@@ -1,9 +1,11 @@
 "use client";
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { IPerson } from "@/types";
 
-export function PersonNode({ data }: NodeProps<{ person: IPerson }>) {
+export type PersonNodeType = Node<{ person: IPerson }, "personNode">;
+
+export function PersonNode({ data }: NodeProps<PersonNodeType>) {
   const { person } = data;
   const initials = `${person.firstName[0]}${person.lastName[0]}`;
   return (

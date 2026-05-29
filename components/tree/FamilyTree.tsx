@@ -4,13 +4,13 @@ import {
   Background,
   Controls,
   MiniMap,
-  type Node,
-  type Edge,
   useNodesState,
   useEdgesState,
+  type Node,
+  type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { PersonNode } from "./PersonNode";
+import { PersonNode, type PersonNodeType } from "./PersonNode";
 import type { TreeNode, TreeEdge } from "@/types";
 
 const nodeTypes = { personNode: PersonNode };
@@ -21,8 +21,14 @@ interface Props {
   onNodeClick?: (personId: string) => void;
 }
 
-export function FamilyTree({ nodes: initialNodes, edges: initialEdges, onNodeClick }: Props) {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes as Node[]);
+export function FamilyTree({
+  nodes: initialNodes,
+  edges: initialEdges,
+  onNodeClick,
+}: Props) {
+  const [nodes, , onNodesChange] = useNodesState<PersonNodeType>(
+    initialNodes as PersonNodeType[]
+  );
   const [edges, , onEdgesChange] = useEdgesState(initialEdges as Edge[]);
 
   return (

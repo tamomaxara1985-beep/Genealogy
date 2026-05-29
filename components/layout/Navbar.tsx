@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,17 +14,15 @@ export function Navbar() {
         FamilyRoots
       </Link>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-            <Avatar className="h-9 w-9">
-              <AvatarImage src="" />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
-          </Button>
+        <DropdownMenuTrigger className="rounded-full outline-none">
+          <Avatar className="h-9 w-9 cursor-pointer">
+            <AvatarImage src="" />
+            <AvatarFallback>U</AvatarFallback>
+          </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href="/settings">Settings</Link>
+          <DropdownMenuItem render={<Link href="/settings" />}>
+            Settings
           </DropdownMenuItem>
           <DropdownMenuItem>Sign out</DropdownMenuItem>
         </DropdownMenuContent>
