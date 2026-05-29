@@ -55,9 +55,15 @@ export interface IRelationship {
   endDate?: string
 }
 
+export type RelativeRole = 'father' | 'mother' | 'son' | 'daughter' | 'spouse' | 'brother' | 'sister'
+
 export type TreeNode = {
   id: string
-  data: { person: IPerson }
+  data: {
+    person: IPerson
+    onAddRelative?: (personId: string, role: RelativeRole) => void
+    onSelect?: (person: IPerson) => void
+  }
   position: { x: number; y: number }
   type: 'personNode'
 }

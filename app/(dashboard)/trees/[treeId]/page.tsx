@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useCallback } from "react";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,26 +15,59 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
-import type { IPerson, IRelationship, TreeNode, TreeEdge } from "@/types";
+import type {
+  IPerson,
+  IRelationship,
+  RelativeRole,
+  TreeNode,
+  TreeEdge,
+} from "@/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-function buildNodes(persons: IPerson[]): TreeNode[] {
+// role → { relType, person1=parent/new, person2=child/new }
+function roleToRelationship(
+  role: RelativeRole,
+  selectedId: string,
+  newId: string
+): { type: "parent-child" | "spouse"; person1Id: string; person2Id: string } {
+  switch (role) {
+    case "father":
+    case "mother":
+      // new person is parent of selected
+      return { type: "parent-child", person1Id: newId, person2Id: selectedId };
+    case "son":
+    case "daughter":
+      // selected is parent of new person
+      return { type: "parent-child", person1Id: selectedId, person2Id: newId };
+    case "brother":
+    case "sister":
+      // treat as parent-child with selected as parent (simplified)
+      return { type: "parent-child", person1Id: selectedId, person2Id: newId };
+    case "spouse":
+      return { type: "spouse", person1Id: selectedId, person2Id: newId };
+  }
+}
+
+// default gender for role
+function roleGender(role: RelativeRole): IPerson["gender"] {
+  if (role === "father" || role === "son" || role === "brother") return "male";
+  if (role === "mother" || role === "daughter" || role === "sister") return "female";
+  return "unknown";
+}
+
+function buildNodes(
+  persons: IPerson[],
+  onAddRelative: (personId: string, role: RelativeRole) => void,
+  onSelect: (person: IPerson) => void
+): TreeNode[] {
   return persons.map((p, i) => ({
     id: p._id,
     type: "personNode" as const,
-    position: { x: (i % 4) * 220 + 40, y: Math.floor(i / 4) * 180 + 40 },
-    data: { person: p },
+    position: { x: (i % 4) * 240 + 60, y: Math.floor(i / 4) * 200 + 60 },
+    data: { person: p, onAddRelative, onSelect },
   }));
 }
 
@@ -55,53 +88,65 @@ export default function TreePage({
 }) {
   const { treeId } = use(params);
 
-  const {
-    data: persons = [],
-    mutate: mutatePersons,
-  } = useSWR<IPerson[]>(`/api/trees/${treeId}/persons`, fetcher);
+  const { data: persons = [], mutate: mutatePersons } = useSWR<IPerson[]>(
+    `/api/trees/${treeId}/persons`,
+    fetcher
+  );
+  const { data: relationships = [], mutate: mutateRels } = useSWR<
+    IRelationship[]
+  >(`/api/trees/${treeId}/relationships`, fetcher);
 
-  const {
-    data: relationships = [],
-    mutate: mutateRels,
-  } = useSWR<IRelationship[]>(`/api/trees/${treeId}/relationships`, fetcher);
-
+  // "Add person" standalone dialog
   const [addPersonOpen, setAddPersonOpen] = useState(false);
-  const [addingPerson, setAddingPerson] = useState(false);
+  const [saving, setSaving] = useState(false);
 
+  // "Add relative" dialog — triggered from node buttons
+  const [pendingRole, setPendingRole] = useState<RelativeRole | null>(null);
+  const [pendingFromId, setPendingFromId] = useState<string | null>(null);
+
+  // Detail sheet for selected person
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
-  const [relType, setRelType] = useState<"parent-child" | "spouse">("parent-child");
-  const [relTarget, setRelTarget] = useState("");
-  const [addingRel, setAddingRel] = useState(false);
 
-  async function handleAddPerson(data: Partial<IPerson>) {
-    setAddingPerson(true);
+  const handleAddRelative = useCallback(
+    (personId: string, role: RelativeRole) => {
+      setPendingFromId(personId);
+      setPendingRole(role);
+    },
+    []
+  );
+
+  const handleSelect = useCallback((person: IPerson) => {
+    setSelectedPerson(person);
+  }, []);
+
+  async function submitPerson(data: Partial<IPerson>) {
+    setSaving(true);
     const res = await fetch(`/api/trees/${treeId}/persons`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (res.ok) {
-      await mutatePersons();
+    if (!res.ok) { setSaving(false); return; }
+
+    const newPerson: IPerson = await res.json();
+
+    // If triggered from a node button, create relationship
+    if (pendingFromId && pendingRole) {
+      const rel = roleToRelationship(pendingRole, pendingFromId, newPerson._id);
+      await fetch(`/api/trees/${treeId}/relationships`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rel),
+      });
+      await mutateRels();
+      setPendingRole(null);
+      setPendingFromId(null);
+    } else {
       setAddPersonOpen(false);
     }
-    setAddingPerson(false);
-  }
 
-  async function handleAddRelationship() {
-    if (!selectedPerson || !relTarget) return;
-    setAddingRel(true);
-    await fetch(`/api/trees/${treeId}/relationships`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: relType,
-        person1Id: selectedPerson._id,
-        person2Id: relTarget,
-      }),
-    });
-    await mutateRels();
-    setRelTarget("");
-    setAddingRel(false);
+    await mutatePersons();
+    setSaving(false);
   }
 
   async function handleDeletePerson() {
@@ -111,7 +156,14 @@ export default function TreePage({
     setSelectedPerson(null);
   }
 
-  const otherPersons = persons.filter((p) => p._id !== selectedPerson?._id);
+  const dialogOpen = addPersonOpen || !!pendingRole;
+  const dialogTitle = pendingRole
+    ? `Add ${pendingRole}`
+    : "Add person";
+  const defaultGender = pendingRole ? roleGender(pendingRole) : "unknown";
+
+  const nodes = buildNodes(persons, handleAddRelative, handleSelect);
+  const edges = buildEdges(relationships);
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -130,27 +182,34 @@ export default function TreePage({
           </div>
         </div>
       ) : (
-        <FamilyTree
-          nodes={buildNodes(persons)}
-          edges={buildEdges(relationships)}
-          onNodeClick={(id) => {
-            const p = persons.find((x) => x._id === id);
-            if (p) setSelectedPerson(p);
-          }}
-        />
+        <FamilyTree nodes={nodes} edges={edges} />
       )}
 
-      {/* Add Person Dialog */}
-      <Dialog open={addPersonOpen} onOpenChange={setAddPersonOpen}>
+      {/* Add / Add-relative dialog */}
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setAddPersonOpen(false);
+            setPendingRole(null);
+            setPendingFromId(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add person</DialogTitle>
+            <DialogTitle className="capitalize">{dialogTitle}</DialogTitle>
           </DialogHeader>
-          <PersonForm onSubmit={handleAddPerson} loading={addingPerson} />
+          <PersonForm
+            key={pendingRole ?? "standalone"}
+            initial={{ gender: defaultGender }}
+            onSubmit={submitPerson}
+            loading={saving}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Person Detail Sheet */}
+      {/* Person detail sheet */}
       <Sheet
         open={!!selectedPerson}
         onOpenChange={(o) => !o && setSelectedPerson(null)}
@@ -163,73 +222,15 @@ export default function TreePage({
                   {selectedPerson.firstName} {selectedPerson.lastName}
                 </SheetTitle>
               </SheetHeader>
-
               <div className="mt-4 space-y-1 text-sm text-muted-foreground">
-                {selectedPerson.birthDate && (
-                  <p>Born: {selectedPerson.birthDate}</p>
-                )}
-                {selectedPerson.birthPlace && (
-                  <p>Place: {selectedPerson.birthPlace}</p>
-                )}
-                {selectedPerson.deathDate && (
-                  <p>Died: {selectedPerson.deathDate}</p>
-                )}
+                <p>Gender: {selectedPerson.gender}</p>
+                {selectedPerson.birthDate && <p>Born: {selectedPerson.birthDate}</p>}
+                {selectedPerson.birthPlace && <p>Place: {selectedPerson.birthPlace}</p>}
+                {selectedPerson.deathDate && <p>Died: {selectedPerson.deathDate}</p>}
                 {selectedPerson.notes && (
                   <p className="mt-2 text-gray-700">{selectedPerson.notes}</p>
                 )}
               </div>
-
-              {otherPersons.length > 0 && (
-                <div className="mt-6 space-y-3">
-                  <p className="font-semibold text-sm">Add relationship</p>
-                  <div className="space-y-2">
-                    <Label>Type</Label>
-                    <Select
-                      value={relType}
-                      onValueChange={(v) =>
-                        setRelType(v as "parent-child" | "spouse")
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="parent-child">
-                          Parent → Child
-                        </SelectItem>
-                        <SelectItem value="spouse">Spouse</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>
-                      {relType === "parent-child"
-                        ? "Child (person 2)"
-                        : "Spouse (person 2)"}
-                    </Label>
-                    <Select value={relTarget} onValueChange={(v) => setRelTarget(v ?? "")}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select person…" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {otherPersons.map((p) => (
-                          <SelectItem key={p._id} value={p._id}>
-                            {p.firstName} {p.lastName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    className="w-full"
-                    disabled={!relTarget || addingRel}
-                    onClick={handleAddRelationship}
-                  >
-                    {addingRel ? "Saving…" : "Add relationship"}
-                  </Button>
-                </div>
-              )}
-
               <div className="mt-6">
                 <Button
                   variant="outline"

@@ -6,7 +6,6 @@ import {
   MiniMap,
   useNodesState,
   useEdgesState,
-  type Node,
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -18,14 +17,9 @@ const nodeTypes = { personNode: PersonNode };
 interface Props {
   nodes: TreeNode[];
   edges: TreeEdge[];
-  onNodeClick?: (personId: string) => void;
 }
 
-export function FamilyTree({
-  nodes: initialNodes,
-  edges: initialEdges,
-  onNodeClick,
-}: Props) {
+export function FamilyTree({ nodes: initialNodes, edges: initialEdges }: Props) {
   const [nodes, , onNodesChange] = useNodesState<PersonNodeType>(
     initialNodes as PersonNodeType[]
   );
@@ -39,8 +33,8 @@ export function FamilyTree({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
-        onNodeClick={(_, node) => onNodeClick?.(node.id)}
         fitView
+        minZoom={0.3}
       >
         <Background color="#f59e0b" gap={20} size={1} />
         <Controls />
