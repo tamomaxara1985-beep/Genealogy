@@ -86,7 +86,7 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
             id="isDeceased"
             checked={!form.isLiving}
             onCheckedChange={(checked) => {
-              if (checked) {
+              if (checked === true) {
                 set("isLiving", false);
               } else {
                 setForm((p) => ({ ...p, isLiving: true, deathDate: undefined, deathPlace: undefined }));
@@ -107,10 +107,7 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
               </Label>
               <DateInput
                 value={form.deathDate}
-                onChange={(v) => {
-                  set("deathDate", v);
-                  if (v) set("isLiving", false);
-                }}
+                onChange={(v) => set("deathDate", v)}
                 placeholder="Year or ~Year"
               />
             </div>
