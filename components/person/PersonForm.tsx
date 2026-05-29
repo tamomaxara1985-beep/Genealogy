@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DateInput } from "@/components/ui/date-input";
 import type { IPerson } from "@/types";
 
@@ -79,19 +80,49 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         <Input value={form.birthPlace ?? ""} onChange={(e) => set("birthPlace", e.target.value)} />
       </div>
 
-      <div className="space-y-2">
-        <Label>
-          Death date{" "}
-          <span className="text-xs text-muted-foreground font-normal">
-            — optional
-          </span>
-        </Label>
-        <DateInput value={form.deathDate} onChange={(v) => set("deathDate", v)} placeholder="Year or ~Year" />
-      </div>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="isDeceased"
+            checked={!form.isLiving}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                set("isLiving", false);
+              } else {
+                setForm((p) => ({ ...p, isLiving: true, deathDate: undefined, deathPlace: undefined }));
+              }
+            }}
+          />
+          <Label htmlFor="isDeceased" className="cursor-pointer">Deceased</Label>
+        </div>
 
-      <div className="space-y-2">
-        <Label>Death place</Label>
-        <Input value={form.deathPlace ?? ""} onChange={(e) => set("deathPlace", e.target.value)} />
+        {!form.isLiving && (
+          <div className="space-y-3 pl-6 border-l-2 border-muted">
+            <div className="space-y-2">
+              <Label>
+                Death date{" "}
+                <span className="text-xs text-muted-foreground font-normal">
+                  — optional, year only is fine
+                </span>
+              </Label>
+              <DateInput
+                value={form.deathDate}
+                onChange={(v) => {
+                  set("deathDate", v);
+                  if (v) set("isLiving", false);
+                }}
+                placeholder="Year or ~Year"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Death place</Label>
+              <Input
+                value={form.deathPlace ?? ""}
+                onChange={(e) => set("deathPlace", e.target.value)}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
