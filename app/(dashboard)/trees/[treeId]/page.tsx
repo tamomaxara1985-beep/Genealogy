@@ -2,6 +2,7 @@
 
 import { use, useState, useCallback } from "react";
 import useSWR from "swr";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
+import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import type {
   IPerson,
   IRelationship,
@@ -55,13 +57,18 @@ function roleGender(role: RelativeRole): IPerson["gender"] {
 function buildNodes(
   persons: IPerson[],
   onAddRelative: (personId: string, role: RelativeRole) => void,
-  onSelect: (person: IPerson) => void
+  onSelect: (person: IPerson) => void,
+  highlighted: Set<string>
 ): TreeNode[] {
+  const hasFilter = highlighted.size > 0;
   return persons.map((p, i) => ({
     id: p._id,
     type: "personNode" as const,
     position: { x: (i % 4) * 240 + 60, y: Math.floor(i / 4) * 200 + 60 },
     data: { person: p, onAddRelative, onSelect },
+    style: hasFilter && !highlighted.has(p._id)
+      ? { opacity: 0.25, transition: "opacity 0.2s" }
+      : { opacity: 1, transition: "opacity 0.2s" },
   }));
 }
 
@@ -93,6 +100,7 @@ export default function TreePage({
 
   const [addPersonOpen, setAddPersonOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
 
   const [pendingRole, setPendingRole] = useState<RelativeRole | null>(null);
   const [pendingFromId, setPendingFromId] = useState<string | null>(null);
@@ -170,14 +178,17 @@ export default function TreePage({
   const dialogTitle = pendingRole ? `Add ${pendingRole}` : "Add person";
   const defaultGender = pendingRole ? roleGender(pendingRole) : "unknown";
 
-  const nodes = buildNodes(persons, handleAddRelative, handleSelect);
+  const nodes = buildNodes(persons, handleAddRelative, handleSelect, highlighted);
   const edges = buildEdges(relationships);
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">Family Tree</h1>
-        <Button onClick={() => setAddPersonOpen(true)}>+ Add Person</Button>
+        <div className="flex items-center gap-3">
+          <TreeToolbar persons={persons} onHighlight={setHighlighted} />
+          <Button onClick={() => setAddPersonOpen(true)}>+ Add Person</Button>
+        </div>
       </div>
 
       {persons.length === 0 ? (
@@ -292,12 +303,7 @@ export default function TreePage({
                   </dl>
 
                   <div className="flex gap-2 pt-2">
-                    <Button
-                      className="flex-1"
-                      onClick={() => setEditMode(true)}
-                    >
-                      Edit
-                    </Button>
+                    <Button className="flex-1" onClick={() => setEditMode(true)}>Edit</Button>
                     <Button
                       variant="outline"
                       className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300"
@@ -307,6 +313,9 @@ export default function TreePage({
                       {deleting ? "Deleting…" : "Delete"}
                     </Button>
                   </div>
+                  <Link href={`/person/${selectedPerson._id}`} className="block">
+                    <Button variant="outline" className="w-full">View full profile →</Button>
+                  </Link>
                 </div>
               )}
             </>

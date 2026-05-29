@@ -118,6 +118,15 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         </div>
       </div>
       <div className="space-y-2">
+        <Label>Photo URL</Label>
+        <Input
+          type="url"
+          placeholder="https://…"
+          value={form.photoUrl ?? ""}
+          onChange={(e) => set("photoUrl", e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
         <Label>Notes</Label>
         <Textarea
           value={form.notes ?? ""}
