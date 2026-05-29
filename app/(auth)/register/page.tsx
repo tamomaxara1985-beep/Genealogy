@@ -32,13 +32,14 @@ export default function RegisterPage() {
       body: JSON.stringify(form),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
-      setError(data.error ?? "Registration failed");
+      const data = await res.json().catch(() => ({}));
+      setError((data as { error?: string }).error ?? "Registration failed");
       setLoading(false);
       return;
     }
+
+    const data = await res.json();
 
     const result = await signIn("credentials", {
       email: form.email,
