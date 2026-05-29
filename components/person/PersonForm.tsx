@@ -87,7 +87,7 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         <div className="space-y-2">
           <Label>Birth date</Label>
           <Input
-            type="date"
+            placeholder="1920, ~1850, or 1920-03-14"
             value={form.birthDate ?? ""}
             onChange={(e) => set("birthDate", e.target.value)}
           />
@@ -104,7 +104,7 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         <div className="space-y-2">
           <Label>Death date</Label>
           <Input
-            type="date"
+            placeholder="1985, ~1970, or 1985-06-20"
             value={form.deathDate ?? ""}
             onChange={(e) => set("deathDate", e.target.value)}
           />

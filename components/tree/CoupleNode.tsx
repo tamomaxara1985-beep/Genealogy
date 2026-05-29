@@ -52,7 +52,7 @@ function PersonHalf({
       <p className="font-semibold text-[11px] leading-tight text-center truncate w-full">{person.firstName}</p>
       <p className="text-[10px] text-gray-500 leading-tight text-center truncate w-full">{person.lastName}</p>
       {person.birthDate && (
-        <p className="text-[9px] text-gray-400 mt-0.5">{person.birthDate.slice(0, 4)}</p>
+        <p className="text-[9px] text-gray-400 mt-0.5 truncate w-full text-center">{person.birthDate}</p>
       )}
     </div>
   );

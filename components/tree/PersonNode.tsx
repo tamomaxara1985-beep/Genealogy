@@ -104,9 +104,9 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
             <p className="font-semibold text-xs leading-tight truncate">{person.firstName}</p>
             <p className="text-xs text-gray-600 leading-tight truncate">{person.lastName}</p>
             {(person.birthDate || person.deathDate) && (
-              <p className="text-[10px] text-gray-400 leading-tight mt-0.5">
-                {person.birthDate ? person.birthDate.slice(0, 4) : "?"}
-                {!person.isLiving && person.deathDate ? `–${person.deathDate.slice(0, 4)}` : ""}
+              <p className="text-[10px] text-gray-400 leading-tight mt-0.5 truncate">
+                {person.birthDate ?? "?"}
+                {!person.isLiving && person.deathDate ? `–${person.deathDate}` : ""}
               </p>
             )}
           </div>
