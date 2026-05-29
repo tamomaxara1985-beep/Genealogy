@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { DateInput } from "@/components/ui/date-input";
 import type { IPerson } from "@/types";
 
 interface Props {
@@ -32,48 +33,27 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
     setForm((p) => ({ ...p, [k]: v }));
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(form);
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>First name *</Label>
-          <Input
-            value={form.firstName}
-            onChange={(e) => set("firstName", e.target.value)}
-            required
-          />
+          <Input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} required />
         </div>
         <div className="space-y-2">
           <Label>Last name *</Label>
-          <Input
-            value={form.lastName}
-            onChange={(e) => set("lastName", e.target.value)}
-            required
-          />
+          <Input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} required />
         </div>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Maiden name</Label>
-          <Input
-            value={form.maidenName ?? ""}
-            onChange={(e) => set("maidenName", e.target.value)}
-          />
+          <Input value={form.maidenName ?? ""} onChange={(e) => set("maidenName", e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label>Gender</Label>
-          <Select
-            value={form.gender}
-            onValueChange={(v) => set("gender", v)}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+          <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="male">Male</SelectItem>
               <SelectItem value="female">Female</SelectItem>
@@ -83,57 +63,47 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
           </Select>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Birth date</Label>
-          <Input
-            placeholder="1920, ~1850, or 1920-03-14"
-            value={form.birthDate ?? ""}
-            onChange={(e) => set("birthDate", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Birth place</Label>
-          <Input
-            value={form.birthPlace ?? ""}
-            onChange={(e) => set("birthPlace", e.target.value)}
-          />
-        </div>
+
+      <div className="space-y-2">
+        <Label>
+          Birth date{" "}
+          <span className="text-xs text-muted-foreground font-normal">
+            — optional, year only is fine
+          </span>
+        </Label>
+        <DateInput value={form.birthDate} onChange={(v) => set("birthDate", v)} placeholder="Year or ~Year" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Death date</Label>
-          <Input
-            placeholder="1985, ~1970, or 1985-06-20"
-            value={form.deathDate ?? ""}
-            onChange={(e) => set("deathDate", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Death place</Label>
-          <Input
-            value={form.deathPlace ?? ""}
-            onChange={(e) => set("deathPlace", e.target.value)}
-          />
-        </div>
+
+      <div className="space-y-2">
+        <Label>Birth place</Label>
+        <Input value={form.birthPlace ?? ""} onChange={(e) => set("birthPlace", e.target.value)} />
       </div>
+
+      <div className="space-y-2">
+        <Label>
+          Death date{" "}
+          <span className="text-xs text-muted-foreground font-normal">
+            — optional
+          </span>
+        </Label>
+        <DateInput value={form.deathDate} onChange={(v) => set("deathDate", v)} placeholder="Year or ~Year" />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Death place</Label>
+        <Input value={form.deathPlace ?? ""} onChange={(e) => set("deathPlace", e.target.value)} />
+      </div>
+
       <div className="space-y-2">
         <Label>Photo URL</Label>
-        <Input
-          type="url"
-          placeholder="https://…"
-          value={form.photoUrl ?? ""}
-          onChange={(e) => set("photoUrl", e.target.value)}
-        />
+        <Input type="url" placeholder="https://…" value={form.photoUrl ?? ""} onChange={(e) => set("photoUrl", e.target.value)} />
       </div>
+
       <div className="space-y-2">
         <Label>Notes</Label>
-        <Textarea
-          value={form.notes ?? ""}
-          onChange={(e) => set("notes", e.target.value)}
-          rows={3}
-        />
+        <Textarea value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} rows={3} />
       </div>
+
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Saving..." : "Save person"}
       </Button>
