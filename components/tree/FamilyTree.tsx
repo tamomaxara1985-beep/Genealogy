@@ -12,26 +12,31 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useMemo } from "react";
 import { PersonNode, type PersonNodeType } from "./PersonNode";
+import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
-import type { TreeNode, TreeEdge } from "@/types";
+import type { TreeEdge } from "@/types";
 
-const nodeTypes = { personNode: PersonNode };
+const nodeTypes = {
+  personNode: PersonNode,
+  coupleNode: CoupleNode,
+};
+
+type AnyNode = PersonNodeType | CoupleNodeType;
 
 interface Props {
-  nodes: TreeNode[];
+  nodes: AnyNode[];
   edges: TreeEdge[];
 }
 
 export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
   const layoutNodes = useMemo(
     () => applyDagreLayout(rawNodes, rawEdges),
+    // Re-layout only when node/edge IDs change
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [rawNodes.map((n) => n.id).join(","), rawEdges.map((e) => e.id).join(",")]
   );
 
-  const [nodes, , onNodesChange] = useNodesState<PersonNodeType>(
-    layoutNodes as PersonNodeType[]
-  );
+  const [nodes, , onNodesChange] = useNodesState(layoutNodes);
   const [edges, , onEdgesChange] = useEdgesState(rawEdges as Edge[]);
 
   return (
@@ -43,8 +48,8 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.15}
+        fitViewOptions={{ padding: 0.25 }}
+        minZoom={0.1}
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
@@ -52,6 +57,7 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
         <Controls />
         <MiniMap
           nodeColor={(n) => {
+            if (n.type === "coupleNode") return "#fde68a";
             const g = (n.data as { person?: { gender?: string } })?.person?.gender;
             if (g === "male") return "#bfdbfe";
             if (g === "female") return "#fbcfe8";

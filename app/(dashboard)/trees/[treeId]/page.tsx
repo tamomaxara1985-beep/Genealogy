@@ -16,16 +16,19 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
-import type {
-  IPerson,
-  IRelationship,
-  RelativeRole,
-  TreeNode,
-  TreeEdge,
-} from "@/types";
+import { buildTreeData } from "@/lib/buildTreeData";
+import type { IPerson, IRelationship, RelativeRole } from "@/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -54,34 +57,6 @@ function roleGender(role: RelativeRole): IPerson["gender"] {
   return "unknown";
 }
 
-function buildNodes(
-  persons: IPerson[],
-  onAddRelative: (personId: string, role: RelativeRole) => void,
-  onSelect: (person: IPerson) => void,
-  highlighted: Set<string>
-): TreeNode[] {
-  const hasFilter = highlighted.size > 0;
-  return persons.map((p, i) => ({
-    id: p._id,
-    type: "personNode" as const,
-    position: { x: (i % 4) * 240 + 60, y: Math.floor(i / 4) * 200 + 60 },
-    data: { person: p, onAddRelative, onSelect },
-    style: hasFilter && !highlighted.has(p._id)
-      ? { opacity: 0.25, transition: "opacity 0.2s" }
-      : { opacity: 1, transition: "opacity 0.2s" },
-  }));
-}
-
-function buildEdges(relationships: IRelationship[]): TreeEdge[] {
-  return relationships.map((r) => ({
-    id: r._id,
-    source: r.person1Id,
-    target: r.person2Id,
-    type: "step" as const,
-    label: r.type === "spouse" ? "spouse" : "child",
-  }));
-}
-
 export default function TreePage({
   params,
 }: {
@@ -98,16 +73,28 @@ export default function TreePage({
     fetcher
   );
 
+  // Add new person
   const [addPersonOpen, setAddPersonOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
 
+  // Add relative (from node button)
   const [pendingRole, setPendingRole] = useState<RelativeRole | null>(null);
   const [pendingFromId, setPendingFromId] = useState<string | null>(null);
 
+  // Link two existing persons
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [linkP1, setLinkP1] = useState("");
+  const [linkP2, setLinkP2] = useState("");
+  const [linkType, setLinkType] = useState<"parent-child" | "spouse">("spouse");
+  const [linkSaving, setLinkSaving] = useState(false);
+
+  // Person detail sheet
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Search highlight
+  const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
 
   const handleAddRelative = useCallback((personId: string, role: RelativeRole) => {
     setPendingFromId(personId);
@@ -157,8 +144,7 @@ export default function TreePage({
       body: JSON.stringify(data),
     });
     if (res.ok) {
-      const updated: IPerson = await res.json();
-      setSelectedPerson(updated);
+      setSelectedPerson(await res.json());
       setEditMode(false);
       await mutatePersons();
     }
@@ -174,19 +160,35 @@ export default function TreePage({
     setDeleting(false);
   }
 
+  async function submitLink(e: React.FormEvent) {
+    e.preventDefault();
+    if (!linkP1 || !linkP2 || linkP1 === linkP2) return;
+    setLinkSaving(true);
+    await fetch(`/api/trees/${treeId}/relationships`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: linkType, person1Id: linkP1, person2Id: linkP2 }),
+    });
+    await mutateRels();
+    setLinkOpen(false);
+    setLinkP1("");
+    setLinkP2("");
+    setLinkSaving(false);
+  }
+
   const dialogOpen = addPersonOpen || !!pendingRole;
   const dialogTitle = pendingRole ? `Add ${pendingRole}` : "Add person";
   const defaultGender = pendingRole ? roleGender(pendingRole) : "unknown";
 
-  const nodes = buildNodes(persons, handleAddRelative, handleSelect, highlighted);
-  const edges = buildEdges(relationships);
+  const { nodes, edges } = buildTreeData(persons, relationships, { onAddRelative: handleAddRelative, onSelect: handleSelect }, highlighted);
 
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">Family Tree</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
           <TreeToolbar persons={persons} onHighlight={setHighlighted} />
+          <Button variant="outline" onClick={() => setLinkOpen(true)}>Link people</Button>
           <Button onClick={() => setAddPersonOpen(true)}>+ Add Person</Button>
         </div>
       </div>
@@ -206,11 +208,7 @@ export default function TreePage({
       <Dialog
         open={dialogOpen}
         onOpenChange={(o) => {
-          if (!o) {
-            setAddPersonOpen(false);
-            setPendingRole(null);
-            setPendingFromId(null);
-          }
+          if (!o) { setAddPersonOpen(false); setPendingRole(null); setPendingFromId(null); }
         }}
       >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -226,90 +224,87 @@ export default function TreePage({
         </DialogContent>
       </Dialog>
 
-      {/* Person detail / edit sheet */}
+      {/* Link existing persons dialog */}
+      <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Link existing people</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitLink} className="space-y-3">
+            <div className="space-y-1">
+              <Label>Person 1</Label>
+              <Select value={linkP1} onValueChange={(v) => setLinkP1(v ?? "")}>
+                <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  {persons.map((p) => (
+                    <SelectItem key={p._id} value={p._id}>
+                      {p.firstName} {p.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Relationship</Label>
+              <Select value={linkType} onValueChange={(v) => setLinkType(v as "parent-child" | "spouse")}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spouse">Spouse / Partner</SelectItem>
+                  <SelectItem value="parent-child">Parent → Child (Person 1 is parent)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Person 2</Label>
+              <Select value={linkP2} onValueChange={(v) => setLinkP2(v ?? "")}>
+                <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
+                <SelectContent>
+                  {persons.filter((p) => p._id !== linkP1).map((p) => (
+                    <SelectItem key={p._id} value={p._id}>
+                      {p.firstName} {p.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full" disabled={!linkP1 || !linkP2 || linkSaving}>
+              {linkSaving ? "Saving…" : "Create relationship"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Person detail sheet */}
       <Sheet
         open={!!selectedPerson}
-        onOpenChange={(o) => {
-          if (!o) { setSelectedPerson(null); setEditMode(false); }
-        }}
+        onOpenChange={(o) => { if (!o) { setSelectedPerson(null); setEditMode(false); } }}
       >
         <SheetContent className="w-96 overflow-y-auto">
           {selectedPerson && (
             <>
               <SheetHeader>
-                <SheetTitle>
-                  {selectedPerson.firstName} {selectedPerson.lastName}
-                </SheetTitle>
+                <SheetTitle>{selectedPerson.firstName} {selectedPerson.lastName}</SheetTitle>
               </SheetHeader>
 
               {editMode ? (
                 <div className="mt-4">
-                  <PersonForm
-                    initial={selectedPerson}
-                    onSubmit={submitEditPerson}
-                    loading={saving}
-                  />
-                  <Button
-                    variant="outline"
-                    className="w-full mt-2"
-                    onClick={() => setEditMode(false)}
-                  >
-                    Cancel
-                  </Button>
+                  <PersonForm initial={selectedPerson} onSubmit={submitEditPerson} loading={saving} />
+                  <Button variant="outline" className="w-full mt-2" onClick={() => setEditMode(false)}>Cancel</Button>
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
                   <dl className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Gender</dt>
-                      <dd className="capitalize">{selectedPerson.gender}</dd>
-                    </div>
-                    {selectedPerson.birthDate && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Born</dt>
-                        <dd>{selectedPerson.birthDate}</dd>
-                      </div>
-                    )}
-                    {selectedPerson.birthPlace && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Birth place</dt>
-                        <dd>{selectedPerson.birthPlace}</dd>
-                      </div>
-                    )}
-                    {selectedPerson.deathDate && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Died</dt>
-                        <dd>{selectedPerson.deathDate}</dd>
-                      </div>
-                    )}
-                    {selectedPerson.deathPlace && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Death place</dt>
-                        <dd>{selectedPerson.deathPlace}</dd>
-                      </div>
-                    )}
-                    {selectedPerson.maidenName && (
-                      <div className="flex justify-between">
-                        <dt className="text-muted-foreground">Maiden name</dt>
-                        <dd>{selectedPerson.maidenName}</dd>
-                      </div>
-                    )}
-                    {selectedPerson.notes && (
-                      <div className="pt-1">
-                        <dt className="text-muted-foreground mb-1">Notes</dt>
-                        <dd className="text-gray-700">{selectedPerson.notes}</dd>
-                      </div>
-                    )}
+                    <div className="flex justify-between"><dt className="text-muted-foreground">Gender</dt><dd className="capitalize">{selectedPerson.gender}</dd></div>
+                    {selectedPerson.birthDate && <div className="flex justify-between"><dt className="text-muted-foreground">Born</dt><dd>{selectedPerson.birthDate}</dd></div>}
+                    {selectedPerson.birthPlace && <div className="flex justify-between"><dt className="text-muted-foreground">Birth place</dt><dd>{selectedPerson.birthPlace}</dd></div>}
+                    {selectedPerson.deathDate && <div className="flex justify-between"><dt className="text-muted-foreground">Died</dt><dd>{selectedPerson.deathDate}</dd></div>}
+                    {selectedPerson.deathPlace && <div className="flex justify-between"><dt className="text-muted-foreground">Death place</dt><dd>{selectedPerson.deathPlace}</dd></div>}
+                    {selectedPerson.maidenName && <div className="flex justify-between"><dt className="text-muted-foreground">Maiden name</dt><dd>{selectedPerson.maidenName}</dd></div>}
+                    {selectedPerson.notes && <div className="pt-1"><dt className="text-muted-foreground mb-1">Notes</dt><dd className="text-gray-700">{selectedPerson.notes}</dd></div>}
                   </dl>
-
                   <div className="flex gap-2 pt-2">
                     <Button className="flex-1" onClick={() => setEditMode(true)}>Edit</Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300"
-                      onClick={handleDeletePerson}
-                      disabled={deleting}
-                    >
+                    <Button variant="outline" className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300" onClick={handleDeletePerson} disabled={deleting}>
                       {deleting ? "Deleting…" : "Delete"}
                     </Button>
                   </div>
