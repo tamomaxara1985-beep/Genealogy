@@ -7,10 +7,10 @@ export default function LandingPage() {
       <nav className="flex items-center justify-between px-8 py-4 border-b bg-white/80 backdrop-blur">
         <span className="text-2xl font-bold text-amber-800">FamilyRoots</span>
         <div className="flex gap-3">
-          <Button variant="ghost" render={<Link href="/login" />}>
+          <Button variant="ghost" nativeButton={false} render={<Link href="/login" />}>
             Sign in
           </Button>
-          <Button render={<Link href="/register" />}>Get started</Button>
+          <Button nativeButton={false} render={<Link href="/register" />}>Get started</Button>
         </div>
       </nav>
 
@@ -24,7 +24,7 @@ export default function LandingPage() {
           Build your family tree, upload old documents, and let AI help uncover
           your ancestors&apos; stories.
         </p>
-        <Button size="lg" render={<Link href="/register" />}>
+        <Button size="lg" nativeButton={false} render={<Link href="/register" />}>
           Start your free tree
         </Button>
       </section>

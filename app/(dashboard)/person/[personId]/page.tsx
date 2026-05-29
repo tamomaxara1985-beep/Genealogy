@@ -118,7 +118,7 @@ export default function PersonProfilePage({
             <p className="text-sm text-muted-foreground">{person.birthPlace}</p>
           )}
           <div className="mt-3">
-            <Button size="sm" render={<Link href={`/trees/${person.treeId}`} />}>
+            <Button size="sm" nativeButton={false} render={<Link href={`/trees/${person.treeId}`} />}>
               ← Back to tree
             </Button>
           </div>
