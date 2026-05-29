@@ -1,3 +1,8 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +16,31 @@ import {
 } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const result = await signIn("credentials", {
+      email: form.email,
+      password: form.password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError("Invalid email or password");
+      setLoading(false);
+      return;
+    }
+
+    router.push("/dashboard");
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -18,33 +48,41 @@ export default function LoginPage() {
         <CardDescription>Sign in to your FamilyRoots account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" className="w-full">
-            Google
-          </Button>
-          <Button variant="outline" className="w-full">
-            Facebook
-          </Button>
-        </div>
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2">
+              {error}
+            </p>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, email: e.target.value }))
+              }
+              required
+            />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">
-              Or continue with
-            </span>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={form.password}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, password: e.target.value }))
+              }
+              required
+            />
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="you@example.com" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" />
-        </div>
-        <Button className="w-full">Sign in</Button>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </Button>
+        </form>
         <p className="text-center text-sm text-muted-foreground">
           No account?{" "}
           <Link href="/register" className="underline">
