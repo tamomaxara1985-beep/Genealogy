@@ -11,16 +11,19 @@ declare module "next-auth" {
   }
 }
 
-if (!process.env.AUTH_GOOGLE_ID || !process.env.AUTH_GOOGLE_SECRET) {
-  throw new Error("AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET must be set");
-}
+const googleProvider =
+  process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
+    ? [
+        Google({
+          clientId: process.env.AUTH_GOOGLE_ID,
+          clientSecret: process.env.AUTH_GOOGLE_SECRET,
+        }),
+      ]
+    : [];
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
+    ...googleProvider,
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
