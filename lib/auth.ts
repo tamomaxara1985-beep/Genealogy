@@ -11,11 +11,15 @@ declare module "next-auth" {
   }
 }
 
+if (!process.env.AUTH_GOOGLE_ID || !process.env.AUTH_GOOGLE_SECRET) {
+  throw new Error("AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET must be set");
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      clientId: process.env.AUTH_GOOGLE_ID,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
     Credentials({
       credentials: {
@@ -50,10 +54,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user, account }) {
       if (account?.provider === "google") {
+        if (!token.email) throw new Error("Google account missing email");
         await connectDB();
         const dbUser = await User.findOneAndUpdate(
           { email: token.email },
-          { $setOnInsert: { name: token.name, email: token.email, image: token.picture } },
+          {
+            $set: { name: token.name, image: token.picture },
+            $setOnInsert: { email: token.email },
+          },
           { upsert: true, new: true }
         );
         token.id = dbUser._id.toString();
