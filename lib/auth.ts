@@ -51,14 +51,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       if (account?.provider === "google") {
         await connectDB();
-        let dbUser = await User.findOne({ email: token.email });
-        if (!dbUser) {
-          dbUser = await User.create({
-            name: token.name,
-            email: token.email,
-            image: token.picture,
-          });
-        }
+        const dbUser = await User.findOneAndUpdate(
+          { email: token.email },
+          { $setOnInsert: { name: token.name, email: token.email, image: token.picture } },
+          { upsert: true, new: true }
+        );
         token.id = dbUser._id.toString();
       } else if (user) {
         token.id = user.id;
