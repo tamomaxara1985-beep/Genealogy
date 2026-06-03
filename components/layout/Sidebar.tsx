@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Home, Trees, User, Dna } from "lucide-react";
+import { Home, Trees, User, Dna, ShieldCheck } from "lucide-react";
+import { auth } from "@/lib/auth";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -8,7 +9,10 @@ const nav = [
   { href: "/dna", label: "DNA Matches", icon: Dna },
 ];
 
-export function Sidebar() {
+export async function Sidebar() {
+  const session = await auth();
+  const isAdmin = session?.user?.role === "admin";
+
   return (
     <aside className="w-56 border-r bg-gray-50 min-h-screen pt-4">
       <nav className="space-y-1 px-3">
@@ -22,6 +26,15 @@ export function Sidebar() {
             {label}
           </Link>
         ))}
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Admin
+          </Link>
+        )}
       </nav>
     </aside>
   );
