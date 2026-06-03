@@ -11,6 +11,10 @@ export async function POST(req: NextRequest) {
   if (!folder || typeof folder !== "string")
     return NextResponse.json({ error: "folder required" }, { status: 400 })
 
+  const ALLOWED_FOLDERS = ["genealogy/photos", "genealogy/documents"] as const
+  if (!ALLOWED_FOLDERS.includes(folder as (typeof ALLOWED_FOLDERS)[number]))
+    return NextResponse.json({ error: "invalid folder" }, { status: 400 })
+
   const apiSecret = process.env.CLOUDINARY_API_SECRET
   const apiKey = process.env.CLOUDINARY_API_KEY
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME
