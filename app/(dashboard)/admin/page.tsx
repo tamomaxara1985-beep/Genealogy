@@ -61,7 +61,8 @@ export default function AdminPage() {
   const [deleteFileTarget, setDeleteFileTarget] = useState<CloudinaryResource | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleRoleChange(userId: string, role: string) {
+  async function handleRoleChange(userId: string, role: string | null) {
+    if (!role) return
     await fetch(`/api/admin/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
