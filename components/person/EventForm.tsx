@@ -47,14 +47,18 @@ export function EventForm({ personId, onSuccess }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    await fetch(`/api/persons/${personId}/events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    })
-    onSuccess()
-    setForm({ type: "birth", documentUrls: [] })
-    setSaving(false)
+    try {
+      const res = await fetch(`/api/persons/${personId}/events`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error("Failed to save event")
+      onSuccess()
+      setForm({ type: "birth", documentUrls: [] })
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
