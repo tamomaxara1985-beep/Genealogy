@@ -29,11 +29,15 @@ interface Props {
 }
 
 export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
+  // Derive stable ID keys so useMemo deps are simple expressions
+  const nodeIds = rawNodes.map((n) => n.id).join(",");
+  const edgeIds = rawEdges.map((e) => e.id).join(",");
+
   const layoutNodes = useMemo(
     () => applyDagreLayout(rawNodes, rawEdges),
     // Re-layout only when node/edge IDs change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rawNodes.map((n) => n.id).join(","), rawEdges.map((e) => e.id).join(",")]
+    [nodeIds, edgeIds]
   );
 
   const [nodes, , onNodesChange] = useNodesState(layoutNodes);

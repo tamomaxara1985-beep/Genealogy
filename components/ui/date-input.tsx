@@ -56,13 +56,16 @@ export function DateInput({ value, onChange, placeholder = "Year" }: Props) {
   const [month, setMonth] = useState(parsed.month);
   const [day, setDay] = useState(parsed.day);
 
+  // Sync local state when controlled `value` prop changes.
+  // This is intentional — the component acts as a controlled input.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const p = parse(value);
     setYear(p.year);
     setMonth(p.month);
     setDay(p.day);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function update(y: string, m: string, d: string) {
     onChange(format(y, m, d));
