@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DateInput } from "@/components/ui/date-input";
+import { CloudinaryUpload } from "@/components/ui/cloudinary-upload";
 import type { IPerson } from "@/types";
 
 interface Props {
@@ -123,8 +124,14 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>Photo URL</Label>
-        <Input type="url" placeholder="https://…" value={form.photoUrl ?? ""} onChange={(e) => set("photoUrl", e.target.value)} />
+        <Label>Photo</Label>
+        <CloudinaryUpload
+          mode="single"
+          folder="genealogy/photos"
+          value={form.photoUrl ?? ""}
+          onChange={(url) => set("photoUrl", url)}
+          accept="image/*"
+        />
       </div>
 
       <div className="space-y-2">
