@@ -6,8 +6,11 @@ import { connectDB } from "./db";
 import User from "./models/User";
 
 declare module "next-auth" {
+  interface User {
+    role?: string;
+  }
   interface Session {
-    user: { id: string } & DefaultSession["user"];
+    user: { id: string; role: string } & DefaultSession["user"];
   }
 }
 
@@ -50,6 +53,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           image: user.image,
+          role: user.role,
         };
       },
     }),
@@ -68,13 +72,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           { upsert: true, new: true }
         );
         token.id = dbUser._id.toString();
+        token.role = dbUser.role;
       } else if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      if (token.role) session.user.role = token.role as string;
       return session;
     },
   },
