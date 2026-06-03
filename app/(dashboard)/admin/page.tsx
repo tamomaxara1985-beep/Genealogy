@@ -38,7 +38,11 @@ interface CloudinaryResource {
   created_at: string
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+const fetcher = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error(`Request failed: ${r.status}`)
+    return r.json()
+  })
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`
@@ -63,27 +67,29 @@ export default function AdminPage() {
 
   async function handleRoleChange(userId: string, role: string | null) {
     if (!role) return
-    await fetch(`/api/admin/users/${userId}`, {
+    const res = await fetch(`/api/admin/users/${userId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ role }),
     })
-    mutateUsers()
+    if (res.ok) mutateUsers()
   }
 
   async function handleDeleteUser() {
     if (!deleteUserTarget) return
     setLoading(true)
-    await fetch(`/api/admin/users/${deleteUserTarget._id}`, { method: "DELETE" })
-    await mutateUsers()
-    setDeleteUserTarget(null)
+    const res = await fetch(`/api/admin/users/${deleteUserTarget._id}`, { method: "DELETE" })
+    if (res.ok) {
+      await mutateUsers()
+      setDeleteUserTarget(null)
+    }
     setLoading(false)
   }
 
   async function handleDeleteFile() {
     if (!deleteFileTarget) return
     setLoading(true)
-    await fetch("/api/admin/files", {
+    const res = await fetch("/api/admin/files", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -91,8 +97,10 @@ export default function AdminPage() {
         resourceType: deleteFileTarget.resource_type,
       }),
     })
-    await mutateFiles()
-    setDeleteFileTarget(null)
+    if (res.ok) {
+      await mutateFiles()
+      setDeleteFileTarget(null)
+    }
     setLoading(false)
   }
 
