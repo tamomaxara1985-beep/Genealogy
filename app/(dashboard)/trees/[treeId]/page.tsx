@@ -57,6 +57,21 @@ function roleGender(role: RelativeRole): IPerson["gender"] {
   return "unknown";
 }
 
+function linkRoleToRelationship(
+  role: "child-of" | "parent-of" | "spouse-of",
+  linkToId: string,
+  newId: string
+): { type: "parent-child" | "spouse"; person1Id: string; person2Id: string } {
+  switch (role) {
+    case "child-of":
+      return { type: "parent-child", person1Id: linkToId, person2Id: newId };
+    case "parent-of":
+      return { type: "parent-child", person1Id: newId, person2Id: linkToId };
+    case "spouse-of":
+      return { type: "spouse", person1Id: linkToId, person2Id: newId };
+  }
+}
+
 export default function TreePage({
   params,
 }: {
@@ -80,6 +95,8 @@ export default function TreePage({
   // Add relative (from node button)
   const [pendingRole, setPendingRole] = useState<RelativeRole | null>(null);
   const [pendingFromId, setPendingFromId] = useState<string | null>(null);
+  const [linkToId, setLinkToId] = useState("");
+  const [linkRole, setLinkRole] = useState<"child-of" | "parent-of" | "spouse-of">("child-of");
 
   // Link two existing persons
   const [linkOpen, setLinkOpen] = useState(false);
@@ -127,10 +144,19 @@ export default function TreePage({
       await mutateRels();
       setPendingRole(null);
       setPendingFromId(null);
-    } else {
-      setAddPersonOpen(false);
+    } else if (linkToId) {
+      const rel = linkRoleToRelationship(linkRole, linkToId, newPerson._id);
+      await fetch(`/api/trees/${treeId}/relationships`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rel),
+      });
+      await mutateRels();
     }
 
+    setAddPersonOpen(false);
+    setLinkToId("");
+    setLinkRole("child-of");
     await mutatePersons();
     setSaving(false);
   }
@@ -208,7 +234,13 @@ export default function TreePage({
       <Dialog
         open={dialogOpen}
         onOpenChange={(o) => {
-          if (!o) { setAddPersonOpen(false); setPendingRole(null); setPendingFromId(null); }
+          if (!o) {
+            setAddPersonOpen(false);
+            setPendingRole(null);
+            setPendingFromId(null);
+            setLinkToId("");
+            setLinkRole("child-of");
+          }
         }}
       >
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -221,6 +253,40 @@ export default function TreePage({
             onSubmit={submitNewPerson}
             loading={saving}
           />
+          {!pendingRole && persons.length > 0 && (
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">
+                Link to existing person (optional)
+              </p>
+              <Select value={linkToId} onValueChange={(v) => setLinkToId(v ?? "")}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select person…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {persons.map((p) => (
+                    <SelectItem key={p._id} value={p._id}>
+                      {p.firstName} {p.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {linkToId && (
+                <Select
+                  value={linkRole}
+                  onValueChange={(v) => setLinkRole(v as typeof linkRole)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="child-of">Child of selected</SelectItem>
+                    <SelectItem value="parent-of">Parent of selected</SelectItem>
+                    <SelectItem value="spouse-of">Spouse of selected</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
