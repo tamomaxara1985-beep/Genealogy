@@ -13,21 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import type { IPerson, IEvent, IRelationship } from "@/types";
+import { EventForm } from "@/components/person/EventForm";
+import type { IPerson, IEvent } from "@/types";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
-
-const EVENT_TYPES = ["birth","death","marriage","divorce","immigration","other"] as const;
 
 const EVENT_ICONS: Record<string, string> = {
   birth: "👶", death: "✝️", marriage: "💍", divorce: "📄",
@@ -41,7 +30,7 @@ export default function PersonProfilePage({
 }) {
   const { personId } = use(params);
 
-  const { data: person, mutate: mutatePerson } = useSWR<IPerson>(
+  const { data: person } = useSWR<IPerson>(
     `/api/persons/${personId}`,
     fetcher
   );
@@ -51,8 +40,6 @@ export default function PersonProfilePage({
   );
 
   const [addEventOpen, setAddEventOpen] = useState(false);
-  const [eventForm, setEventForm] = useState<Partial<IEvent>>({ type: "birth" });
-  const [savingEvent, setSavingEvent] = useState(false);
 
   if (!person) return <div className="p-8 text-muted-foreground">Loading…</div>;
 
@@ -65,20 +52,6 @@ export default function PersonProfilePage({
     other: "bg-purple-50 text-purple-700",
     unknown: "bg-gray-50 text-gray-600",
   };
-
-  async function submitEvent(e: React.FormEvent) {
-    e.preventDefault();
-    setSavingEvent(true);
-    await fetch(`/api/persons/${personId}/events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(eventForm),
-    });
-    await mutateEvents();
-    setAddEventOpen(false);
-    setEventForm({ type: "birth" });
-    setSavingEvent(false);
-  }
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -160,6 +133,21 @@ export default function PersonProfilePage({
                   {ev.description && (
                     <p className="text-sm text-gray-600 mt-0.5">{ev.description}</p>
                   )}
+                  {ev.documentUrls?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {ev.documentUrls.map((url, i) => (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-amber-600 hover:underline"
+                        >
+                          📎 Document {i + 1}
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ol>
@@ -171,39 +159,13 @@ export default function PersonProfilePage({
       <Dialog open={addEventOpen} onOpenChange={setAddEventOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Add life event</DialogTitle></DialogHeader>
-          <form onSubmit={submitEvent} className="space-y-3">
-            <div className="space-y-1">
-              <Label>Type</Label>
-              <Select
-                value={eventForm.type}
-                onValueChange={(v) => setEventForm((f) => ({ ...f, type: v as IEvent["type"] }))}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {EVENT_TYPES.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize">{EVENT_ICONS[t]} {t}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Date</Label>
-                <Input type="date" value={eventForm.date ?? ""} onChange={(e) => setEventForm((f) => ({ ...f, date: e.target.value }))} />
-              </div>
-              <div className="space-y-1">
-                <Label>Place</Label>
-                <Input value={eventForm.place ?? ""} onChange={(e) => setEventForm((f) => ({ ...f, place: e.target.value }))} />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label>Description</Label>
-              <Textarea rows={2} value={eventForm.description ?? ""} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} />
-            </div>
-            <Button type="submit" className="w-full" disabled={savingEvent}>
-              {savingEvent ? "Saving…" : "Add event"}
-            </Button>
-          </form>
+          <EventForm
+            personId={personId}
+            onSuccess={async () => {
+              await mutateEvents();
+              setAddEventOpen(false);
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
