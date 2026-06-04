@@ -23,7 +23,7 @@ type MultiProps = {
 
 type Props = SingleProps | MultiProps
 
-async function uploadFile(file: File, folder: string): Promise<string> {
+export async function uploadFile(file: File, folder: string): Promise<string> {
   const signRes = await fetch("/api/upload/sign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
