@@ -83,7 +83,27 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
 
-  const { messages, treeId } = await req.json()
+  let body: { messages?: unknown; treeId?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+  }
+
+  const { treeId } = body
+  const messages = body.messages
+  if (
+    !Array.isArray(messages) ||
+    messages.some(
+      (m) =>
+        typeof m !== "object" ||
+        m === null ||
+        !["user", "assistant"].includes((m as { role?: string }).role ?? "") ||
+        typeof (m as { content?: string }).content !== "string"
+    )
+  ) {
+    return NextResponse.json({ error: "Invalid messages" }, { status: 400 })
+  }
 
   let systemPrompt = GENERAL_SYSTEM_PROMPT
 
