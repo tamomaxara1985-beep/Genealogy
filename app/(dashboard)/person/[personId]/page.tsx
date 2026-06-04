@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/person/EventForm";
 import type { IPerson, IEvent } from "@/types";
+import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -29,6 +30,9 @@ export default function PersonProfilePage({
   params: Promise<{ personId: string }>;
 }) {
   const { personId } = use(params);
+  const tp = useTranslations("person");
+  const te = useTranslations("event");
+  const tc = useTranslations("common");
 
   const { data: person } = useSWR<IPerson>(
     `/api/persons/${personId}`,
@@ -41,7 +45,7 @@ export default function PersonProfilePage({
 
   const [addEventOpen, setAddEventOpen] = useState(false);
 
-  if (!person) return <div className="p-8 text-muted-foreground">Loading…</div>;
+  if (!person) return <div className="p-8 text-muted-foreground">{tc("loading")}</div>;
 
   const initials = `${person.firstName[0] ?? "?"}${person.lastName[0] ?? ""}`;
   const gender = person.gender ?? "unknown";
@@ -76,7 +80,7 @@ export default function PersonProfilePage({
           </div>
           <div className="flex items-center gap-2 mt-1">
             <Badge variant={person.isLiving ? "default" : "secondary"}>
-              {person.isLiving ? "Living" : "Deceased"}
+              {person.isLiving ? tp("living") : tp("deceased")}
             </Badge>
             <Badge variant="outline" className="capitalize">{gender}</Badge>
           </div>
@@ -92,7 +96,7 @@ export default function PersonProfilePage({
           )}
           <div className="mt-3">
             <Button size="sm" nativeButton={false} render={<Link href={`/trees/${person.treeId}`} />}>
-              ← Back to tree
+              {tp("backToTree")}
             </Button>
           </div>
         </div>
@@ -101,7 +105,7 @@ export default function PersonProfilePage({
       {/* Notes / Bio */}
       {(person.notes || person.bio) && (
         <Card>
-          <CardHeader><CardTitle>About</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{tp("about")}</CardTitle></CardHeader>
           <CardContent className="text-sm space-y-2">
             {person.bio && <p>{person.bio}</p>}
             {person.notes && <p className="text-muted-foreground">{person.notes}</p>}
@@ -112,12 +116,12 @@ export default function PersonProfilePage({
       {/* Life Events */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Life events</CardTitle>
-          <Button size="sm" onClick={() => setAddEventOpen(true)}>+ Add event</Button>
+          <CardTitle>{tp("lifeEvents")}</CardTitle>
+          <Button size="sm" onClick={() => setAddEventOpen(true)}>{tp("addEvent")}</Button>
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events recorded.</p>
+            <p className="text-sm text-muted-foreground">{tp("noEvents")}</p>
           ) : (
             <ol className="relative border-l border-gray-200 space-y-4 ml-3">
               {events.map((ev) => (
@@ -158,7 +162,7 @@ export default function PersonProfilePage({
       {/* Add Event Dialog */}
       <Dialog open={addEventOpen} onOpenChange={setAddEventOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add life event</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{te("add")}</DialogTitle></DialogHeader>
           <EventForm
             personId={personId}
             onSuccess={async () => {
