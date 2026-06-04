@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useRef } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { uploadFile } from "@/components/ui/cloudinary-upload";
 import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
@@ -109,6 +111,9 @@ export default function TreePage({
   const [selectedPerson, setSelectedPerson] = useState<IPerson | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   // Search highlight
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
@@ -184,6 +189,30 @@ export default function TreePage({
     await mutatePersons();
     setSelectedPerson(null);
     setDeleting(false);
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !selectedPerson) return;
+    setPhotoError(null);
+    setPhotoUploading(true);
+    try {
+      const url = await uploadFile(file, "genealogy/photos");
+      const res = await fetch(`/api/persons/${selectedPerson._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoUrl: url }),
+      });
+      if (!res.ok) throw new Error("Failed to save photo");
+      const updated: IPerson = await res.json();
+      setSelectedPerson(updated);
+      await mutatePersons();
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
   }
 
   async function submitLink(e: React.FormEvent) {
@@ -359,6 +388,30 @@ export default function TreePage({
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
+                  <div className="flex flex-col items-center gap-2 pb-3">
+                    <Avatar className="h-20 w-20 border-2 border-white shadow">
+                      <AvatarImage src={selectedPerson.photoUrl} />
+                      <AvatarFallback className="text-xl font-bold">
+                        {selectedPerson.firstName[0] ?? "?"}{selectedPerson.lastName[0] ?? ""}
+                      </AvatarFallback>
+                    </Avatar>
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={photoUploading}
+                      onClick={() => photoInputRef.current?.click()}
+                    >
+                      {photoUploading ? "Uploading…" : "Change photo"}
+                    </Button>
+                    {photoError && <p className="text-xs text-destructive">{photoError}</p>}
+                  </div>
                   <dl className="space-y-1 text-sm">
                     <div className="flex justify-between"><dt className="text-muted-foreground">Gender</dt><dd className="capitalize">{selectedPerson.gender}</dd></div>
                     {selectedPerson.birthDate && <div className="flex justify-between"><dt className="text-muted-foreground">Born</dt><dd>{selectedPerson.birthDate}</dd></div>}
