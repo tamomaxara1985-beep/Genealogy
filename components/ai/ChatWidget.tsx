@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { MessageCircle, X, Send } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { ChatMessage } from "@/components/ai/ChatMessage"
 import type { ChatMessage as ChatMessageType } from "@/types"
 
