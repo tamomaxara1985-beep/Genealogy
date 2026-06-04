@@ -47,14 +47,22 @@ Cloudinary folders:
 ## Component: `components/ui/cloudinary-upload.tsx`
 
 ```ts
-interface Props {
-  mode: "single" | "multi"
-  folder: "genealogy/photos" | "genealogy/documents"
-  value: string | string[]
-  onChange: (urls: string | string[]) => void
-  accept?: string
-  maxFiles?: number  // default 10, multi mode only
-}
+type Props =
+  | {
+      mode: "single"
+      folder: "genealogy/photos" | "genealogy/documents"
+      value: string
+      onChange: (url: string) => void
+      accept?: string
+    }
+  | {
+      mode: "multi"
+      folder: "genealogy/photos" | "genealogy/documents"
+      value: string[]
+      onChange: (urls: string[]) => void
+      accept?: string
+      maxFiles?: number  // default 10
+    }
 ```
 
 ### Single mode
@@ -69,10 +77,13 @@ interface Props {
 
 ### Upload flow (both modes)
 1. User selects file(s)
-2. Component calls `POST /api/upload/sign` with folder
-3. Component POSTs `FormData` to Cloudinary directly from browser
-4. On success: calls `onChange` with `secure_url` (single) or `[...prev, secure_url]` (multi)
-5. Shows inline progress state: idle → uploading → done / error
+2. Component checks each file is ≤ 2 MB — shows inline error and aborts if exceeded
+3. Component calls `POST /api/upload/sign` with folder
+4. Component POSTs `FormData` to Cloudinary directly from browser
+5. On success: calls `onChange` with `secure_url` (single) or `[...prev, secure_url]` (multi)
+6. Shows inline progress state: idle → uploading → done / error
+
+Max file size: **2 MB** per file. Validated client-side before the sign request is made.
 
 No external upload library. Plain `fetch` + `FormData`.
 
