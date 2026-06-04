@@ -194,18 +194,25 @@ export default function TreePage({
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !selectedPerson) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError("File exceeds the 2 MB limit");
+      return;
+    }
+    const personId = selectedPerson._id;
     setPhotoError(null);
     setPhotoUploading(true);
     try {
       const url = await uploadFile(file, "genealogy/photos");
-      const res = await fetch(`/api/persons/${selectedPerson._id}`, {
+      const res = await fetch(`/api/persons/${personId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ photoUrl: url }),
       });
       if (!res.ok) throw new Error("Failed to save photo");
       const updated: IPerson = await res.json();
-      setSelectedPerson(updated);
+      if (selectedPerson?._id === personId) {
+        setSelectedPerson(updated);
+      }
       await mutatePersons();
     } catch (err) {
       setPhotoError(err instanceof Error ? err.message : "Upload failed");
