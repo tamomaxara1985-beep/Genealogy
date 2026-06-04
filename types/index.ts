@@ -76,3 +76,8 @@ export type TreeEdge = {
   type: 'step'
   label?: string
 }
+
+export interface ChatMessage {
+  role: "user" | "assistant"
+  content: string
+}
