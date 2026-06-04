@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ShieldCheck, Trash2, FileText } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface AdminUser {
   _id: string
@@ -52,6 +53,8 @@ function formatBytes(bytes: number) {
 
 export default function AdminPage() {
   const { data: session } = useSession()
+  const t = useTranslations("admin")
+  const tc = useTranslations("common")
   const { data: users = [], mutate: mutateUsers } = useSWR<AdminUser[]>(
     "/api/admin/users",
     fetcher
@@ -108,13 +111,13 @@ export default function AdminPage() {
     <div className="max-w-5xl space-y-6">
       <div className="flex items-center gap-2">
         <ShieldCheck className="h-6 w-6 text-amber-500" />
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
       </div>
 
       <Tabs defaultValue="users">
         <TabsList>
-          <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
-          <TabsTrigger value="files">Files ({files.length})</TabsTrigger>
+          <TabsTrigger value="users">{t("users")} ({users.length})</TabsTrigger>
+          <TabsTrigger value="files">{t("files")} ({files.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-4">
@@ -122,10 +125,10 @@ export default function AdminPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Joined</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t("name")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t("email")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t("role")}</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">{t("joined")}</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -171,7 +174,7 @@ export default function AdminPage() {
                 {users.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground text-sm">
-                      No users found.
+                      {t("noUsers")}
                     </td>
                   </tr>
                 )}
@@ -218,7 +221,7 @@ export default function AdminPage() {
             ))}
             {files.length === 0 && (
               <p className="col-span-full text-sm text-muted-foreground py-6 text-center">
-                No files uploaded yet.
+                {t("noFiles")}
               </p>
             )}
           </div>
@@ -231,16 +234,15 @@ export default function AdminPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete user?</DialogTitle>
+            <DialogTitle>{t("deleteUser")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Permanently delete <strong>{deleteUserTarget?.name}</strong> and all their trees,
-            persons, relationships, and events. This cannot be undone.
+            {t("deleteUserDesc", { name: deleteUserTarget?.name ?? "" })}
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteUserTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDeleteUser} disabled={loading}>
-              {loading ? "Deleting…" : "Delete"}
+              {loading ? tc("deleting") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -252,16 +254,15 @@ export default function AdminPage() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete file?</DialogTitle>
+            <DialogTitle>{t("deleteFile")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Permanently delete <strong>{deleteFileTarget?.public_id.split("/").pop()}</strong> from
-            Cloudinary. This cannot be undone.
+            {t("deleteFileDesc", { name: deleteFileTarget?.public_id.split("/").pop() ?? "" })}
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteFileTarget(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDeleteFile} disabled={loading}>
-              {loading ? "Deleting…" : "Delete"}
+              {loading ? tc("deleting") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>
