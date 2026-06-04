@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { Home, Trees, User, Dna, ShieldCheck } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
-
-const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/trees", label: "My Trees", icon: Trees },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/dna", label: "DNA Matches", icon: Dna },
-];
 
 export async function Sidebar() {
   const session = await auth();
   const isAdmin = session?.user?.role === "admin";
+  const t = await getTranslations("nav");
+
+  const nav = [
+    { href: "/dashboard", label: t("dashboard"), icon: Home },
+    { href: "/trees", label: t("trees"), icon: Trees },
+    { href: "/profile", label: t("profile"), icon: User },
+    { href: "/dna", label: t("dna"), icon: Dna },
+  ];
 
   return (
     <aside className="w-56 border-r bg-gray-50 min-h-screen pt-4">
@@ -32,7 +34,7 @@ export async function Sidebar() {
             className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
           >
             <ShieldCheck className="h-4 w-4" />
-            Admin
+            {t("admin")}
           </Link>
         )}
       </nav>
