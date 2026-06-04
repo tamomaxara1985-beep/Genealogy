@@ -28,14 +28,15 @@ Missing Information Rule:
 - Do not speculate or provide general genealogy knowledge.
 
 Output Style:
+- 1-3 sentences maximum. Never longer.
 - Simple, natural language.
-- Short and clear.
 - Do not mention sources, records, or where information was found.
-- Do not explain your reasoning.`
+- Do not explain your reasoning.
+- No lists, no bullet points, no headers.`
 
 const GENERAL_SYSTEM_PROMPT = `You are a professional Genealogy Research Consultant.
 
-Help users with genealogy research, family history questions, surname origins, historical migration patterns, record types, and research tips. Provide factual, concise, easy-to-understand answers.`
+Answer genealogy questions in 1-3 sentences maximum. Be direct and factual. No lists, no headers, no long explanations.`
 
 function buildTreeContext(
   persons: IPersonDoc[],
