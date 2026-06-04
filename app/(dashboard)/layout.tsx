@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { ChatWidget } from "@/components/ai/ChatWidget";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
         <Sidebar />
         <main className="flex-1 p-6 bg-gray-50">{children}</main>
       </div>
+      <ChatWidget />
     </div>
   );
 }
