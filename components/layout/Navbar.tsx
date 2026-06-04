@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -9,9 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export function Navbar() {
   const { data: session } = useSession();
+  const t = useTranslations("nav");
 
   const initials = session?.user?.name
     ? session.user.name
@@ -27,22 +30,25 @@ export function Navbar() {
       <Link href="/dashboard" className="text-xl font-bold text-amber-800">
         FamilyRoots
       </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger className="rounded-full outline-none">
-          <Avatar className="h-9 w-9 cursor-pointer">
-            <AvatarImage src={session?.user?.image ?? ""} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem render={<Link href="/settings" />}>
-            Settings
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
-            Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-3">
+        <LanguageSwitcher />
+        <DropdownMenu>
+          <DropdownMenuTrigger className="rounded-full outline-none">
+            <Avatar className="h-9 w-9 cursor-pointer">
+              <AvatarImage src={session?.user?.image ?? ""} />
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem render={<Link href="/settings" />}>
+              {t("settings")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+              {t("signOut")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
