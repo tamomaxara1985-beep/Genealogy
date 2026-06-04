@@ -424,13 +424,13 @@ export default function TreePage({
                     {photoError && <p className="text-xs text-destructive">{photoError}</p>}
                   </div>
                   <dl className="space-y-1 text-sm">
-                    <div className="flex justify-between"><dt className="text-muted-foreground">Gender</dt><dd className="capitalize">{selectedPerson.gender}</dd></div>
-                    {selectedPerson.birthDate && <div className="flex justify-between"><dt className="text-muted-foreground">Born</dt><dd>{selectedPerson.birthDate}</dd></div>}
-                    {selectedPerson.birthPlace && <div className="flex justify-between"><dt className="text-muted-foreground">Birth place</dt><dd>{selectedPerson.birthPlace}</dd></div>}
-                    {selectedPerson.deathDate && <div className="flex justify-between"><dt className="text-muted-foreground">Died</dt><dd>{selectedPerson.deathDate}</dd></div>}
-                    {selectedPerson.deathPlace && <div className="flex justify-between"><dt className="text-muted-foreground">Death place</dt><dd>{selectedPerson.deathPlace}</dd></div>}
-                    {selectedPerson.maidenName && <div className="flex justify-between"><dt className="text-muted-foreground">Maiden name</dt><dd>{selectedPerson.maidenName}</dd></div>}
-                    {selectedPerson.notes && <div className="pt-1"><dt className="text-muted-foreground mb-1">Notes</dt><dd className="text-gray-700">{selectedPerson.notes}</dd></div>}
+                    <div className="flex justify-between"><dt className="text-muted-foreground">{tp("gender")}</dt><dd className="capitalize">{selectedPerson.gender}</dd></div>
+                    {selectedPerson.birthDate && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("birthDate")}</dt><dd>{selectedPerson.birthDate}</dd></div>}
+                    {selectedPerson.birthPlace && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("birthPlace")}</dt><dd>{selectedPerson.birthPlace}</dd></div>}
+                    {selectedPerson.deathDate && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("deathDate")}</dt><dd>{selectedPerson.deathDate}</dd></div>}
+                    {selectedPerson.deathPlace && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("deathPlace")}</dt><dd>{selectedPerson.deathPlace}</dd></div>}
+                    {selectedPerson.maidenName && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("maidenName")}</dt><dd>{selectedPerson.maidenName}</dd></div>}
+                    {selectedPerson.notes && <div className="pt-1"><dt className="text-muted-foreground mb-1">{tp("notes")}</dt><dd className="text-gray-700">{selectedPerson.notes}</dd></div>}
                   </dl>
                   <div className="flex gap-2 pt-2">
                     <Button className="flex-1" onClick={() => setEditMode(true)}>{tp("edit")}</Button>

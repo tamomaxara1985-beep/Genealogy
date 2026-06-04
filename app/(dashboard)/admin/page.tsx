@@ -240,7 +240,7 @@ export default function AdminPage() {
             {t("deleteUserDesc", { name: deleteUserTarget?.name ?? "" })}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteUserTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteUserTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDeleteUser} disabled={loading}>
               {loading ? tc("deleting") : tc("delete")}
             </Button>
@@ -260,7 +260,7 @@ export default function AdminPage() {
             {t("deleteFileDesc", { name: deleteFileTarget?.public_id.split("/").pop() ?? "" })}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteFileTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteFileTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDeleteFile} disabled={loading}>
               {loading ? tc("deleting") : tc("delete")}
             </Button>
