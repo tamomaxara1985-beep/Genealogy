@@ -44,8 +44,16 @@ export function applyDagreLayout<T extends MinimalNode>(
     childrenMap.set(e.source, kids);
   });
 
-  // Reposition siblings: sort by current x, center group under parent
-  childrenMap.forEach((childIds, parentId) => {
+  // Build id→node map for O(1) width lookup
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+
+  // Reposition siblings top-down: ancestors have smaller Y, so processing top-down
+  // ensures grandparent positions are finalized before grandchildren are centered
+  const sortedParents = [...childrenMap.entries()].sort(
+    ([a], [b]) => (centerPos.get(a)?.y ?? 0) - (centerPos.get(b)?.y ?? 0)
+  );
+
+  sortedParents.forEach(([parentId, childIds]) => {
     if (childIds.length < 2) return;
     const parentPos = centerPos.get(parentId);
     if (!parentPos) return;
@@ -53,7 +61,7 @@ export function applyDagreLayout<T extends MinimalNode>(
     childIds.sort((a, b) => (centerPos.get(a)?.x ?? 0) - (centerPos.get(b)?.x ?? 0));
 
     const widths = childIds.map((id) => {
-      const node = nodes.find((n) => n.id === id);
+      const node = nodeById.get(id);
       return node?.type === "coupleNode" ? COUPLE_W : PERSON_W;
     });
 
