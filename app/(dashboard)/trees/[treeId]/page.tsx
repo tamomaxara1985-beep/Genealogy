@@ -230,11 +230,11 @@ export default function TreePage({
   async function submitLink(e: React.FormEvent) {
     e.preventDefault();
     if (!linkP1 || !linkP2 || linkP1 === linkP2) return;
-    if (linkType === "sibling" && !linkParent) return;
+    if (linkType === "sibling" && (!linkParent || linkParent === linkP1 || linkParent === linkP2)) return;
     setLinkSaving(true);
 
     if (linkType === "sibling") {
-      await Promise.all([
+      const [res1, res2] = await Promise.all([
         fetch(`/api/trees/${treeId}/relationships`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -246,6 +246,10 @@ export default function TreePage({
           body: JSON.stringify({ type: "parent-child", person1Id: linkParent, person2Id: linkP2 }),
         }),
       ]);
+      if (!res1.ok || !res2.ok) {
+        setLinkSaving(false);
+        return;
+      }
     } else {
       await fetch(`/api/trees/${treeId}/relationships`, {
         method: "POST",
@@ -373,7 +377,10 @@ export default function TreePage({
             </div>
             <div className="space-y-1">
               <Label>{t("relationship")}</Label>
-              <Select value={linkType} onValueChange={(v) => setLinkType(v as "parent-child" | "spouse" | "sibling")}>
+              <Select value={linkType} onValueChange={(v) => {
+                setLinkType(v as "parent-child" | "spouse" | "sibling");
+                if (v !== "sibling") setLinkParent("");
+              }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="spouse">{t("spouse")}</SelectItem>
@@ -413,7 +420,7 @@ export default function TreePage({
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full" disabled={!linkP1 || !linkP2 || (linkType === "sibling" && !linkParent) || linkSaving}>
+            <Button type="submit" className="w-full" disabled={!linkP1 || !linkP2 || (linkType === "sibling" && (!linkParent || linkParent === linkP1 || linkParent === linkP2)) || linkSaving}>
               {linkSaving ? tc("saving") : t("createRelationship")}
             </Button>
           </form>
