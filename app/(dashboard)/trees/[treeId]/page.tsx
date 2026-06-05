@@ -108,7 +108,8 @@ export default function TreePage({
   const [linkOpen, setLinkOpen] = useState(false);
   const [linkP1, setLinkP1] = useState("");
   const [linkP2, setLinkP2] = useState("");
-  const [linkType, setLinkType] = useState<"parent-child" | "spouse">("spouse");
+  const [linkType, setLinkType] = useState<"parent-child" | "spouse" | "sibling">("spouse");
+  const [linkParent, setLinkParent] = useState("");
   const [linkSaving, setLinkSaving] = useState(false);
 
   // Person detail sheet
@@ -229,16 +230,36 @@ export default function TreePage({
   async function submitLink(e: React.FormEvent) {
     e.preventDefault();
     if (!linkP1 || !linkP2 || linkP1 === linkP2) return;
+    if (linkType === "sibling" && !linkParent) return;
     setLinkSaving(true);
-    await fetch(`/api/trees/${treeId}/relationships`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: linkType, person1Id: linkP1, person2Id: linkP2 }),
-    });
+
+    if (linkType === "sibling") {
+      await Promise.all([
+        fetch(`/api/trees/${treeId}/relationships`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "parent-child", person1Id: linkParent, person2Id: linkP1 }),
+        }),
+        fetch(`/api/trees/${treeId}/relationships`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "parent-child", person1Id: linkParent, person2Id: linkP2 }),
+        }),
+      ]);
+    } else {
+      await fetch(`/api/trees/${treeId}/relationships`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: linkType, person1Id: linkP1, person2Id: linkP2 }),
+      });
+    }
+
     await mutateRels();
     setLinkOpen(false);
     setLinkP1("");
     setLinkP2("");
+    setLinkParent("");
+    setLinkType("spouse");
     setLinkSaving(false);
   }
 
@@ -352,14 +373,33 @@ export default function TreePage({
             </div>
             <div className="space-y-1">
               <Label>{t("relationship")}</Label>
-              <Select value={linkType} onValueChange={(v) => setLinkType(v as "parent-child" | "spouse")}>
+              <Select value={linkType} onValueChange={(v) => setLinkType(v as "parent-child" | "spouse" | "sibling")}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="spouse">{t("spouse")}</SelectItem>
                   <SelectItem value="parent-child">{t("parentChild")}</SelectItem>
+                  <SelectItem value="sibling">{t("sibling")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {linkType === "sibling" && (
+              <div className="space-y-1">
+                <Label>{t("sharedParent")}</Label>
+                <Select value={linkParent} onValueChange={(v) => setLinkParent(v ?? "")}>
+                  <SelectTrigger><SelectValue placeholder={t("selectPerson")} /></SelectTrigger>
+                  <SelectContent>
+                    {persons
+                      .filter((p) => p._id !== linkP1 && p._id !== linkP2)
+                      .map((p) => (
+                        <SelectItem key={p._id} value={p._id}>
+                          {p.firstName} {p.lastName}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-1">
               <Label>{t("person2")}</Label>
               <Select value={linkP2} onValueChange={(v) => setLinkP2(v ?? "")}>
@@ -373,7 +413,7 @@ export default function TreePage({
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" className="w-full" disabled={!linkP1 || !linkP2 || linkSaving}>
+            <Button type="submit" className="w-full" disabled={!linkP1 || !linkP2 || (linkType === "sibling" && !linkParent) || linkSaving}>
               {linkSaving ? tc("saving") : t("createRelationship")}
             </Button>
           </form>
