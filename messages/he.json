@@ -73,7 +73,9 @@
     "person2": "אדם 2",
     "relationship": "קשר",
     "spouse": "בן/בת זוג / שותף/ה",
-    "parentChild": "הורה ← ילד (אדם 1 הוא ההורה)"
+    "parentChild": "הורה ← ילד (אדם 1 הוא ההורה)",
+    "sibling": "אחים (הורה משותף)",
+    "sharedParent": "הורה משותף"
   },
   "common": {
     "save": "שמור",
