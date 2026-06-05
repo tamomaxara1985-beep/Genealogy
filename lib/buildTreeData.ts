@@ -98,7 +98,7 @@ export function buildTreeData(
       id: r._id,
       source,
       target,
-      type: "step",
+      type: "smoothstep",
       label: undefined,
     });
   });
