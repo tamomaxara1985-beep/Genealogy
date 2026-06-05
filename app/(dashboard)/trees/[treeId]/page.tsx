@@ -145,12 +145,28 @@ export default function TreePage({
     const newPerson: IPerson = await res.json();
 
     if (pendingFromId && pendingRole) {
-      const rel = roleToRelationship(pendingRole, pendingFromId, newPerson._id);
-      await fetch(`/api/trees/${treeId}/relationships`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(rel),
-      });
+      const isSibling = pendingRole === "brother" || pendingRole === "sister";
+      if (isSibling) {
+        // Find existing parent of the selected person; connect new sibling to same parent
+        const parentRel = relationships.find(
+          (r) => r.type === "parent-child" && r.person2Id === pendingFromId
+        );
+        const parentId = parentRel?.person1Id;
+        if (parentId) {
+          await fetch(`/api/trees/${treeId}/relationships`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "parent-child", person1Id: parentId, person2Id: newPerson._id }),
+          });
+        }
+      } else {
+        const rel = roleToRelationship(pendingRole, pendingFromId, newPerson._id);
+        await fetch(`/api/trees/${treeId}/relationships`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(rel),
+        });
+      }
       await mutateRels();
       setPendingRole(null);
       setPendingFromId(null);

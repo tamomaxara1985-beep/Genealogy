@@ -73,7 +73,7 @@ export type TreeEdge = {
   id: string
   source: string
   target: string
-  type: 'step'
+  type: 'step' | 'smoothstep'
   label?: string
 }
 
