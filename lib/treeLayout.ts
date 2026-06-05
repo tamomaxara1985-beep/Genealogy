@@ -33,7 +33,7 @@ export function applyDagreLayout<T extends MinimalNode>(
   const centerPos = new Map<string, { x: number; y: number }>();
   nodes.forEach((n) => {
     const pos = g.node(n.id);
-    centerPos.set(n.id, { x: pos.x, y: pos.y });
+    if (pos?.x != null) centerPos.set(n.id, { x: pos.x, y: pos.y });
   });
 
   // Build parent → children map
@@ -70,15 +70,17 @@ export function applyDagreLayout<T extends MinimalNode>(
     let x = parentPos.x - totalWidth / 2;
 
     childIds.forEach((id, i) => {
-      centerPos.set(id, { x: x + widths[i] / 2, y: centerPos.get(id)!.y });
+      const cur = centerPos.get(id);
+      if (cur) centerPos.set(id, { x: x + widths[i] / 2, y: cur.y });
       x += widths[i] + NODESEP;
     });
   });
 
   // Convert center positions to top-left for React Flow
   return nodes.map((n) => {
-    const pos = centerPos.get(n.id)!;
+    const pos = centerPos.get(n.id);
     const w = n.type === "coupleNode" ? COUPLE_W : PERSON_W;
+    if (!pos) return { ...n, position: { x: 0, y: 0 } };
     return { ...n, position: { x: pos.x - w / 2, y: pos.y - NODE_H / 2 } };
   });
 }
