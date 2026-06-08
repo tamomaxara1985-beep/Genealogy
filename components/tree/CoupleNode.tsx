@@ -13,6 +13,20 @@ export type CoupleNodeType = Node<
   "coupleNode"
 >;
 
+const genderBorder: Record<string, string> = {
+  male:    "border-blue-300",
+  female:  "border-pink-300",
+  other:   "border-purple-300",
+  unknown: "border-gray-200",
+};
+
+const genderSelectedBorder: Record<string, string> = {
+  male:    "border-blue-500",
+  female:  "border-pink-500",
+  other:   "border-purple-500",
+  unknown: "border-amber-500",
+};
+
 const genderAvatar: Record<string, string> = {
   male:    "bg-blue-50 text-blue-700",
   female:  "bg-pink-50 text-pink-700",
@@ -20,11 +34,13 @@ const genderAvatar: Record<string, string> = {
   unknown: "bg-gray-50 text-gray-600",
 };
 
-function PersonHalf({
+function PersonCard({
   person,
+  selected,
   onClick,
 }: {
   person: IPerson;
+  selected: boolean;
   onClick: () => void;
 }) {
   const initials = `${person.firstName[0] ?? "?"}${person.lastName[0] ?? ""}`;
@@ -32,28 +48,49 @@ function PersonHalf({
 
   return (
     <div
-      className="flex flex-col items-center px-3 py-2.5 cursor-pointer hover:bg-gray-50 transition-colors relative w-[88px]"
+      className={`bg-white border-2 rounded-xl shadow-sm w-40 cursor-pointer select-none transition-all ${
+        selected
+          ? `${genderSelectedBorder[gender]} shadow-md`
+          : `${genderBorder[gender]} hover:shadow-md`
+      }`}
       onClick={(e) => { e.stopPropagation(); onClick(); }}
     >
-      {/* Living dot */}
-      <div className="relative mb-1.5">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={person.photoUrl} />
-          <AvatarFallback className={`text-xs font-semibold ${genderAvatar[gender]}`}>
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <span
-          className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white ${
-            person.isLiving ? "bg-green-400" : "bg-gray-400"
-          }`}
-        />
+      <div className={`h-1 rounded-t-xl ${person.isLiving ? "bg-green-400" : "bg-gray-300"}`} />
+      <div className="px-3 py-2.5 flex items-center gap-2.5">
+        <div className="relative flex-shrink-0">
+          <Avatar className="h-11 w-11">
+            <AvatarImage src={person.photoUrl} />
+            <AvatarFallback className={`text-sm font-semibold ${genderAvatar[gender]}`}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span
+            className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${
+              person.isLiving ? "bg-green-400" : "bg-gray-400"
+            }`}
+          />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-xs leading-tight truncate">{person.firstName}</p>
+          <p className="text-xs text-gray-600 leading-tight truncate">{person.lastName}</p>
+          {(person.birthDate || person.deathDate) && (
+            <p className="text-[10px] text-gray-400 leading-tight mt-0.5 truncate">
+              {person.birthDate ?? "?"}
+              {!person.isLiving && person.deathDate ? `–${person.deathDate}` : ""}
+            </p>
+          )}
+        </div>
       </div>
-      <p className="font-semibold text-[11px] leading-tight text-center truncate w-full">{person.firstName}</p>
-      <p className="text-[10px] text-gray-500 leading-tight text-center truncate w-full">{person.lastName}</p>
-      {person.birthDate && (
-        <p className="text-[9px] text-gray-400 mt-0.5 truncate w-full text-center">{person.birthDate}</p>
-      )}
+    </div>
+  );
+}
+
+function MarriageLine() {
+  return (
+    <div className="flex items-center w-[60px] flex-shrink-0">
+      <div className="flex-1 h-[1.5px] bg-amber-400" />
+      <span className="text-amber-500 text-sm mx-1 leading-none select-none">♥</span>
+      <div className="flex-1 h-[1.5px] bg-amber-400" />
     </div>
   );
 }
@@ -70,17 +107,16 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
     <div className="relative">
       <Handle type="target" position={Position.Top} className="!bg-gray-300 !w-2 !h-2" />
 
-      {/* Add parent buttons when selected */}
       {selected && onAddRelative && (
         <>
           <button
-            className="nodrag nopan absolute -top-9 left-2 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-9 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, "father"); }}
           >
             <span className="text-amber-500 font-bold">+</span> Add father
           </button>
           <button
-            className="nodrag nopan absolute -top-9 right-2 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-9 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, "mother"); }}
           >
             <span className="text-amber-500 font-bold">+</span> Add mother
@@ -88,25 +124,20 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
         </>
       )}
 
-      {/* Couple card */}
-      <div
-        className={`bg-white border-2 rounded-xl shadow-sm overflow-hidden transition-all ${
-          selected ? "border-amber-500 shadow-md shadow-amber-100" : "border-gray-200 hover:border-amber-300"
-        }`}
-      >
-        {/* Top colored bar — split by gender */}
-        <div className="flex h-1">
-          <div className={`flex-1 ${person1.gender === "male" ? "bg-blue-300" : person1.gender === "female" ? "bg-pink-300" : "bg-gray-300"}`} />
-          <div className={`flex-1 ${person2.gender === "male" ? "bg-blue-300" : person2.gender === "female" ? "bg-pink-300" : "bg-gray-300"}`} />
-        </div>
-
-        <div className="flex divide-x divide-gray-100">
-          <PersonHalf person={person1} onClick={() => onSelect?.(person1)} />
-          <PersonHalf person={person2} onClick={() => onSelect?.(person2)} />
-        </div>
+      <div className="flex items-center">
+        <PersonCard
+          person={person1}
+          selected={selected}
+          onClick={() => onSelect?.(person1)}
+        />
+        <MarriageLine />
+        <PersonCard
+          person={person2}
+          selected={selected}
+          onClick={() => onSelect?.(person2)}
+        />
       </div>
 
-      {/* Add child buttons */}
       {selected && onAddRelative && (
         <div className="absolute -bottom-9 left-0 right-0 flex justify-center gap-2 z-10">
           {CHILD_BUTTONS.map(({ role, label }) => (
