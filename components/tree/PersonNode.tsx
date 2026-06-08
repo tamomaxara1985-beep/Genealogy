@@ -61,7 +61,9 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
 
   return (
     <div className="relative">
-      <Handle type="target" position={Position.Top} className="!bg-gray-300 !w-2 !h-2" />
+      {/* father = left quarter, mother = right quarter of 160px card */}
+      <Handle type="target" position={Position.Top} id="father" style={{ left: 40 }} className="!bg-gray-300 !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} id="mother" style={{ left: 120 }} className="!bg-gray-300 !w-2 !h-2" />
 
       {/* Contextual add buttons */}
       {selected && onAddRelative &&

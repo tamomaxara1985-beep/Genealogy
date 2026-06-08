@@ -6,7 +6,7 @@ const NODE_H = 90;
 const NODESEP = 60;
 
 type MinimalNode = { id: string; type?: string };
-type MinimalEdge = { source: string; target: string };
+type MinimalEdge = { source: string; target: string; targetHandle?: string };
 
 export function applyDagreLayout<T extends MinimalNode>(
   nodes: T[],
@@ -74,6 +74,30 @@ export function applyDagreLayout<T extends MinimalNode>(
       if (cur) centerPos.set(id, { x: x + widths[i] / 2, y: cur.y });
       x += widths[i] + NODESEP;
     });
+  });
+
+  // Enforce father.x < mother.x — swap if dagre placed them in wrong order
+  const childParentsMap = new Map<string, { father?: string; mother?: string }>();
+  edges.forEach((e) => {
+    if (!e.targetHandle) return;
+    const isFather = e.targetHandle.includes("father");
+    const isMother = e.targetHandle.includes("mother");
+    if (!isFather && !isMother) return;
+    const entry = childParentsMap.get(e.target) ?? {};
+    if (isFather) entry.father = e.source;
+    if (isMother) entry.mother = e.source;
+    childParentsMap.set(e.target, entry);
+  });
+
+  childParentsMap.forEach(({ father, mother }) => {
+    if (!father || !mother) return;
+    const fp = centerPos.get(father);
+    const mp = centerPos.get(mother);
+    if (!fp || !mp) return;
+    if (fp.x > mp.x) {
+      centerPos.set(father, { x: mp.x, y: fp.y });
+      centerPos.set(mother, { x: fp.x, y: mp.y });
+    }
   });
 
   // Convert center positions to top-left for React Flow

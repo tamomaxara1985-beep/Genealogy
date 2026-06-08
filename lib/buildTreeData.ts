@@ -97,10 +97,12 @@ export function buildTreeData(
     if (seenEdges.has(key)) return;
     seenEdges.add(key);
 
+    const parentPerson = persons.find((p) => p._id === r.person1Id);
+    const isMother = parentPerson?.gender === "female";
     const childSlot = coupleSlot.get(r.person2Id);
     const targetHandle = childSlot
-      ? childSlot === 1 ? "person1-parents" : "person2-parents"
-      : undefined;
+      ? `${childSlot === 1 ? "person1" : "person2"}-${isMother ? "mother" : "father"}`
+      : isMother ? "mother" : "father";
 
     edges.push({
       id: r._id,
