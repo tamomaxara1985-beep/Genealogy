@@ -9,6 +9,8 @@ export type CoupleNodeType = Node<
     person2: IPerson;
     onAddRelative?: (personId: string, role: RelativeRole) => void;
     onSelect?: (person: IPerson) => void;
+    isDivorced?: boolean;
+    divorceDate?: string;
   },
   "coupleNode"
 >;
@@ -85,7 +87,21 @@ function PersonCard({
   );
 }
 
-function MarriageLine() {
+function MarriageLine({ isDivorced, divorceDate }: { isDivorced?: boolean; divorceDate?: string }) {
+  if (isDivorced) {
+    return (
+      <div className="flex flex-col items-center w-[60px] flex-shrink-0 gap-0.5">
+        <div className="flex items-center w-full">
+          <div className="flex-1 h-[1.5px] bg-gray-400 [background-image:repeating-linear-gradient(to_right,#9ca3af_0,#9ca3af_4px,transparent_4px,transparent_8px)]" />
+          <span className="text-red-400 text-xs mx-1 leading-none select-none font-bold">÷</span>
+          <div className="flex-1 h-[1.5px] bg-gray-400 [background-image:repeating-linear-gradient(to_right,#9ca3af_0,#9ca3af_4px,transparent_4px,transparent_8px)]" />
+        </div>
+        {divorceDate && (
+          <span className="text-[9px] text-red-400 leading-none">{divorceDate}</span>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="flex items-center w-[60px] flex-shrink-0">
       <div className="flex-1 h-[1.5px] bg-amber-400" />
@@ -101,7 +117,7 @@ const CHILD_BUTTONS: { role: RelativeRole; label: string }[] = [
 ];
 
 export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
-  const { person1, person2, onAddRelative, onSelect } = data;
+  const { person1, person2, onAddRelative, onSelect, isDivorced, divorceDate } = data;
 
   return (
     <div className="relative">
@@ -149,7 +165,7 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
           selected={selected}
           onClick={() => onSelect?.(person1)}
         />
-        <MarriageLine />
+        <MarriageLine isDivorced={isDivorced} divorceDate={divorceDate} />
         <PersonCard
           person={person2}
           selected={selected}

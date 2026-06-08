@@ -55,6 +55,8 @@ export function buildTreeData(
         person2: p2,
         onAddRelative: callbacks.onAddRelative,
         onSelect: callbacks.onSelect,
+        isDivorced: !!r.endDate,
+        divorceDate: r.endDate,
       },
     } as CoupleNodeType);
   });
