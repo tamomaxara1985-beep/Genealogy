@@ -76,25 +76,57 @@ export function applyDagreLayout<T extends MinimalNode>(
     });
   });
 
-  // Enforce father.x < mother.x — swap if dagre placed them in wrong order
-  const childParentsMap = new Map<string, { father?: string; mother?: string }>();
+  // Position parents correctly above each child node.
+  // Couple node: ordered [p1_father, p1_mother, +extra_gap, p2_father, p2_mother] centered above couple.
+  // Person node: swap if father ended up right of mother.
+  const parentEdgesByTarget = new Map<string, Array<{ source: string; handle?: string }>>();
   edges.forEach((e) => {
-    if (!e.targetHandle) return;
-    const isFather = e.targetHandle.includes("father");
-    const isMother = e.targetHandle.includes("mother");
-    if (!isFather && !isMother) return;
-    const entry = childParentsMap.get(e.target) ?? {};
-    if (isFather) entry.father = e.source;
-    if (isMother) entry.mother = e.source;
-    childParentsMap.set(e.target, entry);
+    const arr = parentEdgesByTarget.get(e.target) ?? [];
+    arr.push({ source: e.source, handle: e.targetHandle });
+    parentEdgesByTarget.set(e.target, arr);
   });
 
-  childParentsMap.forEach(({ father, mother }) => {
-    if (!father || !mother) return;
-    const fp = centerPos.get(father);
-    const mp = centerPos.get(mother);
-    if (!fp || !mp) return;
-    if (fp.x > mp.x) {
+  parentEdgesByTarget.forEach((parentEdges, targetId) => {
+    const targetNode = nodeById.get(targetId);
+    const targetPos = centerPos.get(targetId);
+    if (!targetNode || !targetPos) return;
+
+    if (targetNode.type === "coupleNode") {
+      const p1: string[] = [];
+      const p2: string[] = [];
+      parentEdges.forEach(({ source, handle }) => {
+        if (!handle) return;
+        if (handle.startsWith("person1"))
+          handle.includes("father") ? p1.unshift(source) : p1.push(source);
+        else if (handle.startsWith("person2"))
+          handle.includes("father") ? p2.unshift(source) : p2.push(source);
+      });
+
+      const ordered = [...p1, ...p2];
+      if (ordered.length === 0) return;
+
+      const widths = ordered.map((id) =>
+        nodeById.get(id)?.type === "coupleNode" ? COUPLE_W : PERSON_W
+      );
+      const extraGap = p1.length > 0 && p2.length > 0 ? NODESEP : 0;
+      const totalWidth =
+        widths.reduce((s, w) => s + w, 0) + NODESEP * (ordered.length - 1) + extraGap;
+
+      let x = targetPos.x - totalWidth / 2;
+      ordered.forEach((id, i) => {
+        const cur = centerPos.get(id);
+        if (cur) centerPos.set(id, { x: x + widths[i] / 2, y: cur.y });
+        x += widths[i] + NODESEP;
+        if (i === p1.length - 1 && p2.length > 0) x += extraGap;
+      });
+    } else {
+      // PersonNode: swap if father ended up right of mother
+      const father = parentEdges.find((pe) => pe.handle === "father")?.source;
+      const mother = parentEdges.find((pe) => pe.handle === "mother")?.source;
+      if (!father || !mother) return;
+      const fp = centerPos.get(father);
+      const mp = centerPos.get(mother);
+      if (!fp || !mp || fp.x <= mp.x) return;
       centerPos.set(father, { x: mp.x, y: fp.y });
       centerPos.set(mother, { x: fp.x, y: mp.y });
     }
