@@ -122,6 +122,8 @@ export default function TreePage({
 
   // Search highlight
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
+  // Surname filter — shows only that surname's subgraph
+  const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
   const handleAddRelative = useCallback((personId: string, role: RelativeRole) => {
     setPendingFromId(personId);
@@ -287,14 +289,39 @@ export default function TreePage({
   const dialogTitle = pendingRole ? `Add ${pendingRole}` : t("addPerson");
   const defaultGender = pendingRole ? roleGender(pendingRole) : "unknown";
 
-  const { nodes, edges } = buildTreeData(persons, relationships, { onAddRelative: handleAddRelative, onSelect: handleSelect }, highlighted);
+  // When a surname is active, filter to its connected subgraph (surname matches + 1-hop relatives)
+  const visiblePersons = (() => {
+    if (!activeSurname) return persons;
+    const core = new Set(
+      persons
+        .filter((p) => p.lastName === activeSurname || p.maidenName === activeSurname)
+        .map((p) => p._id)
+    );
+    const expanded = new Set(core);
+    relationships.forEach((r) => {
+      if (core.has(r.person1Id) || core.has(r.person2Id)) {
+        expanded.add(r.person1Id);
+        expanded.add(r.person2Id);
+      }
+    });
+    return persons.filter((p) => expanded.has(p._id));
+  })();
+
+  const visibleRelationships = activeSurname
+    ? (() => {
+        const ids = new Set(visiblePersons.map((p) => p._id));
+        return relationships.filter((r) => ids.has(r.person1Id) && ids.has(r.person2Id));
+      })()
+    : relationships;
+
+  const { nodes, edges } = buildTreeData(visiblePersons, visibleRelationships, { onAddRelative: handleAddRelative, onSelect: handleSelect }, highlighted);
 
   return (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <TreeToolbar persons={persons} onHighlight={setHighlighted} />
+          <TreeToolbar persons={persons} onHighlight={setHighlighted} onSurnameFilter={setActiveSurname} />
           <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
           <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
         </div>

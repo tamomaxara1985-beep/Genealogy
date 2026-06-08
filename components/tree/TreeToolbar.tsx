@@ -8,15 +8,17 @@ import type { IPerson } from "@/types";
 interface Props {
   persons: IPerson[];
   onHighlight: (ids: Set<string>) => void;
+  onSurnameFilter: (surname: string | null) => void;
 }
 
-export function TreeToolbar({ persons, onHighlight }: Props) {
+export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
   const [query, setQuery] = useState("");
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
   function handleSearch(q: string) {
     setQuery(q);
     setActiveSurname(null);
+    onSurnameFilter(null);
     if (!q.trim()) { onHighlight(new Set()); return; }
     const lower = q.toLowerCase();
     const matches = new Set(
@@ -35,16 +37,13 @@ export function TreeToolbar({ persons, onHighlight }: Props) {
   function handleSurnameClick(surname: string) {
     if (activeSurname === surname) {
       setActiveSurname(null);
+      onSurnameFilter(null);
       onHighlight(new Set());
     } else {
       setActiveSurname(surname);
       setQuery("");
-      const ids = new Set(
-        persons
-          .filter((p) => p.lastName === surname || p.maidenName === surname)
-          .map((p) => p._id)
-      );
-      onHighlight(ids);
+      onHighlight(new Set());
+      onSurnameFilter(surname);
     }
   }
 
@@ -102,7 +101,7 @@ export function TreeToolbar({ persons, onHighlight }: Props) {
           ))}
           {activeSurname && (
             <button
-              onClick={() => { setActiveSurname(null); onHighlight(new Set()); }}
+              onClick={() => { setActiveSurname(null); onHighlight(new Set()); onSurnameFilter(null); }}
               className="text-xs text-muted-foreground hover:text-gray-800 ml-1 cursor-pointer"
             >
               × clear
