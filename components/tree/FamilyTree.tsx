@@ -10,7 +10,7 @@ import {
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
@@ -40,8 +40,13 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
     [nodeIds, edgeIds]
   );
 
-  const [nodes, , onNodesChange] = useNodesState(layoutNodes);
-  const [edges, , onEdgesChange] = useEdgesState(rawEdges as Edge[]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(rawEdges as Edge[]);
+
+  // Sync when SWR data arrives after initial render
+  useEffect(() => { setNodes(layoutNodes); }, [layoutNodes, setNodes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
 
   return (
     <div className="w-full flex-1 min-h-[600px] rounded-xl border bg-slate-50">
