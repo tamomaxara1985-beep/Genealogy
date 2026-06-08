@@ -3,8 +3,8 @@ import dagre from "dagre";
 const PERSON_W = 168;
 const COUPLE_W = 380;  // 160px card + 60px gap + 160px card
 const NODE_H = 90;
-const NODESEP = 60;
-const PARENT_GAP = 20; // gap between father and mother of same person
+const NODESEP = 100;
+const PARENT_GAP = 40; // gap between father and mother of same person
 
 type MinimalNode = { id: string; type?: string };
 type MinimalEdge = { source: string; target: string; targetHandle?: string };
@@ -17,7 +17,7 @@ export function applyDagreLayout<T extends MinimalNode>(
 
   const g = new dagre.graphlib.Graph();
   g.setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB", ranksep: 130, nodesep: NODESEP, marginx: 60, marginy: 60 });
+  g.setGraph({ rankdir: "TB", ranksep: 160, nodesep: NODESEP, marginx: 80, marginy: 80 });
 
   nodes.forEach((n) => {
     g.setNode(n.id, {
