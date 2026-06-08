@@ -105,7 +105,21 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
 
   return (
     <div className="relative">
-      <Handle type="target" position={Position.Top} className="!bg-gray-300 !w-2 !h-2" />
+      {/* Two named target handles — one above each card */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="person1-parents"
+        style={{ left: 80 }}
+        className="!bg-gray-300 !w-2 !h-2"
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="person2-parents"
+        style={{ left: 300 }}
+        className="!bg-gray-300 !w-2 !h-2"
+      />
 
       {selected && onAddRelative && (
         <>

@@ -23,6 +23,7 @@ export function buildTreeData(
   // Build couple groupings (only first spouse pairing per person)
   const usedInCouple = new Set<string>();
   const coupleByPersonId = new Map<string, string>(); // personId → coupleNodeId
+  const coupleSlot = new Map<string, 1 | 2>();         // personId → slot in couple (1=left, 2=right)
 
   const coupleNodes: CoupleNodeType[] = [];
 
@@ -38,6 +39,8 @@ export function buildTreeData(
     const coupleId = `couple_${r._id}`;
     coupleByPersonId.set(r.person1Id, coupleId);
     coupleByPersonId.set(r.person2Id, coupleId);
+    coupleSlot.set(r.person1Id, 1);
+    coupleSlot.set(r.person2Id, 2);
 
     const dim =
       hasFilter && !highlighted.has(r.person1Id) && !highlighted.has(r.person2Id);
@@ -94,12 +97,18 @@ export function buildTreeData(
     if (seenEdges.has(key)) return;
     seenEdges.add(key);
 
+    const childSlot = coupleSlot.get(r.person2Id);
+    const targetHandle = childSlot
+      ? childSlot === 1 ? "person1-parents" : "person2-parents"
+      : undefined;
+
     edges.push({
       id: r._id,
       source,
       target,
       type: "smoothstep",
       label: undefined,
+      targetHandle,
     });
   });
 

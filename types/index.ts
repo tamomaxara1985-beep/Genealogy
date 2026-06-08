@@ -75,6 +75,7 @@ export type TreeEdge = {
   target: string
   type: 'step' | 'smoothstep'
   label?: string
+  targetHandle?: string
 }
 
 export interface ChatMessage {
