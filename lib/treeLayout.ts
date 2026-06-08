@@ -1,7 +1,7 @@
 import dagre from "dagre";
 
 const PERSON_W = 168;
-const COUPLE_W = 200;
+const COUPLE_W = 380;  // 160px card + 60px gap + 160px card
 const NODE_H = 90;
 const NODESEP = 60;
 
