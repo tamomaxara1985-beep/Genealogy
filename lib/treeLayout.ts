@@ -4,6 +4,7 @@ const PERSON_W = 168;
 const COUPLE_W = 380;  // 160px card + 60px gap + 160px card
 const NODE_H = 90;
 const NODESEP = 60;
+const PARENT_GAP = 20; // gap between father and mother of same person
 
 type MinimalNode = { id: string; type?: string };
 type MinimalEdge = { source: string; target: string; targetHandle?: string };
@@ -108,27 +109,33 @@ export function applyDagreLayout<T extends MinimalNode>(
       const widths = ordered.map((id) =>
         nodeById.get(id)?.type === "coupleNode" ? COUPLE_W : PERSON_W
       );
-      const extraGap = p1.length > 0 && p2.length > 0 ? NODESEP : 0;
+      // Within same slot: PARENT_GAP. Between p1/p2 groups: NODESEP.
+      const gaps = ordered.slice(0, -1).map((_, i) =>
+        i === p1.length - 1 && p2.length > 0 ? NODESEP : PARENT_GAP
+      );
       const totalWidth =
-        widths.reduce((s, w) => s + w, 0) + NODESEP * (ordered.length - 1) + extraGap;
+        widths.reduce((s, w) => s + w, 0) + gaps.reduce((s, g) => s + g, 0);
 
       let x = targetPos.x - totalWidth / 2;
       ordered.forEach((id, i) => {
         const cur = centerPos.get(id);
         if (cur) centerPos.set(id, { x: x + widths[i] / 2, y: cur.y });
-        x += widths[i] + NODESEP;
-        if (i === p1.length - 1 && p2.length > 0) x += extraGap;
+        if (i < ordered.length - 1) x += widths[i] + gaps[i];
       });
     } else {
-      // PersonNode: swap if father ended up right of mother
+      // PersonNode: center father+mother above the person with PARENT_GAP between them
       const father = parentEdges.find((pe) => pe.handle === "father")?.source;
       const mother = parentEdges.find((pe) => pe.handle === "mother")?.source;
       if (!father || !mother) return;
       const fp = centerPos.get(father);
       const mp = centerPos.get(mother);
-      if (!fp || !mp || fp.x <= mp.x) return;
-      centerPos.set(father, { x: mp.x, y: fp.y });
-      centerPos.set(mother, { x: fp.x, y: mp.y });
+      if (!fp || !mp) return;
+      const fw = nodeById.get(father)?.type === "coupleNode" ? COUPLE_W : PERSON_W;
+      const mw = nodeById.get(mother)?.type === "coupleNode" ? COUPLE_W : PERSON_W;
+      const totalW = fw + PARENT_GAP + mw;
+      const startX = targetPos.x - totalW / 2;
+      centerPos.set(father, { x: startX + fw / 2, y: fp.y });
+      centerPos.set(mother, { x: startX + fw + PARENT_GAP + mw / 2, y: mp.y });
     }
   });
 
