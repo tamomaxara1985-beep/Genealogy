@@ -109,17 +109,31 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
 
       {selected && onAddRelative && (
         <>
+          {/* person1 parents — stacked above left card */}
           <button
-            className="nodrag nopan absolute -top-9 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-16 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, "father"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> Add father
+            <span className="text-amber-500 font-bold">+</span> {person1.firstName}&apos;s father
+          </button>
+          <button
+            className="nodrag nopan absolute -top-9 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, "mother"); }}
+          >
+            <span className="text-amber-500 font-bold">+</span> {person1.firstName}&apos;s mother
+          </button>
+          {/* person2 parents — stacked above right card */}
+          <button
+            className="nodrag nopan absolute -top-16 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            onClick={(e) => { e.stopPropagation(); onAddRelative(person2._id, "father"); }}
+          >
+            <span className="text-amber-500 font-bold">+</span> {person2.firstName}&apos;s father
           </button>
           <button
             className="nodrag nopan absolute -top-9 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
-            onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, "mother"); }}
+            onClick={(e) => { e.stopPropagation(); onAddRelative(person2._id, "mother"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> Add mother
+            <span className="text-amber-500 font-bold">+</span> {person2.firstName}&apos;s mother
           </button>
         </>
       )}
