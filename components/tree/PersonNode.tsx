@@ -1,6 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 export type PersonNodeType = Node<
@@ -8,6 +9,8 @@ export type PersonNodeType = Node<
     person: IPerson;
     onAddRelative?: (personId: string, role: RelativeRole) => void;
     onSelect?: (person: IPerson) => void;
+    onToggleCollapse?: (personId: string) => void;
+    isCollapsed?: boolean;
   },
   "personNode"
 >;
@@ -54,7 +57,7 @@ const genderAvatar: Record<string, string> = {
 };
 
 export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
-  const { person, onAddRelative, onSelect } = data;
+  const { person, onAddRelative, onSelect, onToggleCollapse, isCollapsed } = data;
   const initials = `${person.firstName[0] ?? "?"}${person.lastName[0] ?? ""}`;
   const gender = person.gender ?? "unknown";
   const isLiving = person.isLiving;
@@ -77,6 +80,25 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
             {label}
           </button>
         ))}
+
+      {/* Collapse button */}
+      {onToggleCollapse && (
+        <button
+          className="nodrag nopan absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-amber-400 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onToggleCollapse(person._id); }}
+          title={isCollapsed ? "Show ancestors" : "Hide ancestors"}
+        >
+          {isCollapsed
+            ? <ChevronDown size={11} className="text-gray-500" />
+            : <ChevronUp size={11} className="text-gray-500" />}
+        </button>
+      )}
+      {/* Collapsed ancestors indicator */}
+      {isCollapsed && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-gray-300 text-[8px] tracking-[0.3em] select-none pointer-events-none">
+          •••
+        </div>
+      )}
 
       {/* Card */}
       <div
