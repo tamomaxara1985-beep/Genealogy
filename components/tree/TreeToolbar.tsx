@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { IPerson } from "@/types";
 
 interface Props {
@@ -34,16 +41,16 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
     onHighlight(matches);
   }
 
-  function handleSurnameClick(surname: string) {
-    if (activeSurname === surname) {
+  function handleSurnameChange(value: string | null) {
+    if (!value || value === "__all__") {
       setActiveSurname(null);
       onSurnameFilter(null);
       onHighlight(new Set());
     } else {
-      setActiveSurname(surname);
+      setActiveSurname(value);
       setQuery("");
       onHighlight(new Set());
-      onSurnameFilter(surname);
+      onSurnameFilter(value);
     }
   }
 
@@ -69,6 +76,19 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
         />
+        {surnames.length > 0 && (
+          <Select value={activeSurname ?? ""} onValueChange={handleSurnameChange}>
+            <SelectTrigger className="w-48 h-8 text-sm">
+              <SelectValue placeholder="Filter by surname…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All surnames</SelectItem>
+              {surnames.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline">{persons.length} people</Badge>
           <Badge variant="outline" className="text-green-600">
@@ -81,34 +101,6 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
           )}
         </div>
       </div>
-
-      {/* Surname filter row */}
-      {surnames.length > 0 && (
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-xs text-muted-foreground shrink-0">Surnames:</span>
-          {surnames.map((s) => (
-            <button
-              key={s}
-              onClick={() => handleSurnameClick(s)}
-              className={`text-xs px-2 py-0.5 rounded-full border transition-colors cursor-pointer ${
-                activeSurname === s
-                  ? "bg-amber-100 border-amber-400 text-amber-800 font-medium"
-                  : "bg-white border-gray-200 text-gray-600 hover:border-amber-300 hover:text-amber-700"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-          {activeSurname && (
-            <button
-              onClick={() => { setActiveSurname(null); onHighlight(new Set()); onSurnameFilter(null); }}
-              className="text-xs text-muted-foreground hover:text-gray-800 ml-1 cursor-pointer"
-            >
-              × clear
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
