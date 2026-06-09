@@ -7,6 +7,8 @@ type AnyNode = PersonNodeType | CoupleNodeType;
 interface Callbacks {
   onAddRelative: (personId: string, role: RelativeRole) => void;
   onSelect: (person: IPerson) => void;
+  onToggleCollapse?: (personId: string) => void;
+  collapsedPersonIds?: Set<string>;
 }
 
 export function buildTreeData(
@@ -57,6 +59,9 @@ export function buildTreeData(
         onSelect: callbacks.onSelect,
         isDivorced: !!r.endDate,
         divorceDate: r.endDate,
+        onToggleCollapse: callbacks.onToggleCollapse,
+        isCollapsed1: callbacks.collapsedPersonIds?.has(r.person1Id) ?? false,
+        isCollapsed2: callbacks.collapsedPersonIds?.has(r.person2Id) ?? false,
       },
     } as CoupleNodeType);
   });
@@ -77,6 +82,8 @@ export function buildTreeData(
           person: p,
           onAddRelative: callbacks.onAddRelative,
           onSelect: callbacks.onSelect,
+          onToggleCollapse: callbacks.onToggleCollapse,
+          isCollapsed: callbacks.collapsedPersonIds?.has(p._id) ?? false,
         },
       } as PersonNodeType;
     });
