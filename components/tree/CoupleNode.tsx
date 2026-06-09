@@ -1,6 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 export type CoupleNodeType = Node<
@@ -11,6 +12,9 @@ export type CoupleNodeType = Node<
     onSelect?: (person: IPerson) => void;
     isDivorced?: boolean;
     divorceDate?: string;
+    onToggleCollapse?: (personId: string) => void;
+    isCollapsed1?: boolean;
+    isCollapsed2?: boolean;
   },
   "coupleNode"
 >;
@@ -117,7 +121,7 @@ const CHILD_BUTTONS: { role: RelativeRole; label: string }[] = [
 ];
 
 export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
-  const { person1, person2, onAddRelative, onSelect, isDivorced, divorceDate } = data;
+  const { person1, person2, onAddRelative, onSelect, isDivorced, divorceDate, onToggleCollapse, isCollapsed1, isCollapsed2 } = data;
 
   return (
     <div className="relative">
@@ -157,6 +161,51 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
             <span className="text-amber-500 font-bold">+</span> {person2.firstName}&apos;s mother
           </button>
         </>
+      )}
+
+      {/* Per-person collapse buttons */}
+      {onToggleCollapse && (
+        <>
+          {/* person1 collapse button — centered above left card (card spans 0–160px, center = 80px) */}
+          <button
+            className="nodrag nopan absolute -top-7 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-amber-400 transition-colors"
+            style={{ left: 70 }}
+            onClick={(e) => { e.stopPropagation(); onToggleCollapse(person1._id); }}
+            title={isCollapsed1 ? "Show ancestors" : "Hide ancestors"}
+          >
+            {isCollapsed1
+              ? <ChevronDown size={11} className="text-gray-500" />
+              : <ChevronUp size={11} className="text-gray-500" />}
+          </button>
+          {/* person2 collapse button — centered above right card (card spans 220–380px, center = 300px) */}
+          <button
+            className="nodrag nopan absolute -top-7 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-amber-400 transition-colors"
+            style={{ left: 290 }}
+            onClick={(e) => { e.stopPropagation(); onToggleCollapse(person2._id); }}
+            title={isCollapsed2 ? "Show ancestors" : "Hide ancestors"}
+          >
+            {isCollapsed2
+              ? <ChevronDown size={11} className="text-gray-500" />
+              : <ChevronUp size={11} className="text-gray-500" />}
+          </button>
+        </>
+      )}
+      {/* Collapsed ancestor indicators */}
+      {isCollapsed1 && (
+        <div
+          className="absolute -top-4 z-10 text-gray-300 text-[8px] tracking-[0.3em] select-none pointer-events-none"
+          style={{ left: 57 }}
+        >
+          •••
+        </div>
+      )}
+      {isCollapsed2 && (
+        <div
+          className="absolute -top-4 z-10 text-gray-300 text-[8px] tracking-[0.3em] select-none pointer-events-none"
+          style={{ left: 277 }}
+        >
+          •••
+        </div>
       )}
 
       <div className="flex items-center">
