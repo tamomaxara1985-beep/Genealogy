@@ -126,14 +126,15 @@ export default function TreePage({
   // Surname filter — shows only that surname's subgraph
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
-  const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(() => {
+  const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(new Set());
+
+  // Load from localStorage after mount (avoids SSR/hydration mismatch)
+  useEffect(() => {
     try {
       const stored = localStorage.getItem(`tree-collapsed-${treeId}`);
-      return stored ? new Set<string>(JSON.parse(stored)) : new Set<string>();
-    } catch {
-      return new Set<string>();
-    }
-  });
+      if (stored) setCollapsedPersonIds(new Set<string>(JSON.parse(stored)));
+    } catch {}
+  }, [treeId]);
 
   useEffect(() => {
     localStorage.setItem(

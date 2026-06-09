@@ -13,7 +13,12 @@ export function getAncestors(
   while (queue.length) {
     const cur = queue.shift()!;
     for (const r of relationships) {
-      if (r.type === "parent-child" && r.person2Id === cur && !ancestors.has(r.person1Id)) {
+      if (
+        r.type === "parent-child" &&
+        r.person2Id === cur &&
+        !ancestors.has(r.person1Id) &&
+        r.person1Id !== personId
+      ) {
         ancestors.add(r.person1Id);
         queue.push(r.person1Id);
       }
