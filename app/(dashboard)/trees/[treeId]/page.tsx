@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useRef } from "react";
+import { use, useState, useCallback, useRef, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { buildTreeData } from "@/lib/buildTreeData";
+import { getAncestors } from "@/lib/treeCollapse";
 import type { IPerson, IRelationship, RelativeRole } from "@/types";
 import { useTranslations } from "next-intl";
 
@@ -125,6 +126,22 @@ export default function TreePage({
   // Surname filter — shows only that surname's subgraph
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
+  const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(`tree-collapsed-${treeId}`);
+      return stored ? new Set<string>(JSON.parse(stored)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      `tree-collapsed-${treeId}`,
+      JSON.stringify([...collapsedPersonIds])
+    );
+  }, [collapsedPersonIds, treeId]);
+
   const handleAddRelative = useCallback((personId: string, role: RelativeRole) => {
     setPendingFromId(personId);
     setPendingRole(role);
@@ -134,6 +151,22 @@ export default function TreePage({
     setSelectedPerson(person);
     setEditMode(false);
   }, []);
+
+  const toggleCollapse = useCallback((personId: string) => {
+    setCollapsedPersonIds((prev) => {
+      const next = new Set(prev);
+      next.has(personId) ? next.delete(personId) : next.add(personId);
+      return next;
+    });
+  }, []);
+
+  const hiddenIds = useMemo(() => {
+    const hidden = new Set<string>();
+    collapsedPersonIds.forEach((id) => {
+      getAncestors(id, relationships).forEach((aid) => hidden.add(aid));
+    });
+    return hidden;
+  }, [collapsedPersonIds, relationships]);
 
   async function submitNewPerson(data: Partial<IPerson>) {
     setSaving(true);
@@ -289,8 +322,8 @@ export default function TreePage({
   const dialogTitle = pendingRole ? `Add ${pendingRole}` : t("addPerson");
   const defaultGender = pendingRole ? roleGender(pendingRole) : "unknown";
 
-  // When a surname is active, filter to its connected subgraph (surname matches + 1-hop relatives)
-  const visiblePersons = (() => {
+  // Surname filter
+  const surnamePersons = (() => {
     if (!activeSurname) return persons;
     const core = new Set(
       persons
@@ -307,14 +340,30 @@ export default function TreePage({
     return persons.filter((p) => expanded.has(p._id));
   })();
 
-  const visibleRelationships = activeSurname
+  const surnameRels = activeSurname
     ? (() => {
-        const ids = new Set(visiblePersons.map((p) => p._id));
+        const ids = new Set(surnamePersons.map((p) => p._id));
         return relationships.filter((r) => ids.has(r.person1Id) && ids.has(r.person2Id));
       })()
     : relationships;
 
-  const { nodes, edges } = buildTreeData(visiblePersons, visibleRelationships, { onAddRelative: handleAddRelative, onSelect: handleSelect }, highlighted);
+  // Collapse filter — applied after surname filter; uses full `relationships` for BFS
+  const visiblePersons = surnamePersons.filter((p) => !hiddenIds.has(p._id));
+  const visibleRelationships = surnameRels.filter(
+    (r) => !hiddenIds.has(r.person1Id) && !hiddenIds.has(r.person2Id)
+  );
+
+  const { nodes, edges } = buildTreeData(
+    visiblePersons,
+    visibleRelationships,
+    {
+      onAddRelative: handleAddRelative,
+      onSelect: handleSelect,
+      onToggleCollapse: toggleCollapse,
+      collapsedPersonIds,
+    },
+    highlighted
+  );
 
   return (
     <div className="flex flex-col gap-4 h-full">
