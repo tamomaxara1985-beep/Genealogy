@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Tree from "@/lib/models/Tree";
+import { PLAN_LIMITS } from "@/lib/plans";
 
 export async function GET() {
   const session = await auth();
@@ -25,6 +26,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
 
   await connectDB();
+
+  const plan = session.user.plan ?? "free";
+  const limit = PLAN_LIMITS[plan].maxTrees;
+  const count = await Tree.countDocuments({ ownerId: session.user.id });
+  if (count >= limit) {
+    return NextResponse.json(
+      { error: "Tree limit reached for your plan", upgradeRequired: true },
+      { status: 403 }
+    );
+  }
+
   const tree = await Tree.create({
     name,
     description,
