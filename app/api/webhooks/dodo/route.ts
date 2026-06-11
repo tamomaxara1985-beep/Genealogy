@@ -1,4 +1,5 @@
 import { Webhooks } from "@dodopayments/nextjs";
+import { type NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
 import { getPlanFromProductId } from "@/lib/plans";
@@ -107,15 +108,24 @@ async function handleSubscriptionEvent(
   }
 }
 
-export const POST = Webhooks({
-  webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY!,
-  onPayload: async (payload) => {
-    const { type } = payload;
-    if (!type.startsWith("subscription.")) return;
-    await handleSubscriptionEvent(
-      type,
-      // @ts-ignore — WebhookPayload is a discriminated union; data shape varies per event type
-      (payload.data ?? {}) as SubscriptionData
-    );
-  },
-});
+const webhookHandler = process.env.DODO_PAYMENTS_WEBHOOK_KEY
+  ? Webhooks({
+      webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
+      onPayload: async (payload) => {
+        const { type } = payload;
+        if (!type.startsWith("subscription.")) return;
+        await handleSubscriptionEvent(
+          type,
+          // @ts-ignore - WebhookPayload is a discriminated union; .data exists on all subscription variants
+          (payload.data ?? {}) as SubscriptionData
+        );
+      },
+    })
+  : null;
+
+export async function POST(req: NextRequest) {
+  if (!webhookHandler) {
+    return new Response("Webhook not configured", { status: 503 });
+  }
+  return webhookHandler(req);
+}
