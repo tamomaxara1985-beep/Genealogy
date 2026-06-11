@@ -84,6 +84,14 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
 
+  const plan = session.user.plan ?? "free"
+  if (plan === "free") {
+    return NextResponse.json(
+      { error: "AI chat requires a Standard or Premium plan", upgradeRequired: true },
+      { status: 403 }
+    )
+  }
+
   let body: { messages?: unknown; treeId?: unknown }
   try {
     body = await req.json()
