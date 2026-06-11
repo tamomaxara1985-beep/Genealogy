@@ -31,18 +31,21 @@ export function buildTreeData(
 
   spouseRels.forEach((r) => {
     if (usedInCouple.has(r.person1Id) || usedInCouple.has(r.person2Id)) return;
-    const p1 = persons.find((p) => p._id === r.person1Id);
-    const p2 = persons.find((p) => p._id === r.person2Id);
+    let p1 = persons.find((p) => p._id === r.person1Id);
+    let p2 = persons.find((p) => p._id === r.person2Id);
     if (!p1 || !p2) return;
+
+    // Male (father) always on left (slot 1), female (mother) always on right (slot 2)
+    if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
 
     usedInCouple.add(r.person1Id);
     usedInCouple.add(r.person2Id);
 
     const coupleId = `couple_${r._id}`;
-    coupleByPersonId.set(r.person1Id, coupleId);
-    coupleByPersonId.set(r.person2Id, coupleId);
-    coupleSlot.set(r.person1Id, 1);
-    coupleSlot.set(r.person2Id, 2);
+    coupleByPersonId.set(p1._id, coupleId);
+    coupleByPersonId.set(p2._id, coupleId);
+    coupleSlot.set(p1._id, 1);
+    coupleSlot.set(p2._id, 2);
 
     const dim =
       hasFilter && !highlighted.has(r.person1Id) && !highlighted.has(r.person2Id);
@@ -60,8 +63,8 @@ export function buildTreeData(
         isDivorced: !!r.endDate,
         divorceDate: r.endDate,
         onToggleCollapse: callbacks.onToggleCollapse,
-        isCollapsed1: callbacks.collapsedPersonIds?.has(r.person1Id) ?? false,
-        isCollapsed2: callbacks.collapsedPersonIds?.has(r.person2Id) ?? false,
+        isCollapsed1: callbacks.collapsedPersonIds?.has(p1._id) ?? false,
+        isCollapsed2: callbacks.collapsedPersonIds?.has(p2._id) ?? false,
       },
     } as CoupleNodeType);
   });
