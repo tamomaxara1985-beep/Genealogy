@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Tree from "@/lib/models/Tree";
 import Person from "@/lib/models/Person";
+import { PLAN_LIMITS } from "@/lib/plans";
 
 type Params = { params: Promise<{ treeId: string }> };
 
@@ -33,6 +34,18 @@ export async function POST(req: NextRequest, { params }: Params) {
   const tree = await Tree.findOne({ _id: treeId, ownerId: session.user.id });
   if (!tree)
     return NextResponse.json({ error: "Tree not found" }, { status: 404 });
+
+  const plan = session.user.plan ?? "free";
+  const limit = PLAN_LIMITS[plan].maxPersonsPerTree;
+  if (limit !== Infinity) {
+    const count = await Person.countDocuments({ treeId });
+    if (count >= limit) {
+      return NextResponse.json(
+        { error: "Person limit reached for your plan", upgradeRequired: true },
+        { status: 403 }
+      );
+    }
+  }
 
   const body = await req.json();
   if (!body.firstName || !body.lastName)
