@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { MessageCircle, X, Send } from "lucide-react"
 import { ChatMessage } from "@/components/ai/ChatMessage"
 import type { ChatMessage as ChatMessageType } from "@/types"
+import { useSession } from "next-auth/react"
 
 export function ChatWidget() {
   const [open, setOpen] = useState(false)
@@ -15,6 +16,9 @@ export function ChatWidget() {
   const pathname = usePathname()
 
   const treeId = pathname.match(/\/trees\/([^/]+)/)?.[1]
+
+  const { data: session } = useSession()
+  const plan = session?.user?.plan ?? "free"
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -121,24 +125,40 @@ export function ChatWidget() {
             <div ref={bottomRef} />
           </div>
 
-          <div className="border-t border-gray-100 p-3 flex gap-2">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask about your ancestors..."
-              disabled={streaming}
-              className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 disabled:opacity-50"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || streaming}
-              className="bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white rounded-lg px-3 py-2 transition-colors"
-            >
-              <Send size={16} />
-            </button>
-          </div>
+          {plan === "free" ? (
+            <div className="border-t border-gray-100 p-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                <p className="text-sm font-medium text-amber-800">
+                  AI chat is a paid feature
+                </p>
+                <a
+                  href="/pricing"
+                  className="text-xs text-amber-600 underline mt-1 inline-block"
+                >
+                  Upgrade to Standard →
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="border-t border-gray-100 p-3 flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ask about your ancestors..."
+                disabled={streaming}
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 disabled:opacity-50"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || streaming}
+                className="bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white rounded-lg px-3 py-2 transition-colors"
+              >
+                <Send size={16} />
+              </button>
+            </div>
+          )}
         </div>
       )}
 
