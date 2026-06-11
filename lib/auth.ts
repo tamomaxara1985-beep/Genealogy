@@ -4,13 +4,28 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { connectDB } from "./db";
 import User from "./models/User";
+import type { Plan, PlanStatus } from "./plans";
 
 declare module "next-auth" {
   interface User {
     role?: string;
+    plan?: Plan;
+    planStatus?: PlanStatus;
   }
   interface Session {
-    user: { id: string; role: string } & DefaultSession["user"];
+    user: {
+      id: string;
+      role: string;
+      plan: Plan;
+      planStatus: PlanStatus;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "@auth/core/jwt" {
+  interface JWT {
+    plan?: string;
+    planStatus?: string;
   }
 }
 
@@ -54,6 +69,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           image: user.image,
           role: user.role,
+          plan: user.plan,
+          planStatus: user.planStatus,
         };
       },
     }),
@@ -73,15 +90,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
         token.id = dbUser._id.toString();
         token.role = dbUser.role;
+        token.plan = dbUser.plan ?? "free";
+        token.planStatus = dbUser.planStatus ?? "active";
       } else if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.plan = user.plan ?? "free";
+        token.planStatus = user.planStatus ?? "active";
       }
       return token;
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
       if (token.role) session.user.role = token.role as string;
+      session.user.plan = (token.plan ?? "free") as Plan;
+      session.user.planStatus = (token.planStatus ?? "active") as PlanStatus;
       return session;
     },
   },
