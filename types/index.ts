@@ -4,6 +4,8 @@ export interface IUser {
   email: string
   image?: string
   role: 'user' | 'admin'
+  plan: 'free' | 'standard' | 'premium'
+  planStatus: 'active' | 'cancelled' | 'on_hold' | 'expired'
   createdAt: Date
 }
 
