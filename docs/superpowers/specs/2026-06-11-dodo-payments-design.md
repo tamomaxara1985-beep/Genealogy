@@ -111,7 +111,7 @@ POST handler. Adapter verifies signature with `DODO_PAYMENTS_WEBHOOK_KEY`. Handl
 
 | Event | DB write |
 |-------|---------|
-| `subscription.active` | `plan` (derived from productId), `planStatus='active'`, `dodoCustomerId`, `dodoSubscriptionId` |
+| `subscription.active` | `plan` (mapped via `PLAN_PRODUCT_MAP` constant: `pdt_0Ngp959eAaBGtnmvgciKO` → `'standard'`, premium productId → `'premium'`), `planStatus='active'`, `dodoCustomerId`, `dodoSubscriptionId` |
 | `subscription.renewed` | `planExpiresAt` |
 | `subscription.cancelled` | `planStatus='cancelled'` |
 | `subscription.on_hold` | `planStatus='on_hold'` |
@@ -129,7 +129,7 @@ Public page (no auth required). 3-column card layout:
 
 ### `app/(dashboard)/settings/billing/page.tsx`
 
-Authenticated page showing:
+Server component. Reads plan state directly from DB via `auth()` + `User.findById()` — bypasses potentially stale JWT session. Shows:
 - Current plan badge + status
 - Next billing date (if subscribed)
 - "Manage subscription" button → `GET /api/customer-portal?customer_id=...`
