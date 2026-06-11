@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -7,7 +8,7 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      <Card>
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle>Account</CardTitle>
         </CardHeader>
@@ -20,6 +21,19 @@ export default async function SettingsPage() {
             <span className="text-muted-foreground">Email</span>
             <span>{session?.user?.email ?? "—"}</span>
           </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Billing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link
+            href="/settings/billing"
+            className="text-sm text-amber-600 hover:underline"
+          >
+            Manage your plan and subscription →
+          </Link>
         </CardContent>
       </Card>
     </div>
