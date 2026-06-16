@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -16,9 +17,11 @@ interface Props {
   persons: IPerson[];
   onHighlight: (ids: Set<string>) => void;
   onSurnameFilter: (surname: string | null) => void;
+  collapsedCount: number;
+  onExpandAll: () => void;
 }
 
-export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
+export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCount, onExpandAll }: Props) {
   const [query, setQuery] = useState("");
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
@@ -88,6 +91,16 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter }: Props) {
               ))}
             </SelectContent>
           </Select>
+        )}
+        {collapsedCount > 0 && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onExpandAll}
+            className="border-amber-400 text-amber-600 hover:bg-amber-50 hover:text-amber-700 whitespace-nowrap"
+          >
+            Expand All
+          </Button>
         )}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Badge variant="outline">{persons.length} people</Badge>

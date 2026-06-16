@@ -222,6 +222,10 @@ export default function TreePage({
     });
   }, []);
 
+  const expandAll = useCallback(() => {
+    setCollapsedPersonIds(new Set());
+  }, []);
+
   const hiddenIds = useMemo(() => {
     const hidden = new Set<string>();
     collapsedPersonIds.forEach((id) => {
@@ -443,7 +447,13 @@ export default function TreePage({
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <TreeToolbar persons={persons} onHighlight={setHighlighted} onSurnameFilter={setActiveSurname} />
+          <TreeToolbar
+            persons={persons}
+            onHighlight={setHighlighted}
+            onSurnameFilter={setActiveSurname}
+            collapsedCount={collapsedPersonIds.size}
+            onExpandAll={expandAll}
+          />
           <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
           <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
         </div>
