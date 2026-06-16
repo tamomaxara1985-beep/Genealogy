@@ -8,7 +8,7 @@ export type CoupleNodeType = Node<
   {
     person1: IPerson;
     person2: IPerson;
-    onAddRelative?: (personId: string, role: RelativeRole) => void;
+    onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
     onSelect?: (person: IPerson) => void;
     isDivorced?: boolean;
     divorceDate?: string;
@@ -228,7 +228,7 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
             <button
               key={role}
               className="nodrag nopan flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
-              onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, role); }}
+              onClick={(e) => { e.stopPropagation(); onAddRelative(person1._id, role, person2._id); }}
             >
               <span className="text-amber-500 font-bold">+</span> {label}
             </button>
