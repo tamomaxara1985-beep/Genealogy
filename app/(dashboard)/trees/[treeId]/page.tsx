@@ -272,6 +272,8 @@ export default function TreePage({
       await mutateRels();
       setPendingRole(null);
       setPendingFromId(null);
+      setPendingCouplePartnerId(null);
+      setSelectedParentIds([]);
     } else if (linkToId) {
       const rel = linkRoleToRelationship(linkRole, linkToId, newPerson._id);
       await fetch(`/api/trees/${treeId}/relationships`, {
