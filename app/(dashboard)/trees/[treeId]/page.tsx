@@ -80,7 +80,7 @@ function buildParentOptions(
   pendingFromId: string,
   persons: IPerson[],
   relationships: IRelationship[]
-): Array<{ ids: string[]; label: string }> {
+): Array<{ ids: string[]; label: string; isExistingPersonSlot?: boolean }> {
   const pending = persons.find((p) => p._id === pendingFromId);
   if (!pending) return [];
 
@@ -90,7 +90,7 @@ function buildParentOptions(
       (r.person1Id === pendingFromId || r.person2Id === pendingFromId)
   );
 
-  const options: Array<{ ids: string[]; label: string }> = [];
+  const options: Array<{ ids: string[]; label: string; isExistingPersonSlot?: boolean }> = [];
 
   for (const rel of spouseRels) {
     const spouseId = rel.person1Id === pendingFromId ? rel.person2Id : rel.person1Id;
@@ -111,6 +111,8 @@ function buildParentOptions(
       ? `Unknown father and ${pendingName}`
       : `${pendingName} and Unknown mother`;
   options.push({ ids: [pendingFromId], label: singleLabel });
+
+  options.push({ ids: [], label: "", isExistingPersonSlot: true });
 
   return options;
 }
@@ -143,6 +145,7 @@ export default function TreePage({
   const [pendingFromId, setPendingFromId] = useState<string | null>(null);
   const [pendingCouplePartnerId, setPendingCouplePartnerId] = useState<string | null>(null);
   const [selectedParentIds, setSelectedParentIds] = useState<string[]>([]);
+  const [existingCoParentId, setExistingCoParentId] = useState("");
   const [linkToId, setLinkToId] = useState("");
   const [linkRole, setLinkRole] = useState<"child-of" | "parent-of" | "spouse-of">("child-of");
 
@@ -274,6 +277,7 @@ export default function TreePage({
       setPendingFromId(null);
       setPendingCouplePartnerId(null);
       setSelectedParentIds([]);
+      setExistingCoParentId("");
     } else if (linkToId) {
       const rel = linkRoleToRelationship(linkRole, linkToId, newPerson._id);
       await fetch(`/api/trees/${treeId}/relationships`, {
@@ -466,6 +470,7 @@ export default function TreePage({
             setPendingFromId(null);
             setPendingCouplePartnerId(null);
             setSelectedParentIds([]);
+            setExistingCoParentId("");
             setLinkToId("");
             setLinkRole("child-of");
           }
@@ -486,6 +491,50 @@ export default function TreePage({
               <p className="text-sm font-medium">{t("parents")}</p>
               <div className="space-y-2">
                 {parentOptions.map((opt) => {
+                  if (opt.isExistingPersonSlot) {
+                    const pending = persons.find((p) => p._id === pendingFromId);
+                    const pendingName = pending ? `${pending.firstName} ${pending.lastName}`.trim() : "";
+                    const slotChecked = existingCoParentId !== "";
+                    return (
+                      <label key="existing-slot" className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="radio"
+                          name="parents"
+                          checked={slotChecked}
+                          disabled={existingCoParentId === ""}
+                          onChange={() => {}}
+                          className="accent-amber-500"
+                        />
+                        <span className="shrink-0">{pendingName} and</span>
+                        <Select
+                          value={existingCoParentId}
+                          onValueChange={(personId) => {
+                            if (!personId || !pendingFromId) return;
+                            setExistingCoParentId(personId);
+                            const ids =
+                              pending?.gender === "female"
+                                ? [personId, pendingFromId]
+                                : [pendingFromId, personId];
+                            setSelectedParentIds(ids);
+                          }}
+                        >
+                          <SelectTrigger className="h-7 text-xs flex-1 min-w-0">
+                            <SelectValue placeholder="Select person…" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {persons
+                              .filter((p) => p._id !== pendingFromId)
+                              .map((p) => (
+                                <SelectItem key={p._id} value={p._id}>
+                                  {p.firstName} {p.lastName}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </label>
+                    );
+                  }
+
                   const key = opt.ids.join(",");
                   const checked = selectedParentIds.join(",") === key;
                   return (
@@ -494,7 +543,7 @@ export default function TreePage({
                         type="radio"
                         name="parents"
                         checked={checked}
-                        onChange={() => setSelectedParentIds(opt.ids)}
+                        onChange={() => { setSelectedParentIds(opt.ids); setExistingCoParentId(""); }}
                         className="accent-amber-500"
                       />
                       {opt.label}
