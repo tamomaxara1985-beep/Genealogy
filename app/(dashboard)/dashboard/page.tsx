@@ -7,9 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTrees } from "@/hooks/useTrees";
-import { useSession } from "next-auth/react"
-import { PLAN_LIMITS } from "@/lib/plans"
-import Link from "next/link"
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -18,10 +15,6 @@ export default function DashboardPage() {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const { data: session } = useSession()
-  const plan = session?.user?.plan ?? "free"
-  const treeLimit = PLAN_LIMITS[plan].maxTrees
-  const atTreeLimit = trees.length >= treeLimit
 
   async function createTree(e: React.FormEvent) {
     e.preventDefault();
@@ -45,16 +38,7 @@ export default function DashboardPage() {
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">My Trees</h1>
-        {atTreeLimit ? (
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-1 text-sm bg-amber-50 border border-amber-300 text-amber-800 px-3 py-2 rounded-lg hover:bg-amber-100 transition-colors"
-          >
-            Upgrade for more trees →
-          </Link>
-        ) : (
-          <Button onClick={() => setShowForm(true)}>+ New Tree</Button>
-        )}
+        <Button onClick={() => setShowForm(true)}>+ New Tree</Button>
       </div>
 
       {showForm && (

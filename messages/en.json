@@ -75,7 +75,8 @@
     "spouse": "Spouse / Partner",
     "parentChild": "Parent → Child (Person 1 is parent)",
     "sibling": "Siblings (shared parent)",
-    "sharedParent": "Shared parent"
+    "sharedParent": "Shared parent",
+    "parents": "Parents"
   },
   "common": {
     "save": "Save",
