@@ -76,6 +76,45 @@ function linkRoleToRelationship(
   }
 }
 
+function buildParentOptions(
+  pendingFromId: string,
+  persons: IPerson[],
+  relationships: IRelationship[]
+): Array<{ ids: string[]; label: string }> {
+  const pending = persons.find((p) => p._id === pendingFromId);
+  if (!pending) return [];
+
+  const spouseRels = relationships.filter(
+    (r) =>
+      r.type === "spouse" &&
+      (r.person1Id === pendingFromId || r.person2Id === pendingFromId)
+  );
+
+  const options: Array<{ ids: string[]; label: string }> = [];
+
+  for (const rel of spouseRels) {
+    const spouseId = rel.person1Id === pendingFromId ? rel.person2Id : rel.person1Id;
+    const spouse = persons.find((p) => p._id === spouseId);
+    if (!spouse) continue;
+    const pendingName = `${pending.firstName} ${pending.lastName}`.trim();
+    const spouseName = `${spouse.firstName} ${spouse.lastName}`.trim();
+    if (pending.gender === "female") {
+      options.push({ ids: [spouseId, pendingFromId], label: `${spouseName} and ${pendingName}` });
+    } else {
+      options.push({ ids: [pendingFromId, spouseId], label: `${pendingName} and ${spouseName}` });
+    }
+  }
+
+  const pendingName = `${pending.firstName} ${pending.lastName}`.trim();
+  const singleLabel =
+    pending.gender === "female"
+      ? `Unknown father and ${pendingName}`
+      : `${pendingName} and Unknown mother`;
+  options.push({ ids: [pendingFromId], label: singleLabel });
+
+  return options;
+}
+
 export default function TreePage({
   params,
 }: {
@@ -102,6 +141,8 @@ export default function TreePage({
   // Add relative (from node button)
   const [pendingRole, setPendingRole] = useState<RelativeRole | null>(null);
   const [pendingFromId, setPendingFromId] = useState<string | null>(null);
+  const [pendingCouplePartnerId, setPendingCouplePartnerId] = useState<string | null>(null);
+  const [selectedParentIds, setSelectedParentIds] = useState<string[]>([]);
   const [linkToId, setLinkToId] = useState("");
   const [linkRole, setLinkRole] = useState<"child-of" | "parent-of" | "spouse-of">("child-of");
 
@@ -143,10 +184,27 @@ export default function TreePage({
     );
   }, [collapsedPersonIds, treeId]);
 
-  const handleAddRelative = useCallback((personId: string, role: RelativeRole) => {
+  const handleAddRelative = useCallback((personId: string, role: RelativeRole, personId2?: string) => {
     setPendingFromId(personId);
     setPendingRole(role);
-  }, []);
+    if (personId2) {
+      setPendingCouplePartnerId(personId2);
+      setSelectedParentIds([personId, personId2]);
+    } else {
+      setPendingCouplePartnerId(null);
+      if (role === "son" || role === "daughter") {
+        const opts = buildParentOptions(personId, persons, relationships);
+        setSelectedParentIds(opts.length > 0 ? opts[0].ids : [personId]);
+      } else {
+        setSelectedParentIds([personId]);
+      }
+    }
+  }, [persons, relationships]);
+
+  const parentOptions = useMemo(() => {
+    if (!pendingFromId || pendingCouplePartnerId) return [];
+    return buildParentOptions(pendingFromId, persons, relationships);
+  }, [pendingFromId, pendingCouplePartnerId, persons, relationships]);
 
   const handleSelect = useCallback((person: IPerson) => {
     setSelectedPerson(person);
@@ -189,6 +247,14 @@ export default function TreePage({
         );
         const parentId = parentRel?.person1Id;
         if (parentId) {
+          await fetch(`/api/trees/${treeId}/relationships`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "parent-child", person1Id: parentId, person2Id: newPerson._id }),
+          });
+        }
+      } else if (pendingRole === "son" || pendingRole === "daughter") {
+        for (const parentId of selectedParentIds) {
           await fetch(`/api/trees/${treeId}/relationships`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -396,6 +462,8 @@ export default function TreePage({
             setAddPersonOpen(false);
             setPendingRole(null);
             setPendingFromId(null);
+            setPendingCouplePartnerId(null);
+            setSelectedParentIds([]);
             setLinkToId("");
             setLinkRole("child-of");
           }
@@ -411,6 +479,29 @@ export default function TreePage({
             onSubmit={submitNewPerson}
             loading={saving}
           />
+          {(pendingRole === "son" || pendingRole === "daughter") && !pendingCouplePartnerId && parentOptions.length > 0 && (
+            <div className="border-t pt-4 space-y-3">
+              <p className="text-sm font-medium">{t("parents")}</p>
+              <div className="space-y-2">
+                {parentOptions.map((opt) => {
+                  const key = opt.ids.join(",");
+                  const checked = selectedParentIds.join(",") === key;
+                  return (
+                    <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <input
+                        type="radio"
+                        name="parents"
+                        checked={checked}
+                        onChange={() => setSelectedParentIds(opt.ids)}
+                        className="accent-amber-500"
+                      />
+                      {opt.label}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {!pendingRole && persons.length > 0 && (
             <div className="border-t pt-4 space-y-3">
               <p className="text-sm font-medium text-muted-foreground">
