@@ -1,5 +1,4 @@
 "use client"
-import { useRouter } from "next/navigation"
 import { useLocale } from "next-intl"
 import {
   Select,
@@ -16,13 +15,12 @@ const LANGUAGES = [
 ]
 
 export function LanguageSwitcher() {
-  const router = useRouter()
   const locale = useLocale()
 
   function handleChange(newLocale: string | null) {
     if (!newLocale) return
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365}`
-    router.refresh()
+    window.location.reload()
   }
 
   return (
