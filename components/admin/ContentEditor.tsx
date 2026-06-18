@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Check, Trash2 } from "lucide-react"
+import { Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Override {
@@ -110,26 +110,26 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
                   <td className="px-4 py-2 font-mono text-xs text-gray-600">{key}</td>
                   <td className="px-4 py-2 text-gray-500 text-xs">{defaults[key]}</td>
                   <td className="px-4 py-2">
-                    <Input
-                      value={currentValue(key)}
-                      onChange={(e) =>
-                        setPending((prev) => ({ ...prev, [key]: e.target.value }))
-                      }
-                      onKeyDown={(e) => e.key === "Enter" && save(key)}
-                      className="h-7 text-xs"
-                    />
-                  </td>
-                  <td className="px-2 flex items-center gap-1">
-                    {pending[key] !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={currentValue(key)}
+                        onChange={(e) =>
+                          setPending((prev) => ({ ...prev, [key]: e.target.value }))
+                        }
+                        onKeyDown={(e) => e.key === "Enter" && save(key)}
+                        className="h-7 text-xs"
+                      />
                       <Button
                         size="sm"
-                        className="h-6 px-2 text-xs bg-amber-500 hover:bg-amber-600 text-white"
+                        className="h-7 px-3 text-xs shrink-0 bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
                         onClick={() => save(key)}
-                        disabled={saving[key]}
+                        disabled={pending[key] === undefined || saving[key]}
                       >
-                        {saving[key] ? "…" : <Check className="h-3 w-3" />}
+                        {saving[key] ? "…" : "Save"}
                       </Button>
-                    )}
+                    </div>
+                  </td>
+                  <td className="px-2">
                     {hasOverride && (
                       <Button
                         variant="ghost"
