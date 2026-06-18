@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db"
 import Tree from "@/lib/models/Tree"
 import Person from "@/lib/models/Person"
 import Event from "@/lib/models/Event"
+import User from "@/lib/models/User"
 import mongoose from "mongoose"
 
 export async function GET() {
@@ -13,7 +14,10 @@ export async function GET() {
   await connectDB()
   const userId = new mongoose.Types.ObjectId(session.user.id)
 
-  const trees = await Tree.find({ ownerId: userId }).sort({ updatedAt: -1 }).lean()
+  const [trees, user] = await Promise.all([
+    Tree.find({ ownerId: userId }).sort({ updatedAt: -1 }).lean(),
+    User.findById(userId).select("bio name").lean(),
+  ])
   const treeIds = trees.map((t) => t._id)
 
   const [personCount, eventCount] = await Promise.all([
@@ -29,6 +33,6 @@ export async function GET() {
     treeCount: trees.length,
     personCount,
     eventCount,
-    recentTrees: trees.slice(0, 3),
+    bio: user?.bio ?? "",
   })
 }

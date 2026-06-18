@@ -1,13 +1,10 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { GitBranch, Users, Calendar, Plus, ArrowRight } from "lucide-react"
-import type { ITree } from "@/types"
+import { GitBranch, Users, Calendar, ArrowRight } from "lucide-react"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -15,32 +12,31 @@ interface Stats {
   treeCount: number
   personCount: number
   eventCount: number
-  recentTrees: ITree[]
+  bio: string
 }
 
 export function DashboardClient() {
   const router = useRouter()
   const { data, isLoading, mutate } = useSWR<Stats>("/api/dashboard/stats", fetcher)
-  const [showForm, setShowForm] = useState(false)
-  const [name, setName] = useState("")
-  const [creating, setCreating] = useState(false)
+  const [bio, setBio] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
 
-  async function createTree(e: React.FormEvent) {
-    e.preventDefault()
-    setCreating(true)
-    const res = await fetch("/api/trees", {
-      method: "POST",
+  useEffect(() => {
+    if (data?.bio !== undefined) setBio(data.bio)
+  }, [data?.bio])
+
+  async function saveBio() {
+    setSaving(true)
+    await fetch("/api/profile", {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ bio }),
     })
-    if (res.ok) {
-      const tree = await res.json()
-      await mutate()
-      setShowForm(false)
-      setName("")
-      router.push(`/trees/${tree._id}`)
-    }
-    setCreating(false)
+    setSaving(false)
+    setSaved(true)
+    mutate({ ...data!, bio }, false)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   const stats = [
@@ -51,40 +47,7 @@ export function DashboardClient() {
 
   return (
     <div className="max-w-4xl space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Button onClick={() => setShowForm(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> New Tree
-        </Button>
-      </div>
-
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Create a tree</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={createTree} className="flex gap-3 items-end">
-              <div className="flex-1 space-y-1">
-                <Label htmlFor="treeName">Tree name</Label>
-                <Input
-                  id="treeName"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Smith Family Tree"
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={creating}>
-                {creating ? "Creating…" : "Create"}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+      <h1 className="text-2xl font-bold">Dashboard</h1>
 
       <div className="grid grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon }) => (
@@ -104,45 +67,35 @@ export function DashboardClient() {
         ))}
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Recent Trees</h2>
-          <Button variant="ghost" size="sm" className="gap-1 text-amber-600" onClick={() => router.push("/trees")}>
-            View all <ArrowRight className="h-3 w-3" />
-          </Button>
-        </div>
-
-        {isLoading && <p className="text-muted-foreground text-sm">Loading…</p>}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {data?.recentTrees.map((tree) => (
-            <Card
-              key={tree._id}
-              className="cursor-pointer hover:border-amber-400 transition-colors"
-              onClick={() => router.push(`/trees/${tree._id}`)}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">About My Family Tree</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <textarea
+            className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400"
+            placeholder="Write notes about your family history, origins, or anything you want to remember…"
+            value={bio}
+            onChange={(e) => { setBio(e.target.value); setSaved(false) }}
+          />
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={saveBio}
+              disabled={saving}
+              className="bg-amber-500 hover:bg-amber-600 text-white"
             >
-              <CardHeader>
-                <CardTitle className="text-base">{tree.name}</CardTitle>
-              </CardHeader>
-              {tree.description && (
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">{tree.description}</p>
-                </CardContent>
-              )}
-            </Card>
-          ))}
+              {saving ? "Saving…" : "Save"}
+            </Button>
+            {saved && <span className="text-sm text-green-600">Saved!</span>}
+          </div>
+        </CardContent>
+      </Card>
 
-          {!isLoading && !data?.recentTrees.length && (
-            <Card
-              className="border-dashed border-2 flex items-center justify-center min-h-32 cursor-pointer hover:border-amber-400 col-span-3"
-              onClick={() => setShowForm(true)}
-            >
-              <CardContent className="text-center pt-6">
-                <p className="text-muted-foreground">+ Create your first tree</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">My Trees</h2>
+        <Button variant="ghost" size="sm" className="gap-1 text-amber-600" onClick={() => router.push("/trees")}>
+          View all <ArrowRight className="h-3 w-3" />
+        </Button>
       </div>
     </div>
   )

@@ -6,6 +6,7 @@ export interface IUserDoc extends Document {
   password?: string;
   image?: string;
   role: "user" | "admin";
+  bio?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +18,7 @@ const UserSchema = new Schema<IUserDoc>(
     password: { type: String },
     image: { type: String },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    bio: { type: String },
   },
   { timestamps: true }
 );
