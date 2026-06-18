@@ -108,12 +108,12 @@ DELETE /api/admin/collections/[name]/[id]               → delete doc
 ## 4. Theme Application
 
 1. `app/layout.tsx` calls `getSiteSettings()` server-side (cached 60s via `unstable_cache`).
-2. Renders inline `<style>` on `<body>` overriding CSS custom properties:
+2. Renders inline `<style>` on `:root` overriding CSS custom properties:
    - `--primary` ← primaryColor
    - `--radius` ← borderRadius
-   - `--font-sans` ← fontFamily
-   - `font-size` on `html` ← fontSize scale (14/16/18/20px)
+   - `font-size` on `html` element ← fontSize scale (14/16/18/20px)
 3. Font loaded via Google Fonts `<link>` in `<head>` based on saved fontFamily.
+4. `font-family` injected directly on `html` element via inline style (not via `--font-sans` CSS var, which is circular in globals.css).
 4. These override Tailwind v4's `:root` defaults at runtime without rebuilding CSS.
 
 ---
@@ -146,7 +146,7 @@ Install: `npx shadcn add chart`
 
 ## 7. Theme Editor UI (`/admin/theme`)
 
-- Color pickers (native `<input type="color">` + hex→oklch conversion utility) for `--primary`, `--accent`, `--background`
+- Color pickers (native `<input type="color">` + hex→oklch conversion via `culori` npm package) for `--primary`, `--accent`, `--background`
 - Font family `<Select>`: Inter · Roboto · Playfair Display · Lato · Merriweather
 - Font size `<Select>`: Small (14px) · Medium (16px) · Large (18px) · XL (20px)
 - Border radius slider: 0rem → 1.5rem
@@ -157,7 +157,7 @@ Install: `npx shadcn add chart`
 
 ## 8. Content Editor UI (`/admin/content`)
 
-- Locale tabs: EN | HE
+- Locale tabs: EN | HE | KA
 - Searchable table: `key` column · `Default value` (from JSON) · `Override` (editable input)
 - Row states: gray = using JSON default · amber highlight = has DB override
 - Inline save on blur/Enter per row → PUT `/api/admin/content`
