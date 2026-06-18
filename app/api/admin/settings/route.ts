@@ -37,6 +37,6 @@ export async function PUT(request: Request) {
     { upsert: true, new: true }
   ).lean()
 
-  revalidateTag("site-settings", {})
+  revalidateTag("site-settings")
   return NextResponse.json(settings)
 }
