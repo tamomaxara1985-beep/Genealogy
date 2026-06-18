@@ -36,8 +36,8 @@ export async function GET(
   if (!CollectionModel) return NextResponse.json({ error: "Collection not found" }, { status: 404 })
 
   const { searchParams } = new URL(request.url)
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"))
-  const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20"))
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1)
+  const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") ?? "20", 10) || 20))
   const q = searchParams.get("q") ?? ""
 
   await connectDB()
