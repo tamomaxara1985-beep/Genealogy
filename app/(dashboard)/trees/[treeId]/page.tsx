@@ -176,6 +176,7 @@ export default function TreePage({
   useEffect(() => {
     try {
       const stored = localStorage.getItem(`tree-collapsed-${treeId}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored) setCollapsedPersonIds(new Set<string>(JSON.parse(stored)));
     } catch {}
   }, [treeId]);

@@ -2,50 +2,18 @@
 > genealogy-app@0.1.0 dev
 > next dev
 
+⚠ Port 3000 is in use by process 8556, using available port 3001 instead.
 ▲ Next.js 16.2.6 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://10.149.69.59:3000
+- Local:         http://localhost:3001
+- Network:       http://10.149.69.59:3001
 - Environments: .env.local
-✓ Ready in 1105ms
+✓ Ready in 2.1s
+⨯ Another next dev server is already running.
 
- GET /pricing 200 in 3.5s (next.js: 2.5s, application-code: 982ms)
- GET /settings/billing 307 in 2.5s (next.js: 1832ms, application-code: 679ms)
- GET / 200 in 314ms (next.js: 100ms, application-code: 214ms)
- GET / 200 in 334ms (next.js: 18ms, application-code: 316ms)
- GET /api/auth/session 200 in 3.4s (next.js: 3.3s, application-code: 101ms)
- GET /api/auth/session 200 in 57ms (next.js: 22ms, application-code: 35ms)
- GET /api/auth/session 200 in 30ms (next.js: 6ms, application-code: 25ms)
- GET /api/auth/session 200 in 31ms (next.js: 8ms, application-code: 24ms)
- GET / 200 in 547ms (next.js: 12ms, application-code: 535ms)
- GET /api/auth/session 200 in 88ms (next.js: 10ms, application-code: 78ms)
- GET /api/auth/session 200 in 69ms (next.js: 13ms, application-code: 56ms)
- GET /login 200 in 153ms (next.js: 84ms, application-code: 70ms)
- GET /api/auth/providers 200 in 37ms (next.js: 18ms, application-code: 19ms)
- GET /api/auth/csrf 200 in 15ms (next.js: 5ms, application-code: 9ms)
- POST /api/auth/signin/google? 200 in 884ms (next.js: 4ms, application-code: 880ms)
-(node:11116) [MONGOOSE] Warning: mongoose: the `new` option for `findOneAndUpdate()` and `findOneAndReplace()` is deprecated. Use `returnDocument: 'after'` instead.
-(Use `node --trace-warnings ...` to show where the warning was created)
- GET /api/auth/callback/google?iss=https%3A%2F%2Faccounts.google.com&code=4%2F0AdkVLPwXw56eHLCrbYbO5zwIGa3AWGXxn938E-kdVWax-IWY6feV2L2sdEDw8ywoON4J2A&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none 302 in 1950ms (next.js: 18ms, application-code: 1932ms)
- GET /dashboard 200 in 693ms (next.js: 114ms, proxy.ts: 44ms, application-code: 534ms)
- GET /api/auth/session 200 in 196ms (next.js: 35ms, application-code: 160ms)
- GET /api/auth/session 200 in 64ms (next.js: 15ms, application-code: 49ms)
- GET /api/trees 200 in 664ms (next.js: 245ms, application-code: 419ms)
- GET /dashboard 200 in 54ms (next.js: 9ms, proxy.ts: 22ms, application-code: 23ms)
- GET /dashboard 200 in 92ms (next.js: 8ms, proxy.ts: 28ms, application-code: 56ms)
- GET /dashboard 200 in 43ms (next.js: 9ms, proxy.ts: 20ms, application-code: 15ms)
- GET /dashboard 200 in 81ms (next.js: 7ms, proxy.ts: 19ms, application-code: 55ms)
- GET /trees 200 in 148ms (next.js: 72ms, proxy.ts: 19ms, application-code: 56ms)
- GET /dashboard 200 in 105ms (next.js: 9ms, proxy.ts: 32ms, application-code: 64ms)
- GET /dashboard 200 in 81ms (next.js: 8ms, proxy.ts: 24ms, application-code: 49ms)
- GET /api/trees 200 in 217ms (next.js: 15ms, application-code: 202ms)
- GET /pricing 200 in 212ms (next.js: 9ms, application-code: 203ms)
- GET /api/checkout?productId=pdt_0Ngp959eAaBGtnmvgciKO&email=tamo.maxara1985%40gmail.com 200 in 2.5s (next.js: 1112ms, application-code: 1398ms)
- GET /settings/billing?subscription_id=sub_0NgpPPsfSoSpmkEGU3QeG&status=active&email=tamo.maxara1985%40gmail.com 200 in 514ms (next.js: 21ms, application-code: 493ms)
- GET /api/auth/session 200 in 55ms (next.js: 27ms, application-code: 28ms)
- GET /api/auth/session 200 in 30ms (next.js: 8ms, application-code: 22ms)
- GET /api/auth/session 200 in 75ms (next.js: 39ms, application-code: 36ms)
- GET /api/auth/session 200 in 35ms (next.js: 9ms, application-code: 26ms)
- GET /api/auth/session 200 in 67ms (next.js: 28ms, application-code: 39ms)
- GET /api/auth/session 200 in 31ms (next.js: 9ms, application-code: 21ms)
- GET /api/auth/session 200 in 57ms (next.js: 28ms, application-code: 30ms)
- GET /api/auth/session 200 in 24ms (next.js: 5ms, application-code: 19ms)
+- Local:        http://localhost:3000
+- PID:          8556
+- Dir:          C:\Users\User\Desktop\Genealogy
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 8556 /F to stop it.
+[?25h

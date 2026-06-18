@@ -43,7 +43,9 @@ export function JsonEditorDialog({
     const editableDoc = Object.fromEntries(
       Object.entries(doc ?? {}).filter(([k]) => !READ_ONLY_KEYS.includes(k))
     )
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setText(JSON.stringify(editableDoc, null, 2))
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
   }, [doc])
 

@@ -18,6 +18,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  type ChartConfig,
 } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -72,7 +73,7 @@ export function AdminCharts({ data }: { data: StatsData }) {
           <CardTitle className="text-sm">Relationship Types</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={{} as any} className="h-[200px]">
+          <ChartContainer config={{} as ChartConfig} className="h-[200px]">
             <PieChart>
               <Pie
                 data={data.relationshipTypes}
