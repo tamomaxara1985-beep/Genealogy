@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { Check, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Override {
@@ -23,6 +23,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
   const router = useRouter()
   const [overrides, setOverrides] = useState<Record<string, Override>>(initialOverrides)
   const [pending, setPending] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState<Record<string, boolean>>({})
   const [search, setSearch] = useState("")
 
   const keys = Object.keys(defaults).filter(
@@ -35,6 +36,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
   async function save(key: string) {
     const value = pending[key]
     if (value === undefined) return
+    setSaving((prev) => ({ ...prev, [key]: true }))
     const res = await fetch("/api/admin/content", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -50,6 +52,11 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
       })
       router.refresh()
     }
+    setSaving((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
   }
 
   async function remove(key: string) {
@@ -108,12 +115,21 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
                       onChange={(e) =>
                         setPending((prev) => ({ ...prev, [key]: e.target.value }))
                       }
-                      onBlur={() => save(key)}
                       onKeyDown={(e) => e.key === "Enter" && save(key)}
                       className="h-7 text-xs"
                     />
                   </td>
-                  <td className="px-2">
+                  <td className="px-2 flex items-center gap-1">
+                    {pending[key] !== undefined && (
+                      <Button
+                        size="sm"
+                        className="h-6 px-2 text-xs bg-amber-500 hover:bg-amber-600 text-white"
+                        onClick={() => save(key)}
+                        disabled={saving[key]}
+                      >
+                        {saving[key] ? "…" : <Check className="h-3 w-3" />}
+                      </Button>
+                    )}
                     {hasOverride && (
                       <Button
                         variant="ghost"
