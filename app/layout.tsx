@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
 import { Providers } from "@/components/providers"
 import { getSiteSettings, buildThemeStyle, getFontUrl } from "@/lib/siteSettings"
+import { getSiteContent, applyContentOverrides } from "@/lib/siteContent"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -13,10 +14,14 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale()
-  const messages = await getMessages()
-  const settings = await getSiteSettings()
+  const [messages, settings, overrides] = await Promise.all([
+    getMessages(),
+    getSiteSettings(),
+    getSiteContent(locale),
+  ])
   const themeStyle = buildThemeStyle(settings)
   const fontUrl = getFontUrl(settings.fontFamily)
+  const mergedMessages = applyContentOverrides(messages as Record<string, unknown>, overrides)
 
   return (
     <html lang={locale} dir={locale === "he" ? "rtl" : "ltr"}>
@@ -27,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
       </head>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={mergedMessages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
       </body>
