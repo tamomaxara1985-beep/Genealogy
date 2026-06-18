@@ -14,13 +14,13 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale()
-  const [messages, settings, overrides] = await Promise.all([
-    getMessages(),
-    getSiteSettings(),
-    getSiteContent(locale),
+  const messages = await getMessages()
+  const [settings, overrides] = await Promise.all([
+    getSiteSettings().catch(() => null),
+    getSiteContent(locale).catch(() => []),
   ])
-  const themeStyle = buildThemeStyle(settings)
-  const fontUrl = getFontUrl(settings.fontFamily)
+  const themeStyle = settings ? buildThemeStyle(settings) : ""
+  const fontUrl = settings ? getFontUrl(settings.fontFamily) : ""
   const mergedMessages = applyContentOverrides(messages as Record<string, unknown>, overrides)
 
   return (
@@ -28,8 +28,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href={fontUrl} rel="stylesheet" />
-        <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
+        {fontUrl && <link href={fontUrl} rel="stylesheet" />}
+        {themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={mergedMessages}>
