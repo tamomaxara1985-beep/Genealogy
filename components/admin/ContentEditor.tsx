@@ -1,7 +1,6 @@
 // components/admin/ContentEditor.tsx
 "use client"
 import { useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
@@ -20,7 +19,6 @@ interface ContentEditorProps {
 }
 
 export function ContentEditor({ defaults, initialOverrides, locale }: ContentEditorProps) {
-  const router = useRouter()
   const [overrides, setOverrides] = useState<Record<string, Override>>(initialOverrides)
   const [pending, setPending] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState<Record<string, boolean>>({})
@@ -50,7 +48,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
         delete next[key]
         return next
       })
-      router.refresh()
+      window.location.reload()
     }
     setSaving((prev) => {
       const next = { ...prev }
@@ -73,7 +71,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
       delete next[key]
       return next
     })
-    router.refresh()
+    window.location.reload()
   }
 
   const currentValue = useCallback(
