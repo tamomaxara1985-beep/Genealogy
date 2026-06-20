@@ -8,6 +8,9 @@ export interface IPersonDoc extends Document {
   gender: "male" | "female" | "other" | "unknown";
   birthDate?: string;
   birthPlace?: string;
+  baptismDate?: string;
+  baptismName?: string;
+  baptismPlace?: string;
   godparentName?: string;
   deathDate?: string;
   deathPlace?: string;
@@ -32,6 +35,9 @@ const PersonSchema = new Schema<IPersonDoc>(
     },
     birthDate: { type: String },
     birthPlace: { type: String },
+    baptismDate: { type: String },
+    baptismName: { type: String },
+    baptismPlace: { type: String },
     godparentName: { type: String },
     deathDate: { type: String },
     deathPlace: { type: String },

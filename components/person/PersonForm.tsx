@@ -85,6 +85,27 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>
+            {t("baptismDate")}{" "}
+            <span className="text-xs text-muted-foreground font-normal">
+              — {tc("optional")}
+            </span>
+          </Label>
+          <DateInput value={form.baptismDate} onChange={(v) => set("baptismDate", v)} placeholder={tc("year")} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("baptismPlace")}</Label>
+          <Input value={form.baptismPlace ?? ""} onChange={(e) => set("baptismPlace", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>{t("baptismName")}</Label>
+        <Input value={form.baptismName ?? ""} onChange={(e) => set("baptismName", e.target.value)} />
+      </div>
+
       <div className="space-y-2">
         <Label>{t("godparentName")}</Label>
         <Input value={form.godparentName ?? ""} onChange={(e) => set("godparentName", e.target.value)} />
