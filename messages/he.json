@@ -76,7 +76,21 @@
     "parentChild": "הורה ← ילד (אדם 1 הוא ההורה)",
     "sibling": "אחים (הורה משותף)",
     "sharedParent": "הורה משותף",
-    "parents": "הורים"
+    "parents": "הורים",
+    "newTree": "+ עץ חדש",
+    "createTree": "צור עץ",
+    "treeName": "שם העץ",
+    "treePlaceholder": "עץ משפחת כהן",
+    "creating": "יוצר…",
+    "create": "צור",
+    "createFirst": "+ צור את העץ הראשון שלך",
+    "searchPeople": "חפש אנשים…",
+    "filterSurname": "סנן לפי שם משפחה…",
+    "allSurnames": "כל שמות המשפחה",
+    "expandAll": "הרחב הכל",
+    "people": "אנשים",
+    "treeLiving": "בחיים",
+    "treeDeceased": "נפטרו"
   },
   "common": {
     "save": "שמור",
@@ -103,6 +117,54 @@
     "deleteFile": "מחק קובץ?",
     "deleteFileDesc": "מחק לצמיתות את {name} מ-Cloudinary. לא ניתן לבטל פעולה זו.",
     "noUsers": "לא נמצאו משתמשים.",
-    "noFiles": "לא הועלו קבצים עדיין."
+    "noFiles": "לא הועלו קבצים עדיין.",
+    "collections": "אוספים",
+    "theme": "ערכת נושא",
+    "content": "תוכן",
+    "dashboard": "לוח בקרה",
+    "search": "חיפוש",
+    "newDocument": "מסמך חדש",
+    "noDocuments": "לא נמצאו מסמכים.",
+    "deleteDocument": "מחק מסמך?",
+    "deleteDocumentDesc": "מחק לצמיתות את {label}. לא ניתן לבטל פעולה זו.",
+    "typeToConfirm": "הקלד {collection} לאישור:",
+    "totalUsers": "סה\"כ משתמשים",
+    "totalTrees": "סה\"כ עצים",
+    "totalPersons": "סה\"כ אנשים",
+    "totalEvents": "סה\"כ אירועים",
+    "primaryColor": "צבע ראשי",
+    "fontFamily": "גופן",
+    "fontSize": "גודל גופן",
+    "borderRadius": "רדיוס גבול",
+    "saveTheme": "שמור ערכת נושא",
+    "savedTheme": "נשמר",
+    "roleUser": "משתמש",
+    "roleAdmin": "מנהל",
+    "pageOf": "עמוד {page} מתוך {pages} ({total} סה\"כ)",
+    "filesCount": "קבצים ({count})",
+    "contentDesc": "עקוף טקסט UI לפי לוקל. שורות ענבר עם עקיפות פעילות. ערוך שדה ולחץ Enter או לחץ מחוצה לו לשמירה.",
+    "editDocumentTitle": "ערוך מסמך {collection}",
+    "newDocumentTitle": "מסמך {collection} חדש",
+    "colUsers": "משתמשים",
+    "colTrees": "עצים",
+    "colPersons": "אנשים",
+    "colRelationships": "קשרים",
+    "colEvents": "אירועים"
+  },
+  "dashboard": {
+    "about": "אודות עץ המשפחה שלי",
+    "bioPlaceholder": "כתוב הערות על ההיסטוריה המשפחתית, המוצא, או כל מה שתרצה לזכור…",
+    "viewAll": "צפה בכל",
+    "saved": "נשמר!",
+    "statTrees": "עצים",
+    "statPeople": "אנשים",
+    "statEvents": "אירועים"
+  },
+  "profile": {
+    "memberSince": "חבר מאז יצירת החשבון."
+  },
+  "dna": {
+    "gedcomTitle": "ייבוא GEDCOM — בקרוב",
+    "gedcomDesc": "העלה קובץ GEDCOM לייבוא עץ המשפחה ולמציאת התאמות DNA. תכונה זו בפיתוח."
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCount, onExpandAll }: Props) {
+  const t = useTranslations("tree");
   const [query, setQuery] = useState("");
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
@@ -74,7 +76,7 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCo
       {/* Search row */}
       <div className="flex items-center gap-3 flex-wrap">
         <Input
-          placeholder="Search people…"
+          placeholder={t("searchPeople")}
           className="w-52 h-8 text-sm"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
@@ -82,10 +84,10 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCo
         {surnames.length > 0 && (
           <Select value={activeSurname ?? ""} onValueChange={handleSurnameChange}>
             <SelectTrigger className="w-48 h-8 text-sm">
-              <SelectValue placeholder="Filter by surname…" />
+              <SelectValue placeholder={t("filterSurname")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">All surnames</SelectItem>
+              <SelectItem value="__all__">{t("allSurnames")}</SelectItem>
               {surnames.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
@@ -99,17 +101,17 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCo
             onClick={onExpandAll}
             className="border-amber-400 text-amber-600 hover:bg-amber-50 hover:text-amber-700 whitespace-nowrap"
           >
-            Expand All
+            {t("expandAll")}
           </Button>
         )}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Badge variant="outline">{persons.length} people</Badge>
+          <Badge variant="outline">{persons.length} {t("people")}</Badge>
           <Badge variant="outline" className="text-green-600">
-            {living} living
+            {living} {t("treeLiving")}
           </Badge>
           {deceased > 0 && (
             <Badge variant="outline" className="text-gray-500">
-              {deceased} deceased
+              {deceased} {t("treeDeceased")}
             </Badge>
           )}
         </div>

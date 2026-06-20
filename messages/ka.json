@@ -76,7 +76,21 @@
     "parentChild": "მშობელი → შვილი (პიროვნება 1 არის მშობელი)",
     "sibling": "და-ძმები (საერთო მშობელი)",
     "sharedParent": "საერთო მშობელი",
-    "parents": "მშობლები"
+    "parents": "მშობლები",
+    "newTree": "+ ახალი ხე",
+    "createTree": "ხის შექმნა",
+    "treeName": "ხის სახელი",
+    "treePlaceholder": "სმიტის ოჯახის ხე",
+    "creating": "იქმნება…",
+    "create": "შექმნა",
+    "createFirst": "+ შექმენით თქვენი პირველი ხე",
+    "searchPeople": "ადამიანების ძიება…",
+    "filterSurname": "გვარით ფილტრი…",
+    "allSurnames": "ყველა გვარი",
+    "expandAll": "ყველას გაშლა",
+    "people": "ადამიანი",
+    "treeLiving": "ცოცხალი",
+    "treeDeceased": "გარდაცვლილი"
   },
   "common": {
     "save": "შენახვა",
@@ -103,6 +117,54 @@
     "deleteFile": "ფაილის წაშლა?",
     "deleteFileDesc": "{name}-ის Cloudinary-დან სამუდამო წაშლა. ეს მოქმედება შეუქცევადია.",
     "noUsers": "მომხმარებლები არ მოიძებნა.",
-    "noFiles": "ფაილები ჯერ არ არის ატვირთული."
+    "noFiles": "ფაილები ჯერ არ არის ატვირთული.",
+    "collections": "კოლექციები",
+    "theme": "თემა",
+    "content": "კონტენტი",
+    "dashboard": "მთავარი",
+    "search": "ძიება",
+    "newDocument": "ახალი დოკუმენტი",
+    "noDocuments": "დოკუმენტები არ მოიძებნა.",
+    "deleteDocument": "დოკუმენტის წაშლა?",
+    "deleteDocumentDesc": "{label}-ის სამუდამო წაშლა. ეს მოქმედება შეუქცევადია.",
+    "typeToConfirm": "ჩაწერეთ {collection} დასადასტურებლად:",
+    "totalUsers": "სულ მომხმარებლები",
+    "totalTrees": "სულ ხეები",
+    "totalPersons": "სულ პიროვნებები",
+    "totalEvents": "სულ მოვლენები",
+    "primaryColor": "მთავარი ფერი",
+    "fontFamily": "შრიფტის ოჯახი",
+    "fontSize": "შრიფტის ზომა",
+    "borderRadius": "კუთხის რადიუსი",
+    "saveTheme": "თემის შენახვა",
+    "savedTheme": "შენახულია",
+    "roleUser": "მომხმარებელი",
+    "roleAdmin": "ადმინი",
+    "pageOf": "გვერდი {page} / {pages}-დან ({total} სულ)",
+    "filesCount": "ფაილები ({count})",
+    "contentDesc": "UI ტექსტის გადაწერა ლოკალის მიხედვით. ანბერი სტრიქონები აქტიურ გადაწერებს შეიცავს. ველის შესაცვლელად დააჭირეთ Enter ან დააკლიკეთ გარეთ.",
+    "editDocumentTitle": "{collection}-ის დოკუმენტის რედაქტირება",
+    "newDocumentTitle": "{collection}-ის ახალი დოკუმენტი",
+    "colUsers": "მომხმარებლები",
+    "colTrees": "ხეები",
+    "colPersons": "პიროვნებები",
+    "colRelationships": "ურთიერთობები",
+    "colEvents": "მოვლენები"
+  },
+  "dashboard": {
+    "about": "ჩემი გვარის შესახებ",
+    "bioPlaceholder": "დაწერეთ შენიშვნები თქვენი ოჯახის ისტორიის, წარმოშობის ან სხვა ინფორმაციის შესახებ…",
+    "viewAll": "ყველას ნახვა",
+    "saved": "შენახულია!",
+    "statTrees": "ხეები",
+    "statPeople": "ადამიანები",
+    "statEvents": "მოვლენები"
+  },
+  "profile": {
+    "memberSince": "წევრი ანგარიშის შექმნიდან."
+  },
+  "dna": {
+    "gedcomTitle": "GEDCOM-ის იმპორტი — მალე",
+    "gedcomDesc": "ატვირთეთ GEDCOM ფაილი ოჯახის ხის იმპორტისა და დნმ დამთხვევების მოსაძებნად. ეს ფუნქცია მუშავდება."
   }
 }

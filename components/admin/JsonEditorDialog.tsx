@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ export function JsonEditorDialog({
   doc,
   onSave,
 }: JsonEditorDialogProps) {
+  const tc = useTranslations("common")
   const readOnly = Object.fromEntries(
     Object.entries(doc ?? {}).filter(([k]) => READ_ONLY_KEYS.includes(k))
   )
@@ -90,9 +92,9 @@ export function JsonEditorDialog({
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{tc("cancel")}</Button>
           <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Saving…" : "Save"}
+            {saving ? tc("saving") : tc("save")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import useSWR from "swr"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -24,6 +25,8 @@ const fetcher = (url: string) =>
   })
 
 export function CollectionTable({ collection }: CollectionTableProps) {
+  const t = useTranslations("admin")
+  const tc = useTranslations("common")
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [searchInput, setSearchInput] = useState("")
@@ -96,17 +99,17 @@ export function CollectionTable({ collection }: CollectionTableProps) {
           className="max-w-xs"
         />
         <Button variant="outline" size="sm" onClick={() => { setSearch(searchInput); setPage(1) }}>
-          Search
+          {t("search")}
         </Button>
         <div className="ml-auto">
           <Button size="sm" onClick={() => setNewDoc(true)}>
-            <Plus className="h-4 w-4 mr-1" /> New Document
+            <Plus className="h-4 w-4 mr-1" /> {t("newDocument")}
           </Button>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground py-4">Loading…</p>
+        <p className="text-sm text-muted-foreground py-4">{tc("loading")}</p>
       ) : (
         <div className="rounded-md border overflow-x-auto">
           <table className="w-full text-xs">
@@ -158,7 +161,7 @@ export function CollectionTable({ collection }: CollectionTableProps) {
               {!data?.docs.length && (
                 <tr>
                   <td colSpan={columns.length + 1} className="px-3 py-6 text-center text-muted-foreground">
-                    No documents found.
+                    {t("noDocuments")}
                   </td>
                 </tr>
               )}
@@ -178,7 +181,7 @@ export function CollectionTable({ collection }: CollectionTableProps) {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-muted-foreground">
-            Page {data.page} of {data.pages} ({data.total} total)
+            {t("pageOf", { page: data.page, pages: data.pages, total: data.total })}
           </span>
           <Button
             variant="outline"
@@ -194,7 +197,7 @@ export function CollectionTable({ collection }: CollectionTableProps) {
       <JsonEditorDialog
         open={!!editDoc}
         onOpenChange={(open) => { if (!open) setEditDoc(null) }}
-        title={`Edit ${collection} document`}
+        title={t("editDocumentTitle", { collection })}
         doc={editDoc}
         onSave={handleSaveEdit}
       />
@@ -202,7 +205,7 @@ export function CollectionTable({ collection }: CollectionTableProps) {
       <JsonEditorDialog
         open={newDoc}
         onOpenChange={setNewDoc}
-        title={`New ${collection} document`}
+        title={t("newDocumentTitle", { collection })}
         doc={{}}
         onSave={handleCreate}
       />
@@ -213,13 +216,13 @@ export function CollectionTable({ collection }: CollectionTableProps) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete document?</DialogTitle>
+            <DialogTitle>{t("deleteDocument")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Permanently delete <strong>{deleteTarget?.label}</strong>. This cannot be undone.
+            {t("deleteDocumentDesc", { label: deleteTarget?.label ?? "" })}
           </p>
           <p className="text-sm">
-            Type <strong>{collection}</strong> to confirm:
+            {t("typeToConfirm", { collection })}
           </p>
           <Input
             value={confirmInput}
@@ -228,14 +231,14 @@ export function CollectionTable({ collection }: CollectionTableProps) {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => { setDeleteTarget(null); setConfirmInput("") }}>
-              Cancel
+              {tc("cancel")}
             </Button>
             <Button
               variant="destructive"
               disabled={confirmInput !== collection || deleting}
               onClick={handleDelete}
             >
-              {deleting ? "Deleting…" : "Delete"}
+              {deleting ? tc("deleting") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

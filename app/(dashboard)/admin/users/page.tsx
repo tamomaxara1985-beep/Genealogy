@@ -3,6 +3,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { useSession } from "next-auth/react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -35,6 +36,8 @@ const fetcher = (url: string) =>
   })
 
 export default function AdminUsersPage() {
+  const t = useTranslations("admin")
+  const tc = useTranslations("common")
   const { data: session } = useSession()
   const { data: users = [], mutate } = useSWR<AdminUser[]>("/api/admin/users", fetcher)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
@@ -65,16 +68,16 @@ export default function AdminUsersPage() {
     <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-amber-500" />
-        <h1 className="text-xl font-bold">Users ({users.length})</h1>
+        <h1 className="text-xl font-bold">{t("users")} ({users.length})</h1>
       </div>
       <div className="rounded-md border overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Joined</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{t("name")}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{t("email")}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{t("role")}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{t("joined")}</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -95,8 +98,8 @@ export default function AdminUsersPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="user">{t("roleUser")}</SelectItem>
+                        <SelectItem value="admin">{t("roleAdmin")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </td>
@@ -120,7 +123,7 @@ export default function AdminUsersPage() {
             {users.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground text-sm">
-                  No users found.
+                  {t("noUsers")}
                 </td>
               </tr>
             )}
@@ -131,15 +134,15 @@ export default function AdminUsersPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete user?</DialogTitle>
+            <DialogTitle>{t("deleteUser")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Permanently delete {deleteTarget?.name} and all their data. This cannot be undone.
+            {t("deleteUserDesc", { name: deleteTarget?.name ?? "" })}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-              {loading ? "Deleting…" : "Delete"}
+              {loading ? tc("deleting") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

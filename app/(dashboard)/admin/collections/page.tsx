@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { Database, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,26 +18,39 @@ const COLLECTIONS = [
 ]
 
 export default async function AdminCollectionsPage() {
-  await connectDB()
-  const counts = await Promise.all(
-    COLLECTIONS.map(async ({ name, Model }) => ({
-      name,
-      count: await Model.countDocuments(),
-    }))
-  )
+  const [counts, t] = await Promise.all([
+    (async () => {
+      await connectDB()
+      return Promise.all(
+        COLLECTIONS.map(async ({ name, Model }) => ({
+          name,
+          count: await Model.countDocuments(),
+        }))
+      )
+    })(),
+    getTranslations("admin"),
+  ])
+
+  const collectionLabel: Record<string, string> = {
+    users: t("colUsers"),
+    trees: t("colTrees"),
+    persons: t("colPersons"),
+    relationships: t("colRelationships"),
+    events: t("colEvents"),
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Database className="h-5 w-5 text-amber-500" />
-        <h1 className="text-xl font-bold">Collections</h1>
+        <h1 className="text-xl font-bold">{t("collections")}</h1>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {counts.map(({ name, count }) => (
           <Link key={name} href={`/admin/collections/${name}`}>
             <Card className="hover:border-amber-400 transition-colors cursor-pointer">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base capitalize">{name}</CardTitle>
+                <CardTitle className="text-base">{collectionLabel[name] ?? name}</CardTitle>
               </CardHeader>
               <CardContent className="flex items-center justify-between">
                 <span className="text-2xl font-bold">{count.toLocaleString()}</span>

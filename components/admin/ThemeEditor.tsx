@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -24,6 +25,8 @@ const FONT_SIZES = [
 
 export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
   const router = useRouter()
+  const t = useTranslations("admin")
+  const tc = useTranslations("common")
   const [settings, setSettings] = useState<SiteSettingsData>(initial)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -51,7 +54,7 @@ export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label>Primary Color</Label>
+          <Label>{t("primaryColor")}</Label>
           <div className="flex items-center gap-3">
             <input
               type="color"
@@ -64,7 +67,7 @@ export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
         </div>
 
         <div className="space-y-2">
-          <Label>Font Family</Label>
+          <Label>{t("fontFamily")}</Label>
           <Select value={settings.fontFamily} onValueChange={(v) => { if (v) set("fontFamily", v) }}>
             <SelectTrigger className="w-56">
               <SelectValue />
@@ -78,7 +81,7 @@ export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
         </div>
 
         <div className="space-y-2">
-          <Label>Font Size</Label>
+          <Label>{t("fontSize")}</Label>
           <Select value={settings.fontSize} onValueChange={(v) => set("fontSize", v as SiteSettingsData["fontSize"])}>
             <SelectTrigger className="w-56">
               <SelectValue />
@@ -92,7 +95,7 @@ export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
         </div>
 
         <div className="space-y-2">
-          <Label>Border Radius: {settings.borderRadius}rem</Label>
+          <Label>{t("borderRadius")}: {settings.borderRadius}rem</Label>
           <input
             type="range"
             min={0}
@@ -105,7 +108,7 @@ export function ThemeEditor({ initial }: { initial: SiteSettingsData }) {
         </div>
 
         <Button onClick={save} disabled={saving} className="w-full">
-          {saving ? "Saving..." : saved ? "Saved" : "Save Theme"}
+          {saving ? tc("saving") : saved ? t("savedTheme") : t("saveTheme")}
         </Button>
       </div>
 

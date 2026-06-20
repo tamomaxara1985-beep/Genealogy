@@ -1,4 +1,5 @@
 // app/(dashboard)/admin/dashboard/page.tsx
+import { getTranslations } from "next-intl/server"
 import { Users, Trees, User, Calendar } from "lucide-react"
 import { StatCard } from "@/components/admin/StatCard"
 import { AdminCharts } from "@/components/admin/AdminCharts"
@@ -59,16 +60,16 @@ async function getStats() {
 }
 
 export default async function AdminDashboardPage() {
-  const stats = await getStats()
+  const [stats, t] = await Promise.all([getStats(), getTranslations("admin")])
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">Dashboard</h1>
+      <h1 className="text-xl font-bold">{t("dashboard")}</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Users" value={stats.counts.users} icon={Users} />
-        <StatCard title="Total Trees" value={stats.counts.trees} icon={Trees} />
-        <StatCard title="Total Persons" value={stats.counts.persons} icon={User} />
-        <StatCard title="Total Events" value={stats.counts.events} icon={Calendar} />
+        <StatCard title={t("totalUsers")} value={stats.counts.users} icon={Users} />
+        <StatCard title={t("totalTrees")} value={stats.counts.trees} icon={Trees} />
+        <StatCard title={t("totalPersons")} value={stats.counts.persons} icon={User} />
+        <StatCard title={t("totalEvents")} value={stats.counts.events} icon={Calendar} />
       </div>
       <AdminCharts data={stats} />
     </div>

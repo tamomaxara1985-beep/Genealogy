@@ -2,6 +2,7 @@
 "use client"
 import { useState } from "react"
 import useSWR from "swr"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -35,6 +36,8 @@ function formatBytes(bytes: number) {
 }
 
 export default function AdminFilesPage() {
+  const t = useTranslations("admin")
+  const tc = useTranslations("common")
   const { data: files = [], mutate } = useSWR<CloudinaryResource[]>("/api/admin/files", fetcher)
   const [deleteTarget, setDeleteTarget] = useState<CloudinaryResource | null>(null)
   const [loading, setLoading] = useState(false)
@@ -61,7 +64,7 @@ export default function AdminFilesPage() {
     <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-2">
         <FolderOpen className="h-5 w-5 text-amber-500" />
-        <h1 className="text-xl font-bold">Files ({files.length})</h1>
+        <h1 className="text-xl font-bold">{t("filesCount", { count: files.length })}</h1>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {files.map((file) => (
@@ -96,7 +99,7 @@ export default function AdminFilesPage() {
         ))}
         {files.length === 0 && (
           <p className="col-span-full text-sm text-muted-foreground py-6 text-center">
-            No files uploaded yet.
+            {t("noFiles")}
           </p>
         )}
       </div>
@@ -104,15 +107,15 @@ export default function AdminFilesPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete file?</DialogTitle>
+            <DialogTitle>{t("deleteFile")}</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Permanently delete {deleteTarget?.public_id.split("/").pop()} from Cloudinary. Cannot be undone.
+            {t("deleteFileDesc", { name: deleteTarget?.public_id.split("/").pop() ?? "" })}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-              {loading ? "Deleting…" : "Delete"}
+              {loading ? tc("deleting") : tc("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,16 +1,21 @@
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function DnaPage() {
+export default async function DnaPage() {
+  const [tNav, t] = await Promise.all([
+    getTranslations("nav"),
+    getTranslations("dna"),
+  ]);
+
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">DNA Matches</h1>
+      <h1 className="text-2xl font-bold mb-6">{tNav("dna")}</h1>
       <Card className="border-dashed border-2">
         <CardHeader>
-          <CardTitle className="text-lg">GEDCOM Import — Coming Soon</CardTitle>
+          <CardTitle className="text-lg">{t("gedcomTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Upload a GEDCOM file to import your family tree and find DNA matches.
-          This feature is in development.
+          {t("gedcomDesc")}
         </CardContent>
       </Card>
     </div>

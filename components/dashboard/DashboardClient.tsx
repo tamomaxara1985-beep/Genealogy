@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { GitBranch, Users, Calendar, ArrowRight } from "lucide-react"
@@ -17,6 +18,9 @@ interface Stats {
 
 export function DashboardClient() {
   const router = useRouter()
+  const tNav = useTranslations("nav")
+  const tDash = useTranslations("dashboard")
+  const tc = useTranslations("common")
   const { data, isLoading, mutate } = useSWR<Stats>("/api/dashboard/stats", fetcher)
   const [bio, setBio] = useState("")
   const [saving, setSaving] = useState(false)
@@ -40,14 +44,14 @@ export function DashboardClient() {
   }
 
   const stats = [
-    { label: "Trees", value: data?.treeCount ?? 0, icon: GitBranch },
-    { label: "People", value: data?.personCount ?? 0, icon: Users },
-    { label: "Events", value: data?.eventCount ?? 0, icon: Calendar },
+    { label: tDash("statTrees"), value: data?.treeCount ?? 0, icon: GitBranch },
+    { label: tDash("statPeople"), value: data?.personCount ?? 0, icon: Users },
+    { label: tDash("statEvents"), value: data?.eventCount ?? 0, icon: Calendar },
   ]
 
   return (
     <div className="max-w-4xl space-y-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <h1 className="text-2xl font-bold">{tNav("dashboard")}</h1>
 
       <div className="grid grid-cols-3 gap-4">
         {stats.map(({ label, value, icon: Icon }) => (
@@ -69,12 +73,12 @@ export function DashboardClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">About My Family Tree</CardTitle>
+          <CardTitle className="text-base">{tDash("about")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <textarea
             className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400"
-            placeholder="Write notes about your family history, origins, or anything you want to remember…"
+            placeholder={tDash("bioPlaceholder")}
             value={bio}
             onChange={(e) => { setBio(e.target.value); setSaved(false) }}
           />
@@ -84,17 +88,17 @@ export function DashboardClient() {
               disabled={saving}
               className="bg-amber-500 hover:bg-amber-600 text-white"
             >
-              {saving ? "Saving…" : "Save"}
+              {saving ? tc("saving") : tc("save")}
             </Button>
-            {saved && <span className="text-sm text-green-600">Saved!</span>}
+            {saved && <span className="text-sm text-green-600">{tDash("saved")}</span>}
           </div>
         </CardContent>
       </Card>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">My Trees</h2>
+        <h2 className="text-lg font-semibold">{tNav("trees")}</h2>
         <Button variant="ghost" size="sm" className="gap-1 text-amber-600" onClick={() => router.push("/trees")}>
-          View all <ArrowRight className="h-3 w-3" />
+          {tDash("viewAll")} <ArrowRight className="h-3 w-3" />
         </Button>
       </div>
     </div>

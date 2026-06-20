@@ -1,4 +1,5 @@
 // app/(dashboard)/admin/content/page.tsx
+import { getTranslations } from "next-intl/server"
 import { FileText } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ContentEditor } from "@/components/admin/ContentEditor"
@@ -38,21 +39,20 @@ async function getOverridesForLocale(locale: string) {
 }
 
 export default async function AdminContentPage() {
-  const [enOverrides, heOverrides, kaOverrides] = await Promise.all([
+  const [enOverrides, heOverrides, kaOverrides, t] = await Promise.all([
     getOverridesForLocale("en"),
     getOverridesForLocale("he"),
     getOverridesForLocale("ka"),
+    getTranslations("admin"),
   ])
 
   return (
     <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-2">
         <FileText className="h-5 w-5 text-amber-500" />
-        <h1 className="text-xl font-bold">Content</h1>
+        <h1 className="text-xl font-bold">{t("content")}</h1>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Override UI text per locale. Amber rows have active overrides. Edit a field and press Enter or click away to save.
-      </p>
+
       <Tabs defaultValue="en">
         <TabsList>
           <TabsTrigger value="en">EN</TabsTrigger>

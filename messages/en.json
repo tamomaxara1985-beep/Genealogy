@@ -76,7 +76,21 @@
     "parentChild": "Parent → Child (Person 1 is parent)",
     "sibling": "Siblings (shared parent)",
     "sharedParent": "Shared parent",
-    "parents": "Parents"
+    "parents": "Parents",
+    "newTree": "+ New Tree",
+    "createTree": "Create a tree",
+    "treeName": "Tree name",
+    "treePlaceholder": "Smith Family Tree",
+    "creating": "Creating…",
+    "create": "Create",
+    "createFirst": "+ Create your first tree",
+    "searchPeople": "Search people…",
+    "filterSurname": "Filter by surname…",
+    "allSurnames": "All surnames",
+    "expandAll": "Expand All",
+    "people": "people",
+    "treeLiving": "living",
+    "treeDeceased": "deceased"
   },
   "common": {
     "save": "Save",
@@ -103,6 +117,54 @@
     "deleteFile": "Delete file?",
     "deleteFileDesc": "Permanently delete {name} from Cloudinary. This cannot be undone.",
     "noUsers": "No users found.",
-    "noFiles": "No files uploaded yet."
+    "noFiles": "No files uploaded yet.",
+    "collections": "Collections",
+    "theme": "Theme",
+    "content": "Content",
+    "dashboard": "Dashboard",
+    "search": "Search",
+    "newDocument": "New Document",
+    "noDocuments": "No documents found.",
+    "deleteDocument": "Delete document?",
+    "deleteDocumentDesc": "Permanently delete {label}. This cannot be undone.",
+    "typeToConfirm": "Type {collection} to confirm:",
+    "totalUsers": "Total Users",
+    "totalTrees": "Total Trees",
+    "totalPersons": "Total Persons",
+    "totalEvents": "Total Events",
+    "primaryColor": "Primary Color",
+    "fontFamily": "Font Family",
+    "fontSize": "Font Size",
+    "borderRadius": "Border Radius",
+    "saveTheme": "Save Theme",
+    "savedTheme": "Saved",
+    "roleUser": "User",
+    "roleAdmin": "Admin",
+    "pageOf": "Page {page} of {pages} ({total} total)",
+    "filesCount": "Files ({count})",
+    "contentDesc": "Override UI text per locale. Amber rows have active overrides. Edit a field and press Enter or click away to save.",
+    "editDocumentTitle": "Edit {collection} document",
+    "newDocumentTitle": "New {collection} document",
+    "colUsers": "Users",
+    "colTrees": "Trees",
+    "colPersons": "Persons",
+    "colRelationships": "Relationships",
+    "colEvents": "Events"
+  },
+  "dashboard": {
+    "about": "About My Family Tree",
+    "bioPlaceholder": "Write notes about your family history, origins, or anything you want to remember…",
+    "viewAll": "View all",
+    "saved": "Saved!",
+    "statTrees": "Trees",
+    "statPeople": "People",
+    "statEvents": "Events"
+  },
+  "profile": {
+    "memberSince": "Member since account creation."
+  },
+  "dna": {
+    "gedcomTitle": "GEDCOM Import — Coming Soon",
+    "gedcomDesc": "Upload a GEDCOM file to import your family tree and find DNA matches. This feature is in development."
   }
 }

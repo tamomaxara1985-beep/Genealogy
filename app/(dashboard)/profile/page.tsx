@@ -1,9 +1,14 @@
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function ProfilePage() {
-  const session = await auth();
+  const [session, tNav, t] = await Promise.all([
+    auth(),
+    getTranslations("nav"),
+    getTranslations("profile"),
+  ]);
   if (!session?.user) redirect("/login");
 
   const initials = session.user.name
@@ -15,7 +20,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Profile</h1>
+      <h1 className="text-2xl font-bold mb-6">{tNav("profile")}</h1>
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -29,7 +34,7 @@ export default async function ProfilePage() {
           </div>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Member since account creation.
+          {t("memberSince")}
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,9 @@ import { useTrees } from "@/hooks/useTrees"
 
 export default function TreesPage() {
   const router = useRouter()
+  const tNav = useTranslations("nav")
+  const t = useTranslations("tree")
+  const tc = useTranslations("common")
   const { trees, isLoading, mutate } = useTrees()
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState("")
@@ -35,39 +39,39 @@ export default function TreesPage() {
   return (
     <div className="max-w-4xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">My Trees</h1>
-        <Button onClick={() => setShowForm(true)}>+ New Tree</Button>
+        <h1 className="text-2xl font-bold">{tNav("trees")}</h1>
+        <Button onClick={() => setShowForm(true)}>{t("newTree")}</Button>
       </div>
 
       {showForm && (
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Create a tree</CardTitle>
+            <CardTitle>{t("createTree")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={createTree} className="flex gap-3 items-end">
               <div className="flex-1 space-y-1">
-                <Label htmlFor="treeName">Tree name</Label>
+                <Label htmlFor="treeName">{t("treeName")}</Label>
                 <Input
                   id="treeName"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Smith Family Tree"
+                  placeholder={t("treePlaceholder")}
                   required
                 />
               </div>
               <Button type="submit" disabled={creating}>
-                {creating ? "Creating…" : "Create"}
+                {creating ? t("creating") : t("create")}
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
+                {tc("cancel")}
               </Button>
             </form>
           </CardContent>
         </Card>
       )}
 
-      {isLoading && <p className="text-muted-foreground">Loading…</p>}
+      {isLoading && <p className="text-muted-foreground">{tc("loading")}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {trees.map((tree) => (
@@ -93,7 +97,7 @@ export default function TreesPage() {
             onClick={() => setShowForm(true)}
           >
             <CardContent className="text-center pt-6">
-              <p className="text-muted-foreground">+ Create your first tree</p>
+              <p className="text-muted-foreground">{t("createFirst")}</p>
             </CardContent>
           </Card>
         )}
