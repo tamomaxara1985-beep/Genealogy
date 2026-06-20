@@ -26,8 +26,6 @@ export interface IPerson {
   gender: 'male' | 'female' | 'other' | 'unknown'
   birthDate?: string
   birthPlace?: string
-  baptismDate?: string
-  baptismPlace?: string
   godparentName?: string
   deathDate?: string
   deathPlace?: string
