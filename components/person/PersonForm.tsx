@@ -60,10 +60,10 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
           <Select value={form.gender} onValueChange={(v) => set("gender", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="female">Female</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-              <SelectItem value="unknown">Unknown</SelectItem>
+              <SelectItem value="male">{t("genderMale")}</SelectItem>
+              <SelectItem value="female">{t("genderFemale")}</SelectItem>
+              <SelectItem value="other">{t("genderOther")}</SelectItem>
+              <SelectItem value="unknown">{t("genderUnknown")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -101,14 +101,15 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>{t("baptismName")}</Label>
-        <Input value={form.baptismName ?? ""} onChange={(e) => set("baptismName", e.target.value)} />
-      </div>
-
-      <div className="space-y-2">
-        <Label>{t("godparentName")}</Label>
-        <Input value={form.godparentName ?? ""} onChange={(e) => set("godparentName", e.target.value)} />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>{t("baptismName")}</Label>
+          <Input value={form.baptismName ?? ""} onChange={(e) => set("baptismName", e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("godparentName")}</Label>
+          <Input value={form.godparentName ?? ""} onChange={(e) => set("godparentName", e.target.value)} />
+        </div>
       </div>
 
       <div className="space-y-3">
