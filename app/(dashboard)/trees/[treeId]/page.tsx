@@ -11,12 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -673,17 +667,17 @@ export default function TreePage({
         </DialogContent>
       </Dialog>
 
-      {/* Person detail sheet */}
-      <Sheet
+      {/* Person detail dialog */}
+      <Dialog
         open={!!selectedPerson}
         onOpenChange={(o) => { if (!o) { setSelectedPerson(null); setEditMode(false); } }}
       >
-        <SheetContent className="w-full sm:w-[800px] sm:max-w-none overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedPerson && (
             <>
-              <SheetHeader>
-                <SheetTitle>{selectedPerson.firstName} {selectedPerson.lastName}</SheetTitle>
-              </SheetHeader>
+              <DialogHeader>
+                <DialogTitle>{selectedPerson.firstName} {selectedPerson.lastName}</DialogTitle>
+              </DialogHeader>
 
               {editMode ? (
                 <div className="mt-4">
@@ -738,8 +732,8 @@ export default function TreePage({
               )}
             </>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
