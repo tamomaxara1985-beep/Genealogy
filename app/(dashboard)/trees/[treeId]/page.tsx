@@ -678,7 +678,7 @@ export default function TreePage({
         open={!!selectedPerson}
         onOpenChange={(o) => { if (!o) { setSelectedPerson(null); setEditMode(false); } }}
       >
-        <SheetContent className="w-96 overflow-y-auto">
+        <SheetContent className="w-full sm:w-[800px] sm:max-w-none overflow-y-auto">
           {selectedPerson && (
             <>
               <SheetHeader>

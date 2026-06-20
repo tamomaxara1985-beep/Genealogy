@@ -69,19 +69,41 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label>
-          {t("birthDate")}{" "}
-          <span className="text-xs text-muted-foreground font-normal">
-            — {tc("optional")}
-          </span>
-        </Label>
-        <DateInput value={form.birthDate} onChange={(v) => set("birthDate", v)} placeholder={tc("year")} />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>
+            {t("birthDate")}{" "}
+            <span className="text-xs text-muted-foreground font-normal">
+              — {tc("optional")}
+            </span>
+          </Label>
+          <DateInput value={form.birthDate} onChange={(v) => set("birthDate", v)} placeholder={tc("year")} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("birthPlace")}</Label>
+          <Input value={form.birthPlace ?? ""} onChange={(e) => set("birthPlace", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>
+            {t("baptismDate")}{" "}
+            <span className="text-xs text-muted-foreground font-normal">
+              — {tc("optional")}
+            </span>
+          </Label>
+          <DateInput value={form.baptismDate} onChange={(v) => set("baptismDate", v)} placeholder={tc("year")} />
+        </div>
+        <div className="space-y-2">
+          <Label>{t("baptismPlace")}</Label>
+          <Input value={form.baptismPlace ?? ""} onChange={(e) => set("baptismPlace", e.target.value)} />
+        </div>
       </div>
 
       <div className="space-y-2">
-        <Label>{t("birthPlace")}</Label>
-        <Input value={form.birthPlace ?? ""} onChange={(e) => set("birthPlace", e.target.value)} />
+        <Label>{t("godparentName")}</Label>
+        <Input value={form.godparentName ?? ""} onChange={(e) => set("godparentName", e.target.value)} />
       </div>
 
       <div className="space-y-3">
@@ -101,19 +123,21 @@ export function PersonForm({ initial = {}, onSubmit, loading }: Props) {
         </div>
 
         {!form.isLiving && (
-          <div className="space-y-3 pl-6 border-l-2 border-muted">
-            <div className="space-y-2">
-              <Label>
-                {t("deathDate")}{" "}
-                <span className="text-xs text-muted-foreground font-normal">
-                  — {tc("optional")}
-                </span>
-              </Label>
-              <DateInput value={form.deathDate} onChange={(v) => set("deathDate", v)} placeholder={tc("year")} />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("deathPlace")}</Label>
-              <Input value={form.deathPlace ?? ""} onChange={(e) => set("deathPlace", e.target.value)} />
+          <div className="pl-6 border-l-2 border-muted">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>
+                  {t("deathDate")}{" "}
+                  <span className="text-xs text-muted-foreground font-normal">
+                    — {tc("optional")}
+                  </span>
+                </Label>
+                <DateInput value={form.deathDate} onChange={(v) => set("deathDate", v)} placeholder={tc("year")} />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("deathPlace")}</Label>
+                <Input value={form.deathPlace ?? ""} onChange={(e) => set("deathPlace", e.target.value)} />
+              </div>
             </div>
           </div>
         )}
