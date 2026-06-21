@@ -1,11 +1,12 @@
 import type { IPerson, IRelationship, RelativeRole, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
+import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
 
-type AnyNode = PersonNodeType | CoupleNodeType;
+type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
 
 interface Callbacks {
-  onAddRelative: (personId: string, role: RelativeRole) => void;
+  onAddRelative: (personId: string, role: RelativeRole, personId2?: string) => void;
   onSelect: (person: IPerson) => void;
   onToggleCollapse?: (personId: string) => void;
   collapsedPersonIds?: Set<string>;
@@ -22,54 +23,134 @@ export function buildTreeData(
   const spouseRels = relationships.filter((r) => r.type === "spouse");
   const parentChildRels = relationships.filter((r) => r.type === "parent-child");
 
-  // Build couple groupings — every spouse relationship gets its own CoupleNode.
   const personInAnyCouple = new Set<string>();
-  const coupleByPair = new Map<string, string>();      // "p1Id|p2Id" → coupleNodeId (both orderings stored)
-  const couplesByPerson = new Map<string, string[]>(); // personId → [coupleNodeId, ...]
-  const coupleSlot = new Map<string, 1 | 2>();         // personId → slot (1=left/male, 2=right/female; gender-determined)
+  const coupleByPair = new Map<string, string>();      // "p1|p2" → coupleNodeId (regular couples only)
+  const couplesByPerson = new Map<string, string[]>(); // personId → [nodeId]
+  const coupleSlot = new Map<string, 1 | 2>();         // regular CoupleNode slot
+
+  // Poly-couple routing (person with exactly 2 spouses → polyCoupleNode)
+  const polyByPair = new Map<string, { nodeId: string; handle: "left" | "right" }>();
+  const polyTargetSlot = new Map<string, "left" | "shared" | "right">();
 
   const coupleNodes: CoupleNodeType[] = [];
+  const polyCoupleNodes: PolyCoupleNodeType[] = [];
 
+  // Group spouse rels per person to detect poly-couples
+  const spouseRelsByPerson = new Map<string, IRelationship[]>();
   spouseRels.forEach((r) => {
-    let p1 = persons.find((p) => p._id === r.person1Id);
-    let p2 = persons.find((p) => p._id === r.person2Id);
-    if (!p1 || !p2) return;
+    for (const id of [r.person1Id, r.person2Id]) {
+      const arr = spouseRelsByPerson.get(id) ?? [];
+      arr.push(r);
+      spouseRelsByPerson.set(id, arr);
+    }
+  });
 
-    // Male (father) always on left (slot 1), female (mother) always on right (slot 2)
-    if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
+  // Process persons with exactly 2 spouse rels → polyCoupleNode
+  const processedRelIds = new Set<string>();
 
-    personInAnyCouple.add(p1._id);
-    personInAnyCouple.add(p2._id);
+  spouseRelsByPerson.forEach((rels, sharedId) => {
+    if (rels.length !== 2) return;
+    if (rels.some((r) => processedRelIds.has(r._id))) return;
 
-    const coupleId = `couple_${r._id}`;
-    coupleByPair.set(`${p1._id}|${p2._id}`, coupleId);
-    coupleByPair.set(`${p2._id}|${p1._id}`, coupleId);
-    couplesByPerson.set(p1._id, [...(couplesByPerson.get(p1._id) ?? []), coupleId]);
-    couplesByPerson.set(p2._id, [...(couplesByPerson.get(p2._id) ?? []), coupleId]);
-    coupleSlot.set(p1._id, 1);
-    coupleSlot.set(p2._id, 2);
+    const shared = persons.find((p) => p._id === sharedId);
+    const rel1 = rels[0];
+    const rel2 = rels[1];
+    const sp1Id = rel1.person1Id === sharedId ? rel1.person2Id : rel1.person1Id;
+    const sp2Id = rel2.person1Id === sharedId ? rel2.person2Id : rel2.person1Id;
+    const sp1 = persons.find((p) => p._id === sp1Id);
+    const sp2 = persons.find((p) => p._id === sp2Id);
+
+    if (!shared || !sp1 || !sp2) return;
+
+    processedRelIds.add(rel1._id);
+    processedRelIds.add(rel2._id);
+
+    personInAnyCouple.add(sharedId);
+    personInAnyCouple.add(sp1Id);
+    personInAnyCouple.add(sp2Id);
+
+    const polyId = `poly_${sharedId}`;
+
+    polyByPair.set(`${sp1Id}|${sharedId}`, { nodeId: polyId, handle: "left" });
+    polyByPair.set(`${sharedId}|${sp1Id}`, { nodeId: polyId, handle: "left" });
+    polyByPair.set(`${sp2Id}|${sharedId}`, { nodeId: polyId, handle: "right" });
+    polyByPair.set(`${sharedId}|${sp2Id}`, { nodeId: polyId, handle: "right" });
+
+    couplesByPerson.set(sharedId, [polyId]);
+    couplesByPerson.set(sp1Id, [polyId]);
+    couplesByPerson.set(sp2Id, [polyId]);
+
+    polyTargetSlot.set(sp1Id, "left");
+    polyTargetSlot.set(sharedId, "shared");
+    polyTargetSlot.set(sp2Id, "right");
 
     const dim =
-      hasFilter && !highlighted.has(r.person1Id) && !highlighted.has(r.person2Id);
+      hasFilter &&
+      !highlighted.has(sharedId) &&
+      !highlighted.has(sp1Id) &&
+      !highlighted.has(sp2Id);
 
-    coupleNodes.push({
-      id: coupleId,
-      type: "coupleNode",
+    polyCoupleNodes.push({
+      id: polyId,
+      type: "polyCoupleNode",
       position: { x: 0, y: 0 },
       style: dim ? { opacity: 0.25, transition: "opacity 0.2s" } : { opacity: 1 },
       data: {
-        person1: p1,
-        person2: p2,
+        leftSpouse: sp1,
+        shared,
+        rightSpouse: sp2,
+        isDivorced1: !!rel1.endDate,
+        divorceDate1: rel1.endDate,
+        isDivorced2: !!rel2.endDate,
+        divorceDate2: rel2.endDate,
         onAddRelative: callbacks.onAddRelative,
         onSelect: callbacks.onSelect,
-        isDivorced: !!r.endDate,
-        divorceDate: r.endDate,
-        onToggleCollapse: callbacks.onToggleCollapse,
-        isCollapsed1: callbacks.collapsedPersonIds?.has(p1._id) ?? false,
-        isCollapsed2: callbacks.collapsedPersonIds?.has(p2._id) ?? false,
       },
-    } as CoupleNodeType);
+    } as PolyCoupleNodeType);
   });
+
+  // Process remaining (single) spouse relationships → coupleNode
+  spouseRels
+    .filter((r) => !processedRelIds.has(r._id))
+    .forEach((r) => {
+      let p1 = persons.find((p) => p._id === r.person1Id);
+      let p2 = persons.find((p) => p._id === r.person2Id);
+      if (!p1 || !p2) return;
+
+      if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
+
+      personInAnyCouple.add(p1._id);
+      personInAnyCouple.add(p2._id);
+
+      const coupleId = `couple_${r._id}`;
+      coupleByPair.set(`${p1._id}|${p2._id}`, coupleId);
+      coupleByPair.set(`${p2._id}|${p1._id}`, coupleId);
+      couplesByPerson.set(p1._id, [...(couplesByPerson.get(p1._id) ?? []), coupleId]);
+      couplesByPerson.set(p2._id, [...(couplesByPerson.get(p2._id) ?? []), coupleId]);
+      coupleSlot.set(p1._id, 1);
+      coupleSlot.set(p2._id, 2);
+
+      const dim =
+        hasFilter && !highlighted.has(r.person1Id) && !highlighted.has(r.person2Id);
+
+      coupleNodes.push({
+        id: coupleId,
+        type: "coupleNode",
+        position: { x: 0, y: 0 },
+        style: dim ? { opacity: 0.25, transition: "opacity 0.2s" } : { opacity: 1 },
+        data: {
+          person1: p1,
+          person2: p2,
+          onAddRelative: callbacks.onAddRelative,
+          onSelect: callbacks.onSelect,
+          isDivorced: !!r.endDate,
+          divorceDate: r.endDate,
+          onToggleCollapse: callbacks.onToggleCollapse,
+          isCollapsed1: callbacks.collapsedPersonIds?.has(p1._id) ?? false,
+          isCollapsed2: callbacks.collapsedPersonIds?.has(p2._id) ?? false,
+        },
+      } as CoupleNodeType);
+    });
 
   // Individual person nodes (not in any couple)
   const personNodes: PersonNodeType[] = persons
@@ -80,9 +161,7 @@ export function buildTreeData(
         id: p._id,
         type: "personNode",
         position: { x: 0, y: 0 },
-        style: dim
-          ? { opacity: 0.25, transition: "opacity 0.2s" }
-          : { opacity: 1 },
+        style: dim ? { opacity: 0.25, transition: "opacity 0.2s" } : { opacity: 1 },
         data: {
           person: p,
           onAddRelative: callbacks.onAddRelative,
@@ -93,7 +172,7 @@ export function buildTreeData(
       } as PersonNodeType;
     });
 
-  // Build parents-per-child map so sourceNodeId can find co-parents.
+  // parents-per-child map for edge routing
   const parentsByChild = new Map<string, string[]>();
   parentChildRels.forEach((r) => {
     const arr = parentsByChild.get(r.person2Id) ?? [];
@@ -101,41 +180,52 @@ export function buildTreeData(
     parentsByChild.set(r.person2Id, arr);
   });
 
-  // Return the node ID that represents parentId as a source for an edge to childId.
-  // Finds the CoupleNode that contains parentId and any co-parent of childId.
-  // Falls back to the parent's first CoupleNode, then the bare personId.
-  function sourceNodeId(parentId: string, childId: string): string {
+  // Find the source node + handle for a parent→child edge
+  function sourceInfo(parentId: string, childId: string): { nodeId: string; handle?: string } {
     for (const otherId of (parentsByChild.get(childId) ?? [])) {
       if (otherId === parentId) continue;
+      const polyRef = polyByPair.get(`${parentId}|${otherId}`);
+      if (polyRef) return { nodeId: polyRef.nodeId, handle: polyRef.handle };
       const coupleId = coupleByPair.get(`${parentId}|${otherId}`);
-      if (coupleId) return coupleId;
+      if (coupleId) return { nodeId: coupleId };
     }
-    return couplesByPerson.get(parentId)?.[0] ?? parentId;
+    const first = couplesByPerson.get(parentId)?.[0] ?? parentId;
+    if (first.startsWith("poly_")) return { nodeId: first, handle: "left" };
+    return { nodeId: first };
   }
 
-  // Build edges (parent-child only; spouse edges are implicit in couple nodes)
   const seenEdges = new Set<string>();
   const edges: TreeEdge[] = [];
 
   parentChildRels.forEach((r) => {
-    const source = sourceNodeId(r.person1Id, r.person2Id);
+    const src = sourceInfo(r.person1Id, r.person2Id);
+    const source = src.nodeId;
+    const sourceHandle = src.handle;
     const target = couplesByPerson.get(r.person2Id)?.[0] ?? r.person2Id;
-    if (source === target) return; // same couple node — skip
+    if (source === target) return;
 
-    const key = `${source}->${target}`;
+    const key = `${source}:${sourceHandle ?? ""}->${target}`;
     if (seenEdges.has(key)) return;
     seenEdges.add(key);
 
     const parentPerson = persons.find((p) => p._id === r.person1Id);
     const isMother = parentPerson?.gender === "female";
-    const childSlot = coupleSlot.get(r.person2Id);
-    const targetHandle = childSlot
-      ? `${childSlot === 1 ? "person1" : "person2"}-${isMother ? "mother" : "father"}`
-      : isMother ? "mother" : "father";
+
+    const polySlot = polyTargetSlot.get(r.person2Id);
+    const cSlot = coupleSlot.get(r.person2Id);
+    let targetHandle: string | undefined;
+    if (polySlot) {
+      targetHandle = `${polySlot}-${isMother ? "mother" : "father"}`;
+    } else if (cSlot) {
+      targetHandle = `${cSlot === 1 ? "person1" : "person2"}-${isMother ? "mother" : "father"}`;
+    } else {
+      targetHandle = isMother ? "mother" : "father";
+    }
 
     edges.push({
       id: r._id,
       source,
+      sourceHandle,
       target,
       type: "smoothstep",
       label: undefined,
@@ -143,6 +233,6 @@ export function buildTreeData(
     });
   });
 
-  const nodes: AnyNode[] = [...coupleNodes, ...personNodes];
+  const nodes: AnyNode[] = [...coupleNodes, ...polyCoupleNodes, ...personNodes];
   return { nodes, edges };
 }

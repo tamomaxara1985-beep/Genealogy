@@ -2,6 +2,7 @@ import dagre from "dagre";
 
 const PERSON_W = 168;
 const COUPLE_W = 380;
+const POLY_COUPLE_W = 600;
 const NODE_H = 90;
 const NODESEP = 160;
 const RANKSEP = 220;
@@ -31,7 +32,7 @@ export function applyDagreLayout<T extends MinimalNode>(
 
   nodes.forEach((n) => {
     g.setNode(n.id, {
-      width: n.type === "coupleNode" ? COUPLE_W : PERSON_W,
+      width: n.type === "polyCoupleNode" ? POLY_COUPLE_W : n.type === "coupleNode" ? COUPLE_W : PERSON_W,
       height: NODE_H,
     });
   });
@@ -72,9 +73,10 @@ export function applyDagreLayout<T extends MinimalNode>(
 
     childIds.sort((a, b) => (centerPos.get(a)?.x ?? 0) - (centerPos.get(b)?.x ?? 0));
 
-    const widths = childIds.map((id) =>
-      nodeById.get(id)?.type === "coupleNode" ? COUPLE_W : PERSON_W
-    );
+    const widths = childIds.map((id) => {
+      const t = nodeById.get(id)?.type;
+      return t === "polyCoupleNode" ? POLY_COUPLE_W : t === "coupleNode" ? COUPLE_W : PERSON_W;
+    });
 
     const totalWidth =
       widths.reduce((sum, w) => sum + w, 0) + NODESEP * (childIds.length - 1);
@@ -117,7 +119,7 @@ export function applyDagreLayout<T extends MinimalNode>(
   // Convert center positions to top-left for React Flow
   return nodes.map((n) => {
     const pos = centerPos.get(n.id);
-    const w = n.type === "coupleNode" ? COUPLE_W : PERSON_W;
+    const w = n.type === "polyCoupleNode" ? POLY_COUPLE_W : n.type === "coupleNode" ? COUPLE_W : PERSON_W;
     if (!pos) return { ...n, position: { x: 0, y: 0 } };
     return { ...n, position: { x: pos.x - w / 2, y: pos.y - NODE_H / 2 } };
   });

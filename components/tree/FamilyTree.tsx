@@ -7,21 +7,24 @@ import {
   useNodesState,
   useEdgesState,
   type Edge,
+  type ReactFlowInstance,
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
+import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
 import type { TreeEdge } from "@/types";
 
 const nodeTypes = {
   personNode: PersonNode,
   coupleNode: CoupleNode,
+  polyCoupleNode: PolyCoupleNode,
 };
 
-type AnyNode = PersonNodeType | CoupleNodeType;
+type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
 
 interface Props {
   nodes: AnyNode[];
@@ -43,8 +46,18 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rawEdges as Edge[]);
 
-  // Sync when SWR data arrives after initial render
-  useEffect(() => { setNodes(layoutNodes); }, [layoutNodes, setNodes]);
+  const rfInstance = useRef<ReactFlowInstance<AnyNode, Edge> | null>(null);
+  const isFirstLayout = useRef(true);
+
+  // Sync layout; re-fit viewport when node set changes (e.g. second spouse added)
+  useEffect(() => {
+    setNodes(layoutNodes);
+    if (!isFirstLayout.current) {
+      const t = setTimeout(() => rfInstance.current?.fitView({ padding: 0.25, duration: 300 }), 50);
+      return () => clearTimeout(t);
+    }
+    isFirstLayout.current = false;
+  }, [layoutNodes, setNodes]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
 
@@ -56,6 +69,7 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        onInit={(instance) => { rfInstance.current = instance; }}
         fitView
         fitViewOptions={{ padding: 0.25 }}
         minZoom={0.1}

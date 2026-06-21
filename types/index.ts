@@ -76,6 +76,7 @@ export type TreeNode = {
 export type TreeEdge = {
   id: string
   source: string
+  sourceHandle?: string
   target: string
   type: 'step' | 'smoothstep'
   label?: string
