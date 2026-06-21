@@ -46,11 +46,20 @@ export function buildTreeData(
   });
 
   // Process persons with exactly 2 spouse rels → polyCoupleNode
+  // Sort males first so a husband-with-2-wives scenario centres on the husband,
+  // not on a wife who also happens to have a previous marriage.
   const processedRelIds = new Set<string>();
+  const polyEntries = [...spouseRelsByPerson.entries()].sort(([aId], [bId]) => {
+    const ag = persons.find((p) => p._id === aId)?.gender;
+    const bg = persons.find((p) => p._id === bId)?.gender;
+    if (ag === "male" && bg !== "male") return -1;
+    if (bg === "male" && ag !== "male") return 1;
+    return 0;
+  });
 
-  spouseRelsByPerson.forEach((rels, sharedId) => {
-    if (rels.length !== 2) return;
-    if (rels.some((r) => processedRelIds.has(r._id))) return;
+  for (const [sharedId, rels] of polyEntries) {
+    if (rels.length !== 2) continue;
+    if (rels.some((r) => processedRelIds.has(r._id))) continue;
 
     const shared = persons.find((p) => p._id === sharedId);
     const rel1 = rels[0];
@@ -60,7 +69,7 @@ export function buildTreeData(
     const sp1 = persons.find((p) => p._id === sp1Id);
     const sp2 = persons.find((p) => p._id === sp2Id);
 
-    if (!shared || !sp1 || !sp2) return;
+    if (!shared || !sp1 || !sp2) continue;
 
     processedRelIds.add(rel1._id);
     processedRelIds.add(rel2._id);
@@ -107,15 +116,18 @@ export function buildTreeData(
         onSelect: callbacks.onSelect,
       },
     } as PolyCoupleNodeType);
-  });
+  }
 
   // Process remaining (single) spouse relationships → coupleNode
+  // Skip rels where either person is already committed to a polyCoupleNode.
   spouseRels
     .filter((r) => !processedRelIds.has(r._id))
     .forEach((r) => {
       let p1 = persons.find((p) => p._id === r.person1Id);
       let p2 = persons.find((p) => p._id === r.person2Id);
       if (!p1 || !p2) return;
+      // Skip if either person already appears in a polyCoupleNode
+      if (personInAnyCouple.has(p1._id) || personInAnyCouple.has(p2._id)) return;
 
       if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
 
