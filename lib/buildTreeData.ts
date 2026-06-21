@@ -58,21 +58,30 @@ export function buildTreeData(
   });
 
   for (const [sharedId, rels] of polyEntries) {
-    if (rels.length !== 2) continue;
+    // Skip if already committed to another polyCoupleNode as a spouse
+    if (personInAnyCouple.has(sharedId)) continue;
     if (rels.some((r) => processedRelIds.has(r._id))) continue;
 
+    // Deduplicate by spouse ID (guards against duplicate DB rels)
+    const seenSpouses = new Map<string, IRelationship>();
+    for (const r of rels) {
+      const spId = r.person1Id === sharedId ? r.person2Id : r.person1Id;
+      if (!seenSpouses.has(spId)) seenSpouses.set(spId, r);
+    }
+    if (seenSpouses.size !== 2) continue;
+
+    const [[sp1Id, rel1], [sp2Id, rel2]] = [...seenSpouses.entries()];
+
     const shared = persons.find((p) => p._id === sharedId);
-    const rel1 = rels[0];
-    const rel2 = rels[1];
-    const sp1Id = rel1.person1Id === sharedId ? rel1.person2Id : rel1.person1Id;
-    const sp2Id = rel2.person1Id === sharedId ? rel2.person2Id : rel2.person1Id;
     const sp1 = persons.find((p) => p._id === sp1Id);
     const sp2 = persons.find((p) => p._id === sp2Id);
 
     if (!shared || !sp1 || !sp2) continue;
+    // Skip if either spouse is already in another polyCoupleNode
+    if (personInAnyCouple.has(sp1Id) || personInAnyCouple.has(sp2Id)) continue;
 
-    processedRelIds.add(rel1._id);
-    processedRelIds.add(rel2._id);
+    // Mark all rels for both spouse pairs as processed (handles DB duplicates)
+    rels.forEach((r) => processedRelIds.add(r._id));
 
     personInAnyCouple.add(sharedId);
     personInAnyCouple.add(sp1Id);
