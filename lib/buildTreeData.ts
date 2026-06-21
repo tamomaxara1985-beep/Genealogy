@@ -22,15 +22,15 @@ export function buildTreeData(
   const spouseRels = relationships.filter((r) => r.type === "spouse");
   const parentChildRels = relationships.filter((r) => r.type === "parent-child");
 
-  // Build couple groupings (only first spouse pairing per person)
-  const usedInCouple = new Set<string>();
-  const coupleByPersonId = new Map<string, string>(); // personId → coupleNodeId
-  const coupleSlot = new Map<string, 1 | 2>();         // personId → slot in couple (1=left, 2=right)
+  // Build couple groupings — every spouse relationship gets its own CoupleNode.
+  const personInAnyCouple = new Set<string>();
+  const coupleByPair = new Map<string, string>();      // "p1Id|p2Id" → coupleNodeId (both orderings stored)
+  const couplesByPerson = new Map<string, string[]>(); // personId → [coupleNodeId, ...]
+  const coupleSlot = new Map<string, 1 | 2>();         // personId → slot (1=left/male, 2=right/female; gender-determined)
 
   const coupleNodes: CoupleNodeType[] = [];
 
   spouseRels.forEach((r) => {
-    if (usedInCouple.has(r.person1Id) || usedInCouple.has(r.person2Id)) return;
     let p1 = persons.find((p) => p._id === r.person1Id);
     let p2 = persons.find((p) => p._id === r.person2Id);
     if (!p1 || !p2) return;
@@ -38,12 +38,14 @@ export function buildTreeData(
     // Male (father) always on left (slot 1), female (mother) always on right (slot 2)
     if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
 
-    usedInCouple.add(r.person1Id);
-    usedInCouple.add(r.person2Id);
+    personInAnyCouple.add(p1._id);
+    personInAnyCouple.add(p2._id);
 
     const coupleId = `couple_${r._id}`;
-    coupleByPersonId.set(p1._id, coupleId);
-    coupleByPersonId.set(p2._id, coupleId);
+    coupleByPair.set(`${p1._id}|${p2._id}`, coupleId);
+    coupleByPair.set(`${p2._id}|${p1._id}`, coupleId);
+    couplesByPerson.set(p1._id, [...(couplesByPerson.get(p1._id) ?? []), coupleId]);
+    couplesByPerson.set(p2._id, [...(couplesByPerson.get(p2._id) ?? []), coupleId]);
     coupleSlot.set(p1._id, 1);
     coupleSlot.set(p2._id, 2);
 
@@ -69,9 +71,9 @@ export function buildTreeData(
     } as CoupleNodeType);
   });
 
-  // Individual person nodes (no spouse)
+  // Individual person nodes (not in any couple)
   const personNodes: PersonNodeType[] = persons
-    .filter((p) => !usedInCouple.has(p._id))
+    .filter((p) => !personInAnyCouple.has(p._id))
     .map((p) => {
       const dim = hasFilter && !highlighted.has(p._id);
       return {
@@ -91,9 +93,24 @@ export function buildTreeData(
       } as PersonNodeType;
     });
 
-  // Map personId → the node ID that represents them
-  function nodeId(personId: string): string {
-    return coupleByPersonId.get(personId) ?? personId;
+  // Build parents-per-child map so sourceNodeId can find co-parents.
+  const parentsByChild = new Map<string, string[]>();
+  parentChildRels.forEach((r) => {
+    const arr = parentsByChild.get(r.person2Id) ?? [];
+    arr.push(r.person1Id);
+    parentsByChild.set(r.person2Id, arr);
+  });
+
+  // Return the node ID that represents parentId as a source for an edge to childId.
+  // Finds the CoupleNode that contains parentId and any co-parent of childId.
+  // Falls back to the parent's first CoupleNode, then the bare personId.
+  function sourceNodeId(parentId: string, childId: string): string {
+    for (const otherId of (parentsByChild.get(childId) ?? [])) {
+      if (otherId === parentId) continue;
+      const coupleId = coupleByPair.get(`${parentId}|${otherId}`);
+      if (coupleId) return coupleId;
+    }
+    return couplesByPerson.get(parentId)?.[0] ?? parentId;
   }
 
   // Build edges (parent-child only; spouse edges are implicit in couple nodes)
@@ -101,8 +118,8 @@ export function buildTreeData(
   const edges: TreeEdge[] = [];
 
   parentChildRels.forEach((r) => {
-    const source = nodeId(r.person1Id);
-    const target = nodeId(r.person2Id);
+    const source = sourceNodeId(r.person1Id, r.person2Id);
+    const target = couplesByPerson.get(r.person2Id)?.[0] ?? r.person2Id;
     if (source === target) return; // same couple node — skip
 
     const key = `${source}->${target}`;
