@@ -123,6 +123,119 @@ function Reveal({
   );
 }
 
+/* === PRODUCT PREVIEW ============================================
+   A faithful static mockup of the tree canvas, reusing the real
+   node vocabulary (gender border, living bar, initials avatar, amber
+   ♥ marriage line). Not a live capture — no auth/DB needed — but it
+   reads as a genuine screenshot of the app on the hero.
+   ================================================================ */
+const border: Record<string, string> = {
+  male: "border-blue-300",
+  female: "border-pink-300",
+};
+const avatarTone: Record<string, string> = {
+  male: "bg-blue-50 text-blue-700",
+  female: "bg-pink-50 text-pink-700",
+};
+
+function PvCard({
+  name,
+  surname,
+  years,
+  gender,
+  living = false,
+}: {
+  name: string;
+  surname: string;
+  years: string;
+  gender: "male" | "female";
+  living?: boolean;
+}) {
+  return (
+    <div
+      className={`w-32 select-none rounded-lg border-2 bg-white shadow-sm sm:w-36 ${border[gender]}`}
+    >
+      <div className={`h-1 rounded-t-md ${living ? "bg-green-400" : "bg-gray-300"}`} />
+      <div className="flex items-center gap-2 px-2 py-1.5">
+        <div className="relative flex-shrink-0">
+          <div
+            className={`flex size-8 items-center justify-center rounded-full text-[11px] font-semibold ${avatarTone[gender]}`}
+          >
+            {name[0]}
+            {surname[0]}
+          </div>
+          <span
+            className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-white ${
+              living ? "bg-green-400" : "bg-gray-400"
+            }`}
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-semibold leading-tight text-gray-800">
+            {name}
+          </p>
+          <p className="truncate text-[11px] leading-tight text-gray-500">{surname}</p>
+          <p className="truncate text-[9px] leading-tight text-gray-400">{years}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Marriage() {
+  return (
+    <div className="flex w-7 flex-shrink-0 items-center">
+      <div className="h-px flex-1 bg-amber-400" />
+      <span className="mx-0.5 text-xs leading-none text-amber-500">♥</span>
+      <div className="h-px flex-1 bg-amber-400" />
+    </div>
+  );
+}
+
+function TreePreview() {
+  return (
+    <div className="w-full max-w-md rounded-xl border border-amber-900/10 bg-white shadow-2xl shadow-amber-950/15 ring-1 ring-black/5">
+      {/* Browser chrome */}
+      <div className="flex items-center gap-2 rounded-t-xl border-b border-gray-100 bg-gray-50 px-3 py-2">
+        <span className="size-2.5 rounded-full bg-red-400/80" />
+        <span className="size-2.5 rounded-full bg-amber-400/80" />
+        <span className="size-2.5 rounded-full bg-green-400/80" />
+        <span className="ml-2 truncate rounded-md bg-white px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-gray-200">
+          familyroots.app/trees/hale-family
+        </span>
+      </div>
+      {/* Canvas — react-flow style dotted grid */}
+      <div className="rounded-b-xl bg-[#fbfbf9] bg-[radial-gradient(#0000000d_1px,transparent_1px)] [background-size:14px_14px]">
+        <div className="flex flex-col items-center gap-0 px-4 py-6">
+          {/* Grandparents */}
+          <div className="flex items-center">
+            <PvCard name="Thomas" surname="Hale" years="1898–1974" gender="male" />
+            <Marriage />
+            <PvCard name="Margaret" surname="Hale" years="1901–1989" gender="female" />
+          </div>
+          <span className="h-5 w-px bg-gray-300" />
+          {/* Parents */}
+          <div className="flex items-center">
+            <PvCard name="James" surname="Hale" years="b. 1956" gender="male" living />
+            <Marriage />
+            <PvCard name="Eleanor" surname="Hale" years="b. 1959" gender="female" living />
+          </div>
+          {/* Split connector to children */}
+          <span className="h-4 w-px bg-gray-300" />
+          <div className="flex w-40 items-start justify-between">
+            <span className="h-4 w-1/2 rounded-tl-md border-l border-t border-gray-300" />
+            <span className="h-4 w-1/2 rounded-tr-md border-r border-t border-gray-300" />
+          </div>
+          <div className="flex gap-3">
+            <PvCard name="Sophie" surname="Hale" years="b. 1988" gender="female" living />
+            <PvCard name="Noah" surname="Hale" years="b. 1991" gender="male" living />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const scrollerRef = useRef<HTMLElement | null>(null);
   const [active, setActive] = useState(0);
@@ -296,52 +409,62 @@ export default function LandingPage() {
           </svg>
         </div>
 
-        <div className="relative z-10 mx-auto max-w-3xl text-center">
-          <Reveal>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-800/20 bg-[#fcf8ee] px-3.5 py-1.5 text-sm font-medium text-amber-800 shadow-sm">
-              <Sparkles className="size-3.5" aria-hidden />
-              AI-powered family history
-            </span>
-          </Reveal>
-          <Reveal delay={120}>
-            <h1
-              style={{ fontFamily: "var(--font-fraunces)" }}
-              className="mt-7 text-balance text-6xl font-semibold leading-[1.02] tracking-tight text-[#34291d] sm:text-7xl md:text-8xl"
-            >
-              Discover your{" "}
-              <span className="italic text-amber-700">family story</span>
-            </h1>
-          </Reveal>
-          <Reveal delay={240}>
-            <p className="mx-auto mt-7 max-w-xl text-pretty text-lg leading-relaxed text-[#6a5b48] sm:text-xl">
-              Build your family tree, bring old documents to life, and let AI
-              uncover the stories of the people who came before you.
-            </p>
-          </Reveal>
-          <Reveal delay={360}>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button
-                className="h-12 w-full gap-2 bg-amber-700 px-7 text-base text-amber-50 shadow-md hover:bg-amber-800 sm:w-auto"
-                nativeButton={false}
-                render={<Link href="/register" />}
+        <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-10 pt-16 lg:grid-cols-2 lg:gap-12 lg:pt-0">
+          {/* Text column */}
+          <div className="text-center lg:text-left">
+            <Reveal>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-800/20 bg-[#fcf8ee] px-3.5 py-1.5 text-sm font-medium text-amber-800 shadow-sm">
+                <Sparkles className="size-3.5" aria-hidden />
+                AI-powered family history
+              </span>
+            </Reveal>
+            <Reveal delay={120}>
+              <h1
+                style={{ fontFamily: "var(--font-fraunces)" }}
+                className="mt-6 text-balance text-5xl font-semibold leading-[1.03] tracking-tight text-[#34291d] sm:text-6xl lg:text-7xl"
               >
-                Start your free tree
-                <ArrowRight className="size-4" aria-hidden />
-              </Button>
-              <Button
-                variant="outline"
-                className="h-12 w-full border-amber-800/25 bg-[#fcf8ee] px-7 text-base text-[#4a3d2d] hover:bg-[#f3e8cf] sm:w-auto"
-                nativeButton={false}
-                render={<Link href="/login" />}
-              >
-                Sign in
-              </Button>
+                Discover your{" "}
+                <span className="italic text-amber-700">family story</span>
+              </h1>
+            </Reveal>
+            <Reveal delay={240}>
+              <p className="mx-auto mt-6 max-w-xl text-pretty text-lg leading-relaxed text-[#6a5b48] lg:mx-0">
+                Build your family tree, bring old documents to life, and let AI
+                uncover the stories of the people who came before you.
+              </p>
+            </Reveal>
+            <Reveal delay={360}>
+              <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+                <Button
+                  className="h-12 w-full gap-2 bg-amber-700 px-7 text-base text-amber-50 shadow-md hover:bg-amber-800 sm:w-auto"
+                  nativeButton={false}
+                  render={<Link href="/register" />}
+                >
+                  Start your free tree
+                  <ArrowRight className="size-4" aria-hidden />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-12 w-full border-amber-800/25 bg-[#fcf8ee] px-7 text-base text-[#4a3d2d] hover:bg-[#f3e8cf] sm:w-auto"
+                  nativeButton={false}
+                  render={<Link href="/login" />}
+                >
+                  Sign in
+                </Button>
+              </div>
+            </Reveal>
+            <Reveal delay={480}>
+              <p className="mt-5 text-sm text-[#8a7c66]">
+                Free to start · No credit card required
+              </p>
+            </Reveal>
+          </div>
+
+          {/* Product preview column */}
+          <Reveal delay={300} className="flex justify-center lg:justify-end">
+            <div className="motion-safe:lg:rotate-[1.5deg]">
+              <TreePreview />
             </div>
-          </Reveal>
-          <Reveal delay={480}>
-            <p className="mt-6 text-sm text-[#8a7c66]">
-              Free to start · No credit card required
-            </p>
           </Reveal>
         </div>
 
@@ -349,7 +472,7 @@ export default function LandingPage() {
         <button
           onClick={() => goTo(1)}
           aria-label="Next slide"
-          className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-amber-800/60 transition-colors hover:text-amber-800 motion-safe:animate-bounce"
+          className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 text-amber-800/60 transition-colors hover:text-amber-800 sm:block motion-safe:animate-bounce"
         >
           <ArrowDown className="size-6" aria-hidden />
         </button>
