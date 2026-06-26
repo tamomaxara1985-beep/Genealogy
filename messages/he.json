@@ -98,7 +98,10 @@
     "expandAll": "הרחב הכל",
     "people": "אנשים",
     "treeLiving": "בחיים",
-    "treeDeceased": "נפטרו"
+    "treeDeceased": "נפטרו",
+    "myTrees": "My Trees",
+    "sharedWithMe": "Shared with me",
+    "viewOnly": "View-only"
   },
   "common": {
     "save": "שמור",

@@ -98,7 +98,10 @@
     "expandAll": "ყველას გაშლა",
     "people": "ადამიანი",
     "treeLiving": "ცოცხალი",
-    "treeDeceased": "გარდაცვლილი"
+    "treeDeceased": "გარდაცვლილი",
+    "myTrees": "My Trees",
+    "sharedWithMe": "Shared with me",
+    "viewOnly": "View-only"
   },
   "common": {
     "save": "შენახვა",
