@@ -89,9 +89,9 @@ export function applyDagreLayout<T extends MinimalNode>(
     });
   });
 
-  // Enforce father-left / mother-right ordering without moving nodes.
+  // Enforce mother-left / father-right ordering without moving nodes.
   // For each child, collect its parents grouped by handle, sort them by
-  // logical order (person1-father < person1-mother < person2-father < person2-mother),
+  // logical order (person1-mother < person1-father < person2-mother < person2-father),
   // then reassign their current X positions in ascending order to that sequence.
   // Dagre's spacing is preserved — only ordering is corrected.
   const parentsByTarget = new Map<string, Array<{ source: string; order: number }>>();
