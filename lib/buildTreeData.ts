@@ -6,7 +6,7 @@ import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
 type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
 
 interface Callbacks {
-  onAddRelative: (personId: string, role: RelativeRole, personId2?: string) => void;
+  onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
   onSelect: (person: IPerson) => void;
   onToggleCollapse?: (personId: string) => void;
   collapsedPersonIds?: Set<string>;
