@@ -13,6 +13,8 @@ export interface ITree {
   description?: string
   ownerId: string
   isPublic: boolean
+  sharedEmails?: string[]
+  role?: 'owner' | 'viewer'
   createdAt: Date
   updatedAt: Date
 }
