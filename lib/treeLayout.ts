@@ -12,12 +12,12 @@ type MinimalEdge = { source: string; target: string; targetHandle?: string };
 
 // Logical left-to-right order of parent handle slots
 const HANDLE_ORDER: Record<string, number> = {
-  "person1-father": 0,
-  "father": 0,
-  "person1-mother": 1,
-  "mother": 1,
-  "person2-father": 2,
-  "person2-mother": 3,
+  "person1-mother": 0,
+  "mother": 0,
+  "person1-father": 1,
+  "father": 1,
+  "person2-mother": 2,
+  "person2-father": 3,
 };
 
 export function applyDagreLayout<T extends MinimalNode>(

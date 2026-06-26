@@ -138,7 +138,7 @@ export function buildTreeData(
       // Skip if either person already appears in a polyCoupleNode
       if (personInAnyCouple.has(p1._id) || personInAnyCouple.has(p2._id)) return;
 
-      if (p1.gender === "female" && p2.gender === "male") [p1, p2] = [p2, p1];
+      if (p1.gender === "male" && p2.gender === "female") [p1, p2] = [p2, p1];
 
       personInAnyCouple.add(p1._id);
       personInAnyCouple.add(p2._id);

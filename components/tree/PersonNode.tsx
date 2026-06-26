@@ -16,8 +16,8 @@ export type PersonNodeType = Node<
 >;
 
 const ADD_BUTTONS: { role: RelativeRole; label: string; pos: string }[] = [
-  { role: "father",   label: "Add father",   pos: "top-left" },
-  { role: "mother",   label: "Add mother",   pos: "top-right" },
+  { role: "mother",   label: "Add mother",   pos: "top-left" },
+  { role: "father",   label: "Add father",   pos: "top-right" },
   { role: "brother",  label: "Add brother",  pos: "left-top" },
   { role: "sister",   label: "Add sister",   pos: "left-bottom" },
   { role: "spouse",   label: "Add spouse",   pos: "right" },
@@ -64,9 +64,9 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
 
   return (
     <div className="relative">
-      {/* father = left quarter, mother = right quarter of 160px card */}
-      <Handle type="target" position={Position.Top} id="father" style={{ left: 40 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="mother" style={{ left: 120 }} className="!bg-gray-300 !w-2 !h-2" />
+      {/* mother = left quarter, father = right quarter of 160px card */}
+      <Handle type="target" position={Position.Top} id="mother" style={{ left: 40 }} className="!bg-gray-300 !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} id="father" style={{ left: 120 }} className="!bg-gray-300 !w-2 !h-2" />
 
       {/* Contextual add buttons */}
       {selected && onAddRelative &&
