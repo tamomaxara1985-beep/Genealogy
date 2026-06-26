@@ -13,7 +13,7 @@ export default function TreesPage() {
   const tNav = useTranslations("nav")
   const t = useTranslations("tree")
   const tc = useTranslations("common")
-  const { trees, isLoading, mutate } = useTrees()
+  const { owned, shared, isLoading, mutate } = useTrees()
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState("")
   const [creating, setCreating] = useState(false)
@@ -73,35 +73,67 @@ export default function TreesPage() {
 
       {isLoading && <p className="text-muted-foreground">{tc("loading")}</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {trees.map((tree) => (
-          <Card
-            key={tree._id}
-            className="cursor-pointer hover:border-amber-400 transition-colors"
-            onClick={() => router.push(`/trees/${tree._id}`)}
-          >
-            <CardHeader>
-              <CardTitle className="text-lg">{tree.name}</CardTitle>
-            </CardHeader>
-            {tree.description && (
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{tree.description}</p>
-              </CardContent>
-            )}
-          </Card>
-        ))}
+      {!isLoading && (
+        <>
+          <h2 className="text-lg font-semibold mb-3">{t("myTrees")}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {owned.map((tree) => (
+              <Card
+                key={tree._id}
+                className="cursor-pointer hover:border-amber-400 transition-colors"
+                onClick={() => router.push(`/trees/${tree._id}`)}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">{tree.name}</CardTitle>
+                </CardHeader>
+                {tree.description && (
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">{tree.description}</p>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
 
-        {!isLoading && trees.length === 0 && (
-          <Card
-            className="border-dashed border-2 flex items-center justify-center min-h-40 cursor-pointer hover:border-amber-400"
-            onClick={() => setShowForm(true)}
-          >
-            <CardContent className="text-center pt-6">
-              <p className="text-muted-foreground">{t("createFirst")}</p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            {owned.length === 0 && (
+              <Card
+                className="border-dashed border-2 flex items-center justify-center min-h-40 cursor-pointer hover:border-amber-400"
+                onClick={() => setShowForm(true)}
+              >
+                <CardContent className="text-center pt-6">
+                  <p className="text-muted-foreground">{t("createFirst")}</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {shared.length > 0 && (
+            <>
+              <h2 className="text-lg font-semibold mt-8 mb-3">{t("sharedWithMe")}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {shared.map((tree) => (
+                  <Card
+                    key={tree._id}
+                    className="cursor-pointer hover:border-amber-400 transition-colors"
+                    onClick={() => router.push(`/trees/${tree._id}`)}
+                  >
+                    <CardHeader className="flex flex-row items-center justify-between gap-2">
+                      <CardTitle className="text-lg">{tree.name}</CardTitle>
+                      <span className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-0.5 whitespace-nowrap">
+                        {t("viewOnly")}
+                      </span>
+                    </CardHeader>
+                    {tree.description && (
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">{tree.description}</p>
+                      </CardContent>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   )
 }

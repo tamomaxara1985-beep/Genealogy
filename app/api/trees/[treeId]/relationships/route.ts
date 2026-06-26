@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Tree from "@/lib/models/Tree";
 import Relationship from "@/lib/models/Relationship";
+import { resolveTreeAccess } from "@/lib/treeAccess";
 
 type Params = { params: Promise<{ treeId: string }> };
 
@@ -12,10 +13,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { treeId } = await params;
-  await connectDB();
-
-  const tree = await Tree.findOne({ _id: treeId, ownerId: session.user.id });
-  if (!tree)
+  const { tree, role } = await resolveTreeAccess(treeId, session);
+  if (!tree || !role)
     return NextResponse.json({ error: "Tree not found" }, { status: 404 });
 
   const relationships = await Relationship.find({ treeId });

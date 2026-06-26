@@ -25,7 +25,8 @@ import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { buildTreeData } from "@/lib/buildTreeData";
 import { getAncestors } from "@/lib/treeCollapse";
-import type { IPerson, IRelationship, RelativeRole } from "@/types";
+import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
+import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -129,6 +130,12 @@ export default function TreePage({
     `/api/trees/${treeId}/relationships`,
     fetcher
   );
+  const { data: treeMeta, mutate: mutateTree } = useSWR<ITree>(
+    `/api/trees/${treeId}`,
+    fetcher
+  );
+  const isOwner = treeMeta?.role === "owner";
+  const readOnly = !!treeMeta && !isOwner;
 
   // Add new person
   const [addPersonOpen, setAddPersonOpen] = useState(false);
@@ -165,6 +172,12 @@ export default function TreePage({
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
   const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(new Set());
+
+  // Share dialog
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareError, setShareError] = useState<string | null>(null);
+  const [shareBusy, setShareBusy] = useState(false);
 
   // Load from localStorage after mount (avoids SSR/hydration mismatch)
   useEffect(() => {
@@ -220,6 +233,34 @@ export default function TreePage({
   const expandAll = useCallback(() => {
     setCollapsedPersonIds(new Set());
   }, []);
+
+  async function submitShare(e: React.FormEvent) {
+    e.preventDefault();
+    setShareError(null);
+    setShareBusy(true);
+    const res = await fetch(`/api/trees/${treeId}/shares`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: shareEmail }),
+    });
+    if (res.ok) {
+      setShareEmail("");
+      await mutateTree();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setShareError(data.error ?? "Could not share");
+    }
+    setShareBusy(false);
+  }
+
+  async function revokeShare(email: string) {
+    const res = await fetch(`/api/trees/${treeId}/shares`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok) await mutateTree();
+  }
 
   const hiddenIds = useMemo(() => {
     const hidden = new Set<string>();
@@ -429,7 +470,7 @@ export default function TreePage({
     visiblePersons,
     visibleRelationships,
     {
-      onAddRelative: handleAddRelative,
+      onAddRelative: readOnly ? undefined : handleAddRelative,
       onSelect: handleSelect,
       onToggleCollapse: toggleCollapse,
       collapsedPersonIds,
@@ -449,8 +490,18 @@ export default function TreePage({
             collapsedCount={collapsedPersonIds.size}
             onExpandAll={expandAll}
           />
-          <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
-          <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
+          {isOwner && (
+            <>
+              <Button variant="outline" onClick={() => setShareOpen(true)}>{t("share")}</Button>
+              <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
+              <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
+            </>
+          )}
+          {readOnly && (
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+              {t("viewOnlyBadge")}
+            </span>
+          )}
         </div>
       </div>
 
@@ -458,7 +509,7 @@ export default function TreePage({
         <div className="flex-1 flex items-center justify-center border-2 border-dashed rounded-xl text-muted-foreground">
           <div className="text-center">
             <p className="mb-3">{t("noPersons")}</p>
-            <Button onClick={() => setAddPersonOpen(true)}>{t("addFirstPerson")}</Button>
+            {isOwner && <Button onClick={() => setAddPersonOpen(true)}>{t("addFirstPerson")}</Button>}
           </div>
         </div>
       ) : (
@@ -667,6 +718,51 @@ export default function TreePage({
         </DialogContent>
       </Dialog>
 
+      {/* Share dialog (owner only) */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("shareTitle")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitShare} className="flex gap-2 items-end">
+            <div className="flex-1 space-y-1">
+              <Label htmlFor="shareEmail">Email</Label>
+              <Input
+                id="shareEmail"
+                type="email"
+                value={shareEmail}
+                onChange={(e) => setShareEmail(e.target.value)}
+                placeholder={t("emailPlaceholder")}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={shareBusy || !shareEmail}>
+              {t("grantAccess")}
+            </Button>
+          </form>
+          {shareError && <p className="text-xs text-destructive mt-1">{shareError}</p>}
+          <div className="mt-4 space-y-2">
+            {(treeMeta?.sharedEmails ?? []).length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("sharedWithNobody")}</p>
+            ) : (
+              (treeMeta?.sharedEmails ?? []).map((email) => (
+                <div key={email} className="flex items-center justify-between border rounded-lg px-3 py-2">
+                  <span className="text-sm truncate">{email}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                    onClick={() => revokeShare(email)}
+                  >
+                    {t("revoke")}
+                  </Button>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Person detail dialog */}
       <Dialog
         open={!!selectedPerson}
@@ -700,14 +796,16 @@ export default function TreePage({
                       className="hidden"
                       onChange={handlePhotoChange}
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={photoUploading}
-                      onClick={() => photoInputRef.current?.click()}
-                    >
-                      {photoUploading ? tc("uploading") : tp("changePhoto")}
-                    </Button>
+                    {isOwner && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={photoUploading}
+                        onClick={() => photoInputRef.current?.click()}
+                      >
+                        {photoUploading ? tc("uploading") : tp("changePhoto")}
+                      </Button>
+                    )}
                     {photoError && <p className="text-xs text-destructive">{photoError}</p>}
                   </div>
                   <dl className="space-y-1 text-sm">
@@ -719,12 +817,14 @@ export default function TreePage({
                     {selectedPerson.maidenName && <div className="flex justify-between"><dt className="text-muted-foreground">{tp("maidenName")}</dt><dd>{selectedPerson.maidenName}</dd></div>}
                     {selectedPerson.notes && <div className="pt-1"><dt className="text-muted-foreground mb-1">{tp("notes")}</dt><dd className="text-gray-700">{selectedPerson.notes}</dd></div>}
                   </dl>
-                  <div className="flex gap-2 pt-2">
-                    <Button className="flex-1" onClick={() => setEditMode(true)}>{tp("edit")}</Button>
-                    <Button variant="outline" className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300" onClick={handleDeletePerson} disabled={deleting}>
-                      {deleting ? tp("deleting") : tp("delete")}
-                    </Button>
-                  </div>
+                  {isOwner && (
+                    <div className="flex gap-2 pt-2">
+                      <Button className="flex-1" onClick={() => setEditMode(true)}>{tp("edit")}</Button>
+                      <Button variant="outline" className="flex-1 text-red-600 hover:text-red-700 hover:border-red-300" onClick={handleDeletePerson} disabled={deleting}>
+                        {deleting ? tp("deleting") : tp("delete")}
+                      </Button>
+                    </div>
+                  )}
                   <Link href={`/person/${selectedPerson._id}`} className="block">
                     <Button variant="outline" className="w-full">{tp("viewProfile")}</Button>
                   </Link>

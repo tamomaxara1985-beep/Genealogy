@@ -98,7 +98,17 @@
     "expandAll": "ყველას გაშლა",
     "people": "ადამიანი",
     "treeLiving": "ცოცხალი",
-    "treeDeceased": "გარდაცვლილი"
+    "treeDeceased": "გარდაცვლილი",
+    "myTrees": "My Trees",
+    "sharedWithMe": "Shared with me",
+    "viewOnly": "View-only",
+    "share": "Share",
+    "shareTitle": "Share this tree (view-only)",
+    "grantAccess": "Grant access",
+    "revoke": "Revoke",
+    "sharedWithNobody": "Not shared with anyone yet.",
+    "emailPlaceholder": "name@example.com",
+    "viewOnlyBadge": "View-only"
   },
   "common": {
     "save": "შენახვა",
