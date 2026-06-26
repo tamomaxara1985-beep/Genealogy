@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Person from "@/lib/models/Person";
 import Tree from "@/lib/models/Tree";
+import { resolvePersonAccess } from "@/lib/treeAccess";
 
 type Params = { params: Promise<{ personId: string }> };
 
@@ -20,9 +21,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { personId } = await params;
-  await connectDB();
-  const person = await authorizePersonAccess(personId, session.user.id);
-  if (!person)
+  const { person, role } = await resolvePersonAccess(personId, session);
+  if (!person || !role)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(person);
 }
