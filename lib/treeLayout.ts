@@ -12,12 +12,12 @@ type MinimalEdge = { source: string; target: string; targetHandle?: string };
 
 // Logical left-to-right order of parent handle slots
 const HANDLE_ORDER: Record<string, number> = {
-  "person1-father": 0,
-  "father": 0,
-  "person1-mother": 1,
-  "mother": 1,
-  "person2-father": 2,
-  "person2-mother": 3,
+  "person1-mother": 0,
+  "mother": 0,
+  "person1-father": 1,
+  "father": 1,
+  "person2-mother": 2,
+  "person2-father": 3,
 };
 
 export function applyDagreLayout<T extends MinimalNode>(
@@ -89,9 +89,9 @@ export function applyDagreLayout<T extends MinimalNode>(
     });
   });
 
-  // Enforce father-left / mother-right ordering without moving nodes.
+  // Enforce mother-left / father-right ordering without moving nodes.
   // For each child, collect its parents grouped by handle, sort them by
-  // logical order (person1-father < person1-mother < person2-father < person2-mother),
+  // logical order (person1-mother < person1-father < person2-mother < person2-father),
   // then reassign their current X positions in ascending order to that sequence.
   // Dagre's spacing is preserved — only ordering is corrected.
   const parentsByTarget = new Map<string, Array<{ source: string; order: number }>>();
