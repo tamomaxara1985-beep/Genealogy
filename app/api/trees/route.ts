@@ -9,10 +9,19 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const trees = await Tree.find({ ownerId: session.user.id }).sort({
+  const owned = await Tree.find({ ownerId: session.user.id }).sort({
     updatedAt: -1,
   });
-  return NextResponse.json(trees);
+
+  const email = session.user.email?.toLowerCase();
+  const shared = email
+    ? await Tree.find({
+        sharedEmails: email,
+        ownerId: { $ne: session.user.id },
+      }).sort({ updatedAt: -1 })
+    : [];
+
+  return NextResponse.json({ owned, shared });
 }
 
 export async function POST(req: NextRequest) {
