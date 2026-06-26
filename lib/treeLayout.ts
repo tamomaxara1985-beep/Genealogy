@@ -116,6 +116,35 @@ export function applyDagreLayout<T extends MinimalNode>(
     });
   });
 
+  // Final pass: resolve horizontal overlaps within each rank.
+  // The sibling-centering and parent-ordering passes above override dagre's
+  // collision-free spacing, so nodes of differing widths (person 168 / couple
+  // 380 / poly 600) can end up stacked. Group nodes by rank (rounded Y), sort
+  // by X, and push any node right until it clears its left neighbour by NODESEP.
+  // Order is preserved, so father-right / mother-left ordering is untouched.
+  const widthOf = (id: string) => {
+    const t = nodeById.get(id)?.type;
+    return t === "polyCoupleNode" ? POLY_COUPLE_W : t === "coupleNode" ? COUPLE_W : PERSON_W;
+  };
+  const byRank = new Map<number, string[]>();
+  centerPos.forEach((pos, id) => {
+    const key = Math.round(pos.y);
+    const arr = byRank.get(key) ?? [];
+    arr.push(id);
+    byRank.set(key, arr);
+  });
+  byRank.forEach((ids) => {
+    ids.sort((a, b) => (centerPos.get(a)!.x) - (centerPos.get(b)!.x));
+    for (let i = 1; i < ids.length; i++) {
+      const prev = centerPos.get(ids[i - 1])!;
+      const cur = centerPos.get(ids[i])!;
+      const minGap = widthOf(ids[i - 1]) / 2 + widthOf(ids[i]) / 2 + NODESEP;
+      if (cur.x - prev.x < minGap) {
+        centerPos.set(ids[i], { x: prev.x + minGap, y: cur.y });
+      }
+    }
+  });
+
   // Convert center positions to top-left for React Flow
   return nodes.map((n) => {
     const pos = centerPos.get(n.id);
