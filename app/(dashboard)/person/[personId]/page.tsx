@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/person/EventForm";
-import type { IPerson, IEvent, IRelationship } from "@/types";
+import type { IPerson, IEvent, IRelationship, ITree } from "@/types";
 import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -65,6 +65,11 @@ export default function PersonProfilePage({
     person ? `/api/trees/${person.treeId}/relationships` : null,
     fetcher
   );
+  const { data: treeMeta } = useSWR<ITree>(
+    person ? `/api/trees/${person.treeId}` : null,
+    fetcher
+  );
+  const isOwner = treeMeta?.role === "owner";
 
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -205,9 +210,11 @@ export default function PersonProfilePage({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Relationships</CardTitle>
-          <Button size="sm" onClick={() => { setLinkOpen(true); setLinkPersonId(""); }}>
-            Link person
-          </Button>
+          {isOwner && (
+            <Button size="sm" onClick={() => { setLinkOpen(true); setLinkPersonId(""); }}>
+              Link person
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {!hasRelationships && (
@@ -225,12 +232,14 @@ export default function PersonProfilePage({
                 {parents.map((r) => (
                   <div key={r._id} className="flex items-center justify-between">
                     <PersonLink id={r.person1Id} />
-                    <button
-                      className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
-                      onClick={() => handleUnlink(r._id)}
-                    >
-                      unlink
-                    </button>
+                    {isOwner && (
+                      <button
+                        className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
+                        onClick={() => handleUnlink(r._id)}
+                      >
+                        unlink
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -256,23 +265,25 @@ export default function PersonProfilePage({
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-1 shrink-0">
-                        <button
-                          className="text-[11px] text-gray-400 hover:text-amber-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300 transition-colors"
-                          onClick={() => {
-                            setDivorceRelId(r._id);
-                            setDivorceDate(r.endDate ?? "");
-                          }}
-                        >
-                          {isDivorced ? "edit divorce" : "÷ divorce"}
-                        </button>
-                        <button
-                          className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
-                          onClick={() => handleUnlink(r._id)}
-                        >
-                          unlink
-                        </button>
-                      </div>
+                      {isOwner && (
+                        <div className="flex gap-1 shrink-0">
+                          <button
+                            className="text-[11px] text-gray-400 hover:text-amber-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300 transition-colors"
+                            onClick={() => {
+                              setDivorceRelId(r._id);
+                              setDivorceDate(r.endDate ?? "");
+                            }}
+                          >
+                            {isDivorced ? "edit divorce" : "÷ divorce"}
+                          </button>
+                          <button
+                            className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
+                            onClick={() => handleUnlink(r._id)}
+                          >
+                            unlink
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -289,12 +300,14 @@ export default function PersonProfilePage({
                 {children.map((r) => (
                   <div key={r._id} className="flex items-center justify-between">
                     <PersonLink id={r.person2Id} />
-                    <button
-                      className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
-                      onClick={() => handleUnlink(r._id)}
-                    >
-                      unlink
-                    </button>
+                    {isOwner && (
+                      <button
+                        className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
+                        onClick={() => handleUnlink(r._id)}
+                      >
+                        unlink
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -307,7 +320,7 @@ export default function PersonProfilePage({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{tp("lifeEvents")}</CardTitle>
-          <Button size="sm" onClick={() => setAddEventOpen(true)}>{tp("addEvent")}</Button>
+          {isOwner && <Button size="sm" onClick={() => setAddEventOpen(true)}>{tp("addEvent")}</Button>}
         </CardHeader>
         <CardContent>
           {events.length === 0 ? (
