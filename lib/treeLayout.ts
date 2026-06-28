@@ -6,31 +6,31 @@ const POLY_COUPLE_W = 600;
 const NODE_H = 90;
 const NODESEP = 160;
 const RANKSEP = 220;
-const SIDE_GAP = 200; // clearance between the root couple center and each lineage block
-
-type LayoutHintsInput = {
-  rootCenterNodeId: string | null;
-  rightAncestorNodeIds: Set<string>;
-  leftAncestorNodeIds: Set<string>;
-};
+const GAP = NODESEP; // horizontal gap between adjacent ancestor subtrees
 
 type MinimalNode = { id: string; type?: string };
 type MinimalEdge = { source: string; target: string; targetHandle?: string };
 
-// Logical left-to-right order of parent handle slots
-const HANDLE_ORDER: Record<string, number> = {
-  "person1-mother": 0,
-  "mother": 0,
-  "person1-father": 1,
-  "father": 1,
-  "person2-mother": 2,
-  "person2-father": 3,
-};
+function widthOfType(type?: string): number {
+  return type === "polyCoupleNode" ? POLY_COUPLE_W : type === "coupleNode" ? COUPLE_W : PERSON_W;
+}
 
+/**
+ * Layout strategy:
+ *  - dagre lays out the whole graph → we keep its Y (generation rows) for every
+ *    node, and its X only as a fallback for nodes the fan never reaches.
+ *  - For the ancestor structure we override X with a per-couple pedigree fan:
+ *    each couple's husband-side parent subtree goes to the right and the
+ *    wife-side parent subtree to the left, recursively, with horizontal width
+ *    allocated per subtree so nothing overlaps.
+ *
+ * Edges run parent→child (source = ancestor, target = descendant). For a couple
+ * child the targetHandle starts with "person1" (wife / left card) or "person2"
+ * (husband / right card).
+ */
 export function applyDagreLayout<T extends MinimalNode>(
   nodes: T[],
-  edges: MinimalEdge[],
-  layoutHints?: LayoutHintsInput
+  edges: MinimalEdge[]
 ): T[] {
   if (nodes.length === 0) return nodes;
 
@@ -39,144 +39,94 @@ export function applyDagreLayout<T extends MinimalNode>(
   g.setGraph({ rankdir: "TB", ranksep: RANKSEP, nodesep: NODESEP, marginx: 100, marginy: 100 });
 
   nodes.forEach((n) => {
-    g.setNode(n.id, {
-      width: n.type === "polyCoupleNode" ? POLY_COUPLE_W : n.type === "coupleNode" ? COUPLE_W : PERSON_W,
-      height: NODE_H,
-    });
+    g.setNode(n.id, { width: widthOfType(n.type), height: NODE_H });
   });
-
   edges.forEach((e) => g.setEdge(e.source, e.target));
 
   dagre.layout(g);
 
-  // Capture dagre center positions
+  // dagre center positions: authoritative Y (generation rows) + fallback X
   const centerPos = new Map<string, { x: number; y: number }>();
   nodes.forEach((n) => {
     const pos = g.node(n.id);
     if (pos?.x != null) centerPos.set(n.id, { x: pos.x, y: pos.y });
   });
 
-  // Build id→node map for O(1) width lookup
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  const widthOf = (id: string) => widthOfType(nodeById.get(id)?.type);
 
-  // Build parent → children map for sibling repositioning
-  const childrenMap = new Map<string, string[]>();
+  // Resolve each child node's parents, split by side.
+  // wife = person1 / left card, husband = person2 / right card,
+  // single = a lone person's parent group (no husband/wife split).
+  type Parents = { wife?: string; husband?: string; single?: string };
+  const parentsOf = new Map<string, Parents>();
+  const hasChildren = new Set<string>(); // nodes that are a parent of someone
   edges.forEach((e) => {
-    const kids = childrenMap.get(e.source) ?? [];
-    kids.push(e.target);
-    childrenMap.set(e.source, kids);
+    hasChildren.add(e.source);
+    const entry = parentsOf.get(e.target) ?? {};
+    const th = e.targetHandle ?? "";
+    if (th.startsWith("person1")) entry.wife = e.source;
+    else if (th.startsWith("person2")) entry.husband = e.source;
+    else entry.single = e.source; // "mother"/"father" (person child) or poly handles
+    parentsOf.set(e.target, entry);
   });
 
-  // Reposition siblings top-down so siblings are evenly spaced under their parent.
-  // Process ancestors first (smaller Y) so grandparent positions are finalized
-  // before grandchildren are centered.
-  const sortedParents = [...childrenMap.entries()].sort(
-    ([a], [b]) => (centerPos.get(a)?.y ?? 0) - (centerPos.get(b)?.y ?? 0)
-  );
-
-  sortedParents.forEach(([parentId, childIds]) => {
-    if (childIds.length < 2) return;
-    const parentPos = centerPos.get(parentId);
-    if (!parentPos) return;
-
-    childIds.sort((a, b) => (centerPos.get(a)?.x ?? 0) - (centerPos.get(b)?.x ?? 0));
-
-    const widths = childIds.map((id) => {
-      const t = nodeById.get(id)?.type;
-      return t === "polyCoupleNode" ? POLY_COUPLE_W : t === "coupleNode" ? COUPLE_W : PERSON_W;
-    });
-
-    const totalWidth =
-      widths.reduce((sum, w) => sum + w, 0) + NODESEP * (childIds.length - 1);
-    let x = parentPos.x - totalWidth / 2;
-
-    childIds.forEach((id, i) => {
-      const cur = centerPos.get(id);
-      if (cur) centerPos.set(id, { x: x + widths[i] / 2, y: cur.y });
-      x += widths[i] + NODESEP;
-    });
-  });
-
-  // Enforce mother-left / father-right ordering without moving nodes.
-  // For each child, collect its parents grouped by handle, sort them by
-  // logical order (person1-mother < person1-father < person2-mother < person2-father),
-  // then reassign their current X positions in ascending order to that sequence.
-  // Dagre's spacing is preserved — only ordering is corrected.
-  const parentsByTarget = new Map<string, Array<{ source: string; order: number }>>();
-  edges.forEach((e) => {
-    if (!e.targetHandle || HANDLE_ORDER[e.targetHandle] === undefined) return;
-    const list = parentsByTarget.get(e.target) ?? [];
-    list.push({ source: e.source, order: HANDLE_ORDER[e.targetHandle] });
-    parentsByTarget.set(e.target, list);
-  });
-
-  parentsByTarget.forEach((parents) => {
-    if (parents.length < 2) return;
-    parents.sort((a, b) => a.order - b.order);
-    const xs = parents
-      .map((p) => centerPos.get(p.source)?.x)
-      .filter((x): x is number => x !== undefined);
-    if (xs.length !== parents.length) return;
-    const sortedXs = [...xs].sort((a, b) => a - b);
-    parents.forEach((p, i) => {
-      const cur = centerPos.get(p.source);
-      if (cur) centerPos.set(p.source, { x: sortedXs[i], y: cur.y });
-    });
-  });
-
-  // Root-couple ancestor split: shift the male-side ancestor block right of the
-  // couple center and the female-side block left. Uniform per-side delta keeps
-  // each block's internal arrangement and all Y ranks intact.
-  if (layoutHints?.rootCenterNodeId) {
-    const centerPosRoot = centerPos.get(layoutHints.rootCenterNodeId);
-    if (centerPosRoot) {
-      const centerX = centerPosRoot.x;
-      const widthOf = (id: string) => {
-        const t = nodeById.get(id)?.type;
-        return t === "polyCoupleNode" ? POLY_COUPLE_W : t === "coupleNode" ? COUPLE_W : PERSON_W;
-      };
-
-      // Right block: push so its leftmost edge clears centerX + SIDE_GAP.
-      const rightIds = [...layoutHints.rightAncestorNodeIds].filter((id) => centerPos.has(id));
-      if (rightIds.length) {
-        let minLeftEdge = Infinity;
-        rightIds.forEach((id) => {
-          const x = centerPos.get(id)!.x;
-          minLeftEdge = Math.min(minLeftEdge, x - widthOf(id) / 2);
-        });
-        const delta = Math.max(0, centerX + SIDE_GAP - minLeftEdge);
-        if (delta > 0) {
-          rightIds.forEach((id) => {
-            const cur = centerPos.get(id)!;
-            centerPos.set(id, { x: cur.x + delta, y: cur.y });
-          });
-        }
-      }
-
-      // Left block: push so its rightmost edge clears centerX - SIDE_GAP.
-      const leftIds = [...layoutHints.leftAncestorNodeIds].filter((id) => centerPos.has(id));
-      if (leftIds.length) {
-        let maxRightEdge = -Infinity;
-        leftIds.forEach((id) => {
-          const x = centerPos.get(id)!.x;
-          maxRightEdge = Math.max(maxRightEdge, x + widthOf(id) / 2);
-        });
-        const delta = Math.min(0, centerX - SIDE_GAP - maxRightEdge);
-        if (delta < 0) {
-          leftIds.forEach((id) => {
-            const cur = centerPos.get(id)!;
-            centerPos.set(id, { x: cur.x + delta, y: cur.y });
-          });
-        }
-      }
-    }
+  // Memoized horizontal extent of a node plus its entire ancestor fan.
+  const widthMemo = new Map<string, number>();
+  const widthVisiting = new Set<string>();
+  function subtreeWidth(id: string): number {
+    const cached = widthMemo.get(id);
+    if (cached != null) return cached;
+    if (widthVisiting.has(id)) return widthOf(id); // cycle / shared-ancestor guard
+    widthVisiting.add(id);
+    const p = parentsOf.get(id);
+    const left = p?.wife ? subtreeWidth(p.wife) : 0;
+    const right = p?.husband ? subtreeWidth(p.husband) : 0;
+    const single = p?.single ? subtreeWidth(p.single) : 0;
+    let w = widthOf(id);
+    if (p?.wife || p?.husband) w = Math.max(w, left + GAP + right);
+    if (p?.single) w = Math.max(w, single);
+    widthVisiting.delete(id);
+    widthMemo.set(id, w);
+    return w;
   }
 
-  // Convert center positions to top-left for React Flow
+  // Recursively place a node and its ancestor fan. X only; Y stays dagre's.
+  const fanX = new Map<string, number>();
+  function placeFan(id: string, centerX: number, visited: Set<string>) {
+    if (visited.has(id)) return; // shared ancestor: place once (first path wins)
+    visited.add(id);
+    fanX.set(id, centerX);
+    const p = parentsOf.get(id);
+    if (p?.wife) placeFan(p.wife, centerX - GAP / 2 - subtreeWidth(p.wife) / 2, visited);
+    if (p?.husband) placeFan(p.husband, centerX + GAP / 2 + subtreeWidth(p.husband) / 2, visited);
+    if (p?.single) placeFan(p.single, centerX, visited); // lone person's parents: centered above
+  }
+
+  // Anchors = youngest nodes (never a parent). Fan upward from each, ordered by
+  // dagre X, shifting right when a fan would overlap the previous one.
+  const anchors = nodes
+    .map((n) => n.id)
+    .filter((id) => !hasChildren.has(id) && centerPos.has(id))
+    .sort((a, b) => centerPos.get(a)!.x - centerPos.get(b)!.x);
+
+  const visited = new Set<string>();
+  let cursor = -Infinity; // right edge of the previously placed fan
+  for (const anchorId of anchors) {
+    const half = subtreeWidth(anchorId) / 2;
+    let cx = centerPos.get(anchorId)!.x;
+    if (cx - half < cursor) cx = cursor + half; // clear the previous fan
+    placeFan(anchorId, cx, visited);
+    cursor = cx + half + GAP;
+  }
+
+  // Convert to top-left for React Flow. Fan-visited nodes use fanX; the rest keep
+  // dagre X. Y is always dagre's.
   return nodes.map((n) => {
     const pos = centerPos.get(n.id);
-    const w = n.type === "polyCoupleNode" ? POLY_COUPLE_W : n.type === "coupleNode" ? COUPLE_W : PERSON_W;
+    const w = widthOf(n.id);
     if (!pos) return { ...n, position: { x: 0, y: 0 } };
-    return { ...n, position: { x: pos.x - w / 2, y: pos.y - NODE_H / 2 } };
+    const cx = fanX.get(n.id) ?? pos.x;
+    return { ...n, position: { x: cx - w / 2, y: pos.y - NODE_H / 2 } };
   });
 }

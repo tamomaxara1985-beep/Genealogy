@@ -2,15 +2,8 @@ import type { IPerson, IRelationship, RelativeRole, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
 import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
-import { partitionRootAncestors } from "@/lib/treeAncestry";
 
 type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
-
-export type LayoutHints = {
-  rootCenterNodeId: string | null;
-  rightAncestorNodeIds: Set<string>;
-  leftAncestorNodeIds: Set<string>;
-};
 
 interface Callbacks {
   onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
@@ -28,7 +21,7 @@ export function buildTreeData(
   relationships: IRelationship[],
   callbacks: Callbacks,
   highlighted: Set<string>
-): { nodes: AnyNode[]; edges: TreeEdge[]; layoutHints: LayoutHints } {
+): { nodes: AnyNode[]; edges: TreeEdge[] } {
   const hasFilter = highlighted.size > 0;
 
   const hasRootBadge = (callbacks.rootSiblingCount ?? 0) > 0;
@@ -295,19 +288,5 @@ export function buildTreeData(
 
   const nodes: AnyNode[] = [...coupleNodes, ...polyCoupleNodes, ...personNodes];
 
-  const nodeIdOf = (personId: string) =>
-    couplesByPerson.get(personId)?.[0] ?? personId;
-
-  const { rightPersonIds, leftPersonIds } = partitionRootAncestors(
-    callbacks.rootPersonId ?? null,
-    persons,
-    relationships
-  );
-  const layoutHints: LayoutHints = {
-    rootCenterNodeId: callbacks.rootPersonId ? nodeIdOf(callbacks.rootPersonId) : null,
-    rightAncestorNodeIds: new Set([...rightPersonIds].map(nodeIdOf)),
-    leftAncestorNodeIds: new Set([...leftPersonIds].map(nodeIdOf)),
-  };
-
-  return { nodes, edges, layoutHints };
+  return { nodes, edges };
 }
