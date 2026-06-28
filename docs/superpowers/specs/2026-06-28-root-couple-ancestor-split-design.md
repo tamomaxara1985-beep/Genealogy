@@ -114,7 +114,14 @@ rootPersonId + persons + relationships
 - **Root has no parents and no spouse** → both sets empty → layout unchanged.
 - **Root single with one parent** → only that parent's side populated; other side
   empty (no shift).
-- **Same-gender couple** → card-position fallback.
+- **Single root with an `other`/`unknown`-gender parent** → that parent's lineage
+  is assigned to neither side and stays centered (no shift). The single-root split
+  is strictly male→right / female→left; there is no fallback for non-binary parent
+  gender. Degrades gracefully (centered, no crash).
+- **Same-gender / unknown-gender couple** → deterministic fallback: the **spouse**
+  is treated as the right seed and the **root person** as the left seed. This is a
+  fixed root-vs-spouse rule; the helper does **not** read the rendered card slot,
+  so the visual side may not correspond to card position for same-gender couples.
 - **Shared ancestor** → excluded from both sides, stays centered.
 - **Collapsed siblings (existing feature)** → ancestors are not hidden by the
   collapse feature, so the partition still sees them; the two features compose.
@@ -123,7 +130,11 @@ rootPersonId + persons + relationships
 
 - Uniform per-side block shift does not run a global de-overlap; very deep
   lineages or unrelated nodes on the same row can still crowd.
-- Same-gender couples use card position, not gender.
+- Same-gender / unknown-gender couples use a deterministic spouse-right / root-left
+  rule, not gender and not rendered card position — the visual side may not match
+  the card slot for these couples.
+- `other`/`unknown`-gender parents of a single (spouse-less) root are left centered
+  (no side assignment).
 - Shared ancestors are left centered rather than assigned to a side.
 - Root couple only — other couples are unaffected.
 
