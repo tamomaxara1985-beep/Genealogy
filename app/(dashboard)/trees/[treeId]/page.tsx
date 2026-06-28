@@ -24,7 +24,8 @@ import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { buildTreeData } from "@/lib/buildTreeData";
-import { getAncestors } from "@/lib/treeCollapse";
+import { getAncestors, getSiblings, getDescendants } from "@/lib/treeCollapse";
+import { getRootPersonId } from "@/lib/treeRoot";
 import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
@@ -172,6 +173,7 @@ export default function TreePage({
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
   const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(new Set());
+  const [rootSiblingsExpanded, setRootSiblingsExpanded] = useState(false);
 
   // Share dialog
   const [shareOpen, setShareOpen] = useState(false);
@@ -194,6 +196,21 @@ export default function TreePage({
       JSON.stringify([...collapsedPersonIds])
     );
   }, [collapsedPersonIds, treeId]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`tree-root-siblings-${treeId}`);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (stored) setRootSiblingsExpanded(JSON.parse(stored) === true);
+    } catch {}
+  }, [treeId]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      `tree-root-siblings-${treeId}`,
+      JSON.stringify(rootSiblingsExpanded)
+    );
+  }, [rootSiblingsExpanded, treeId]);
 
   const handleAddRelative = useCallback((personId: string, role: RelativeRole, personId2?: string) => {
     setPendingFromId(personId);
@@ -234,6 +251,17 @@ export default function TreePage({
     setCollapsedPersonIds(new Set());
   }, []);
 
+  const rootId = useMemo(() => getRootPersonId(persons), [persons]);
+
+  const rootSiblingIds = useMemo(
+    () => (rootId ? getSiblings(rootId, relationships) : new Set<string>()),
+    [rootId, relationships]
+  );
+
+  const toggleRootSiblings = useCallback(() => {
+    setRootSiblingsExpanded((v) => !v);
+  }, []);
+
   async function submitShare(e: React.FormEvent) {
     e.preventDefault();
     setShareError(null);
@@ -267,8 +295,14 @@ export default function TreePage({
     collapsedPersonIds.forEach((id) => {
       getAncestors(id, relationships).forEach((aid) => hidden.add(aid));
     });
+    if (!rootSiblingsExpanded) {
+      rootSiblingIds.forEach((sibId) => {
+        hidden.add(sibId);
+        getDescendants(sibId, relationships).forEach((d) => hidden.add(d));
+      });
+    }
     return hidden;
-  }, [collapsedPersonIds, relationships]);
+  }, [collapsedPersonIds, relationships, rootSiblingsExpanded, rootSiblingIds]);
 
   async function submitNewPerson(data: Partial<IPerson>) {
     setSaving(true);
@@ -474,6 +508,10 @@ export default function TreePage({
       onSelect: handleSelect,
       onToggleCollapse: toggleCollapse,
       collapsedPersonIds,
+      rootPersonId: rootId,
+      rootSiblingCount: rootSiblingIds.size,
+      rootSiblingsExpanded,
+      onToggleRootSiblings: toggleRootSiblings,
     },
     highlighted
   );

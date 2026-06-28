@@ -10,6 +10,10 @@ interface Callbacks {
   onSelect: (person: IPerson) => void;
   onToggleCollapse?: (personId: string) => void;
   collapsedPersonIds?: Set<string>;
+  rootPersonId?: string | null;
+  rootSiblingCount?: number;
+  rootSiblingsExpanded?: boolean;
+  onToggleRootSiblings?: () => void;
 }
 
 export function buildTreeData(
@@ -19,6 +23,10 @@ export function buildTreeData(
   highlighted: Set<string>
 ): { nodes: AnyNode[]; edges: TreeEdge[] } {
   const hasFilter = highlighted.size > 0;
+
+  const hasRootBadge = (callbacks.rootSiblingCount ?? 0) > 0;
+  const isRootPerson = (id: string) =>
+    hasRootBadge && callbacks.rootPersonId === id;
 
   const spouseRels = relationships.filter((r) => r.type === "spouse");
   const parentChildRels = relationships.filter((r) => r.type === "parent-child");
@@ -169,6 +177,13 @@ export function buildTreeData(
           onToggleCollapse: callbacks.onToggleCollapse,
           isCollapsed1: callbacks.collapsedPersonIds?.has(p1._id) ?? false,
           isCollapsed2: callbacks.collapsedPersonIds?.has(p2._id) ?? false,
+          rootSlot: isRootPerson(p1._id) ? 1 : isRootPerson(p2._id) ? 2 : undefined,
+          rootSiblingCount:
+            isRootPerson(p1._id) || isRootPerson(p2._id)
+              ? callbacks.rootSiblingCount
+              : undefined,
+          rootSiblingsExpanded: callbacks.rootSiblingsExpanded,
+          onToggleRootSiblings: callbacks.onToggleRootSiblings,
         },
       } as CoupleNodeType);
     });
@@ -189,6 +204,10 @@ export function buildTreeData(
           onSelect: callbacks.onSelect,
           onToggleCollapse: callbacks.onToggleCollapse,
           isCollapsed: callbacks.collapsedPersonIds?.has(p._id) ?? false,
+          isRoot: isRootPerson(p._id),
+          rootSiblingCount: isRootPerson(p._id) ? callbacks.rootSiblingCount : undefined,
+          rootSiblingsExpanded: isRootPerson(p._id) ? callbacks.rootSiblingsExpanded : undefined,
+          onToggleRootSiblings: isRootPerson(p._id) ? callbacks.onToggleRootSiblings : undefined,
         },
       } as PersonNodeType;
     });
