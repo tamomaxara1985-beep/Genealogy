@@ -17,6 +17,7 @@ import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
 import type { TreeEdge } from "@/types";
+import type { LayoutHints } from "@/lib/buildTreeData";
 
 const nodeTypes = {
   personNode: PersonNode,
@@ -29,18 +30,23 @@ type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
 interface Props {
   nodes: AnyNode[];
   edges: TreeEdge[];
+  layoutHints?: LayoutHints;
 }
 
-export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
+export function FamilyTree({ nodes: rawNodes, edges: rawEdges, layoutHints }: Props) {
   // Derive stable ID keys so useMemo deps are simple expressions
   const nodeIds = rawNodes.map((n) => n.id).join(",");
   const edgeIds = rawEdges.map((e) => e.id).join(",");
+  const hintsKey =
+    `${layoutHints?.rootCenterNodeId ?? ""}|` +
+    `${[...(layoutHints?.rightAncestorNodeIds ?? [])].sort().join(",")}|` +
+    `${[...(layoutHints?.leftAncestorNodeIds ?? [])].sort().join(",")}`;
 
   const layoutNodes = useMemo(
-    () => applyDagreLayout(rawNodes, rawEdges),
-    // Re-layout only when node/edge IDs change
+    () => applyDagreLayout(rawNodes, rawEdges, layoutHints),
+    // Re-layout only when node/edge IDs or layout hints change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodeIds, edgeIds]
+    [nodeIds, edgeIds, hintsKey]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
