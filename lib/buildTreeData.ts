@@ -131,6 +131,19 @@ export function buildTreeData(
         divorceDate2: rel2.endDate,
         onAddRelative: callbacks.onAddRelative,
         onSelect: callbacks.onSelect,
+        rootSlot: isRootPerson(sp1Id)
+          ? "left"
+          : isRootPerson(sharedId)
+          ? "shared"
+          : isRootPerson(sp2Id)
+          ? "right"
+          : undefined,
+        rootSiblingCount:
+          isRootPerson(sp1Id) || isRootPerson(sharedId) || isRootPerson(sp2Id)
+            ? callbacks.rootSiblingCount
+            : undefined,
+        rootSiblingsExpanded: callbacks.rootSiblingsExpanded,
+        onToggleRootSiblings: callbacks.onToggleRootSiblings,
       },
     } as PolyCoupleNodeType);
   }
