@@ -500,7 +500,7 @@ export default function TreePage({
     (r) => !hiddenIds.has(r.person1Id) && !hiddenIds.has(r.person2Id)
   );
 
-  const { nodes, edges, layoutHints } = buildTreeData(
+  const { nodes, edges } = buildTreeData(
     visiblePersons,
     visibleRelationships,
     {
@@ -551,7 +551,7 @@ export default function TreePage({
           </div>
         </div>
       ) : (
-        <FamilyTree nodes={nodes} edges={edges} layoutHints={layoutHints} />
+        <FamilyTree nodes={nodes} edges={edges} />
       )}
 
       {/* Add / Add-relative dialog */}
