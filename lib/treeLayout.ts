@@ -6,6 +6,13 @@ const POLY_COUPLE_W = 600;
 const NODE_H = 90;
 const NODESEP = 160;
 const RANKSEP = 220;
+const SIDE_GAP = 200; // clearance between the root couple center and each lineage block
+
+type LayoutHintsInput = {
+  rootCenterNodeId: string | null;
+  rightAncestorNodeIds: Set<string>;
+  leftAncestorNodeIds: Set<string>;
+};
 
 type MinimalNode = { id: string; type?: string };
 type MinimalEdge = { source: string; target: string; targetHandle?: string };
@@ -22,7 +29,8 @@ const HANDLE_ORDER: Record<string, number> = {
 
 export function applyDagreLayout<T extends MinimalNode>(
   nodes: T[],
-  edges: MinimalEdge[]
+  edges: MinimalEdge[],
+  layoutHints?: LayoutHintsInput
 ): T[] {
   if (nodes.length === 0) return nodes;
 
@@ -115,6 +123,54 @@ export function applyDagreLayout<T extends MinimalNode>(
       if (cur) centerPos.set(p.source, { x: sortedXs[i], y: cur.y });
     });
   });
+
+  // Root-couple ancestor split: shift the male-side ancestor block right of the
+  // couple center and the female-side block left. Uniform per-side delta keeps
+  // each block's internal arrangement and all Y ranks intact.
+  if (layoutHints?.rootCenterNodeId) {
+    const centerPosRoot = centerPos.get(layoutHints.rootCenterNodeId);
+    if (centerPosRoot) {
+      const centerX = centerPosRoot.x;
+      const widthOf = (id: string) => {
+        const t = nodeById.get(id)?.type;
+        return t === "polyCoupleNode" ? POLY_COUPLE_W : t === "coupleNode" ? COUPLE_W : PERSON_W;
+      };
+
+      // Right block: push so its leftmost edge clears centerX + SIDE_GAP.
+      const rightIds = [...layoutHints.rightAncestorNodeIds].filter((id) => centerPos.has(id));
+      if (rightIds.length) {
+        let minLeftEdge = Infinity;
+        rightIds.forEach((id) => {
+          const x = centerPos.get(id)!.x;
+          minLeftEdge = Math.min(minLeftEdge, x - widthOf(id) / 2);
+        });
+        const delta = Math.max(0, centerX + SIDE_GAP - minLeftEdge);
+        if (delta > 0) {
+          rightIds.forEach((id) => {
+            const cur = centerPos.get(id)!;
+            centerPos.set(id, { x: cur.x + delta, y: cur.y });
+          });
+        }
+      }
+
+      // Left block: push so its rightmost edge clears centerX - SIDE_GAP.
+      const leftIds = [...layoutHints.leftAncestorNodeIds].filter((id) => centerPos.has(id));
+      if (leftIds.length) {
+        let maxRightEdge = -Infinity;
+        leftIds.forEach((id) => {
+          const x = centerPos.get(id)!.x;
+          maxRightEdge = Math.max(maxRightEdge, x + widthOf(id) / 2);
+        });
+        const delta = Math.min(0, centerX - SIDE_GAP - maxRightEdge);
+        if (delta < 0) {
+          leftIds.forEach((id) => {
+            const cur = centerPos.get(id)!;
+            centerPos.set(id, { x: cur.x + delta, y: cur.y });
+          });
+        }
+      }
+    }
+  }
 
   // Convert center positions to top-left for React Flow
   return nodes.map((n) => {

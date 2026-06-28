@@ -2,14 +2,25 @@ import type { IPerson, IRelationship, RelativeRole, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
 import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
+import { partitionRootAncestors } from "@/lib/treeAncestry";
 
 type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
+
+export type LayoutHints = {
+  rootCenterNodeId: string | null;
+  rightAncestorNodeIds: Set<string>;
+  leftAncestorNodeIds: Set<string>;
+};
 
 interface Callbacks {
   onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
   onSelect: (person: IPerson) => void;
   onToggleCollapse?: (personId: string) => void;
   collapsedPersonIds?: Set<string>;
+  rootPersonId?: string | null;
+  rootSiblingCount?: number;
+  rootSiblingsExpanded?: boolean;
+  onToggleRootSiblings?: () => void;
 }
 
 export function buildTreeData(
@@ -17,8 +28,12 @@ export function buildTreeData(
   relationships: IRelationship[],
   callbacks: Callbacks,
   highlighted: Set<string>
-): { nodes: AnyNode[]; edges: TreeEdge[] } {
+): { nodes: AnyNode[]; edges: TreeEdge[]; layoutHints: LayoutHints } {
   const hasFilter = highlighted.size > 0;
+
+  const hasRootBadge = (callbacks.rootSiblingCount ?? 0) > 0;
+  const isRootPerson = (id: string) =>
+    hasRootBadge && callbacks.rootPersonId === id;
 
   const spouseRels = relationships.filter((r) => r.type === "spouse");
   const parentChildRels = relationships.filter((r) => r.type === "parent-child");
@@ -123,6 +138,19 @@ export function buildTreeData(
         divorceDate2: rel2.endDate,
         onAddRelative: callbacks.onAddRelative,
         onSelect: callbacks.onSelect,
+        rootSlot: isRootPerson(sp1Id)
+          ? "left"
+          : isRootPerson(sharedId)
+          ? "shared"
+          : isRootPerson(sp2Id)
+          ? "right"
+          : undefined,
+        rootSiblingCount:
+          isRootPerson(sp1Id) || isRootPerson(sharedId) || isRootPerson(sp2Id)
+            ? callbacks.rootSiblingCount
+            : undefined,
+        rootSiblingsExpanded: callbacks.rootSiblingsExpanded,
+        onToggleRootSiblings: callbacks.onToggleRootSiblings,
       },
     } as PolyCoupleNodeType);
   }
@@ -169,6 +197,13 @@ export function buildTreeData(
           onToggleCollapse: callbacks.onToggleCollapse,
           isCollapsed1: callbacks.collapsedPersonIds?.has(p1._id) ?? false,
           isCollapsed2: callbacks.collapsedPersonIds?.has(p2._id) ?? false,
+          rootSlot: isRootPerson(p1._id) ? 1 : isRootPerson(p2._id) ? 2 : undefined,
+          rootSiblingCount:
+            isRootPerson(p1._id) || isRootPerson(p2._id)
+              ? callbacks.rootSiblingCount
+              : undefined,
+          rootSiblingsExpanded: callbacks.rootSiblingsExpanded,
+          onToggleRootSiblings: callbacks.onToggleRootSiblings,
         },
       } as CoupleNodeType);
     });
@@ -189,6 +224,10 @@ export function buildTreeData(
           onSelect: callbacks.onSelect,
           onToggleCollapse: callbacks.onToggleCollapse,
           isCollapsed: callbacks.collapsedPersonIds?.has(p._id) ?? false,
+          isRoot: isRootPerson(p._id),
+          rootSiblingCount: isRootPerson(p._id) ? callbacks.rootSiblingCount : undefined,
+          rootSiblingsExpanded: isRootPerson(p._id) ? callbacks.rootSiblingsExpanded : undefined,
+          onToggleRootSiblings: isRootPerson(p._id) ? callbacks.onToggleRootSiblings : undefined,
         },
       } as PersonNodeType;
     });
@@ -255,5 +294,20 @@ export function buildTreeData(
   });
 
   const nodes: AnyNode[] = [...coupleNodes, ...polyCoupleNodes, ...personNodes];
-  return { nodes, edges };
+
+  const nodeIdOf = (personId: string) =>
+    couplesByPerson.get(personId)?.[0] ?? personId;
+
+  const { rightPersonIds, leftPersonIds } = partitionRootAncestors(
+    callbacks.rootPersonId ?? null,
+    persons,
+    relationships
+  );
+  const layoutHints: LayoutHints = {
+    rootCenterNodeId: callbacks.rootPersonId ? nodeIdOf(callbacks.rootPersonId) : null,
+    rightAncestorNodeIds: new Set([...rightPersonIds].map(nodeIdOf)),
+    leftAncestorNodeIds: new Set([...leftPersonIds].map(nodeIdOf)),
+  };
+
+  return { nodes, edges, layoutHints };
 }

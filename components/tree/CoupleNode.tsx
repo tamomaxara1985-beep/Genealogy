@@ -15,6 +15,10 @@ export type CoupleNodeType = Node<
     onToggleCollapse?: (personId: string) => void;
     isCollapsed1?: boolean;
     isCollapsed2?: boolean;
+    rootSlot?: 1 | 2;
+    rootSiblingCount?: number;
+    rootSiblingsExpanded?: boolean;
+    onToggleRootSiblings?: () => void;
   },
   "coupleNode"
 >;
@@ -121,7 +125,7 @@ const CHILD_BUTTONS: { role: RelativeRole; label: string }[] = [
 ];
 
 export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
-  const { person1, person2, onAddRelative, onSelect, isDivorced, divorceDate, onToggleCollapse, isCollapsed1, isCollapsed2 } = data;
+  const { person1, person2, onAddRelative, onSelect, isDivorced, divorceDate, onToggleCollapse, isCollapsed1, isCollapsed2, rootSlot, rootSiblingCount, rootSiblingsExpanded, onToggleRootSiblings } = data;
 
   return (
     <div className="relative">
@@ -221,6 +225,21 @@ export function CoupleNode({ data, selected }: NodeProps<CoupleNodeType>) {
         >
           •••
         </div>
+      )}
+
+      {/* Root siblings toggle — below the root spouse's card (left card center 80px, right card center 300px) */}
+      {rootSlot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
+        <button
+          className="nodrag nopan absolute -bottom-8 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors"
+          style={{ left: rootSlot === 1 ? 56 : 276 }}
+          onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
+          title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
+        >
+          {rootSiblingsExpanded
+            ? <ChevronUp size={11} className="text-gray-500" />
+            : <ChevronDown size={11} className="text-gray-500" />}
+          <span>{rootSiblingCount}</span>
+        </button>
       )}
 
       <div className="flex items-center">

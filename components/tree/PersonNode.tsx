@@ -11,6 +11,10 @@ export type PersonNodeType = Node<
     onSelect?: (person: IPerson) => void;
     onToggleCollapse?: (personId: string) => void;
     isCollapsed?: boolean;
+    isRoot?: boolean;
+    rootSiblingCount?: number;
+    rootSiblingsExpanded?: boolean;
+    onToggleRootSiblings?: () => void;
   },
   "personNode"
 >;
@@ -57,7 +61,7 @@ const genderAvatar: Record<string, string> = {
 };
 
 export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
-  const { person, onAddRelative, onSelect, onToggleCollapse, isCollapsed } = data;
+  const { person, onAddRelative, onSelect, onToggleCollapse, isCollapsed, isRoot, rootSiblingCount, rootSiblingsExpanded, onToggleRootSiblings } = data;
   const initials = `${person.firstName[0] ?? "?"}${person.lastName[0] ?? ""}`;
   const gender = person.gender ?? "unknown";
   const isLiving = person.isLiving;
@@ -98,6 +102,20 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-gray-300 text-[8px] tracking-[0.3em] select-none pointer-events-none">
           •••
         </div>
+      )}
+
+      {/* Root siblings toggle — right side of root card only */}
+      {isRoot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
+        <button
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-14 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
+          title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
+        >
+          {rootSiblingsExpanded
+            ? <ChevronUp size={11} className="text-gray-500" />
+            : <ChevronDown size={11} className="text-gray-500" />}
+          <span>{rootSiblingCount}</span>
+        </button>
       )}
 
       {/* Card */}
