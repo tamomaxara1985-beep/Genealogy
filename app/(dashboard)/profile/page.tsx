@@ -2,6 +2,10 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { connectDB } from "@/lib/db"
+import User from "@/lib/models/User"
+import { Badge } from "@/components/ui/badge"
+import type { IResearcher } from "@/types"
 
 export default async function ProfilePage() {
   const [session, tNav, t] = await Promise.all([
@@ -10,6 +14,10 @@ export default async function ProfilePage() {
     getTranslations("profile"),
   ]);
   if (!session?.user) redirect("/login");
+
+  await connectDB()
+  const me = await User.findById(session.user.id, { researcher: 1 }).lean<{ researcher?: IResearcher } | null>()
+  const researcher = me?.researcher
 
   const initials = session.user.name
     ?.split(" ")
@@ -35,6 +43,28 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           {t("memberSince")}
+        </CardContent>
+      </Card>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Researcher</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm">
+          {researcher ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">{researcher.fullName}</span>
+                <Badge variant="secondary">{researcher.status}</Badge>
+              </div>
+              <p className="text-muted-foreground">{researcher.contact}</p>
+              {researcher.notes && <p className="text-muted-foreground">{researcher.notes}</p>}
+              {researcher.assignmentDate && (
+                <p className="text-xs text-muted-foreground">Assigned: {researcher.assignmentDate}</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">No researcher assigned yet.</p>
+          )}
         </CardContent>
       </Card>
     </div>
