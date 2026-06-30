@@ -76,7 +76,12 @@ export default function LoginPage() {
             <Input id="email" type="email" placeholder="you@example.com" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">{t("password")}</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">{t("password")}</Label>
+              <Link href="/forgot-password" className="text-xs text-muted-foreground underline">
+                Forgot password?
+              </Link>
+            </div>
             <Input id="password" type="password" value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
