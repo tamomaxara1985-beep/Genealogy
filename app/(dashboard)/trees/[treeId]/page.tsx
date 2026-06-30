@@ -333,12 +333,16 @@ export default function TreePage({
     if (pendingFromId && pendingRole) {
       const isSibling = pendingRole === "brother" || pendingRole === "sister";
       if (isSibling) {
-        // Find existing parent of the selected person; connect new sibling to same parent
-        const parentRel = relationships.find(
-          (r) => r.type === "parent-child" && r.person2Id === pendingFromId
-        );
-        const parentId = parentRel?.person1Id;
-        if (parentId) {
+        // Connect new sibling to ALL of the selected person's parents (both, not just one).
+        // With both parents linked, the co-parent rule auto-couples them server-side.
+        const parentIds = [
+          ...new Set(
+            relationships
+              .filter((r) => r.type === "parent-child" && r.person2Id === pendingFromId)
+              .map((r) => r.person1Id)
+          ),
+        ];
+        for (const parentId of parentIds) {
           await fetch(`/api/trees/${treeId}/relationships`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
