@@ -14,9 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/person/EventForm";
-import type { IPerson, IEvent, IRelationship, ITree } from "@/types";
+import type { IPerson, IEvent, IRelationship, ITree, ISiblingHide } from "@/types";
 import { deriveSiblingIds, splitSiblingsByHide } from "@/lib/deriveSiblings";
-import type { ISiblingHide } from "@/types";
 import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
