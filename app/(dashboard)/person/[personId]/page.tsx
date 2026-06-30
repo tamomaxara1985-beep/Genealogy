@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { EventForm } from "@/components/person/EventForm";
 import type { IPerson, IEvent, IRelationship, ITree } from "@/types";
+import { deriveSiblingIds, splitSiblingsByHide } from "@/lib/deriveSiblings";
+import type { ISiblingHide } from "@/types";
 import { useTranslations } from "next-intl";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
@@ -65,6 +67,10 @@ export default function PersonProfilePage({
     person ? `/api/trees/${person.treeId}/relationships` : null,
     fetcher
   );
+  const { data: siblingHides = [], mutate: mutateHides } = useSWR<ISiblingHide[]>(
+    person ? `/api/trees/${person.treeId}/sibling-hides` : null,
+    fetcher
+  );
   const { data: treeMeta } = useSWR<ITree>(
     person ? `/api/trees/${person.treeId}` : null,
     fetcher
@@ -100,7 +106,14 @@ export default function PersonProfilePage({
   const spouses = allRels.filter(
     (r) => r.type === "spouse" && (r.person1Id === personId || r.person2Id === personId)
   );
-  const hasRelationships = parents.length + children.length + spouses.length > 0;
+  const allSiblingIds = deriveSiblingIds(personId, allRels);
+  const { visible: siblingIds, hidden: hiddenSiblings } = splitSiblingsByHide(
+    personId,
+    allSiblingIds,
+    siblingHides
+  );
+  const hasRelationships =
+    parents.length + children.length + spouses.length + siblingIds.length > 0;
 
   const personById = new Map(allPersons.map((p) => [p._id, p]));
   const availablePersons = allPersons.filter((p) => p._id !== personId);
@@ -135,6 +148,22 @@ export default function PersonProfilePage({
       method: "DELETE",
     });
     await mutateRels();
+  }
+
+  async function handleUnlinkSibling(siblingId: string) {
+    await fetch(`/api/trees/${person!.treeId}/sibling-hides`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personAId: personId, personBId: siblingId }),
+    });
+    await mutateHides();
+  }
+
+  async function handleRelinkSibling(hideId: string) {
+    await fetch(`/api/trees/${person!.treeId}/sibling-hides/${hideId}`, {
+      method: "DELETE",
+    });
+    await mutateHides();
   }
 
   function PersonLink({ id }: { id: string }) {
@@ -240,6 +269,50 @@ export default function PersonProfilePage({
                         unlink
                       </button>
                     )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {siblingIds.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
+                Siblings
+              </p>
+              <div className="space-y-1">
+                {siblingIds.map((sibId) => (
+                  <div key={sibId} className="flex items-center justify-between">
+                    <PersonLink id={sibId} />
+                    {isOwner && (
+                      <button
+                        className="text-[11px] text-gray-400 hover:text-red-500 px-1.5 py-0.5 rounded border border-gray-200 hover:border-red-300 transition-colors"
+                        onClick={() => handleUnlinkSibling(sibId)}
+                      >
+                        unlink
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isOwner && hiddenSiblings.length > 0 && (
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/60 mb-1.5">
+                Hidden siblings
+              </p>
+              <div className="space-y-1">
+                {hiddenSiblings.map(({ siblingId, hideId }) => (
+                  <div key={hideId} className="flex items-center justify-between opacity-60">
+                    <PersonLink id={siblingId} />
+                    <button
+                      className="text-[11px] text-gray-400 hover:text-amber-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300 transition-colors"
+                      onClick={() => handleRelinkSibling(hideId)}
+                    >
+                      relink
+                    </button>
                   </div>
                 ))}
               </div>
