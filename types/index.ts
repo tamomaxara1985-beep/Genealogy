@@ -62,6 +62,13 @@ export interface IRelationship {
   endDate?: string
 }
 
+export interface ISiblingHide {
+  _id: string
+  treeId: string
+  personAId: string
+  personBId: string
+}
+
 export type RelativeRole = 'father' | 'mother' | 'son' | 'daughter' | 'spouse' | 'brother' | 'sister'
 
 export type TreeNode = {
