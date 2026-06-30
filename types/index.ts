@@ -14,6 +14,7 @@ export interface ITree {
   ownerId: string
   isPublic: boolean
   sharedEmails?: string[]
+  coParentBackfillAt?: string
   role?: 'owner' | 'viewer'
   createdAt: Date
   updatedAt: Date

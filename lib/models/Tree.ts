@@ -6,6 +6,7 @@ export interface ITreeDoc extends Document {
   ownerId: mongoose.Types.ObjectId;
   isPublic: boolean;
   sharedEmails: string[];
+  coParentBackfillAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +18,7 @@ const TreeSchema = new Schema<ITreeDoc>(
     ownerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isPublic: { type: Boolean, default: false },
     sharedEmails: { type: [String], default: [] },
+    coParentBackfillAt: { type: Date },
   },
   { timestamps: true }
 );
