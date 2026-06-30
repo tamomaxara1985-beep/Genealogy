@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Person from "@/lib/models/Person";
 import Tree from "@/lib/models/Tree";
+import Relationship from "@/lib/models/Relationship";
+import Event from "@/lib/models/Event";
 import { resolvePersonAccess } from "@/lib/treeAccess";
 
 type Params = { params: Promise<{ personId: string }> };
@@ -56,5 +58,11 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await person.deleteOne();
+  // Cascade: remove relationships and events that referenced this person so
+  // no orphaned rels remain (which would otherwise show as ghost relatives).
+  await Relationship.deleteMany({
+    $or: [{ person1Id: personId }, { person2Id: personId }],
+  });
+  await Event.deleteMany({ personId });
   return NextResponse.json({ success: true });
 }
