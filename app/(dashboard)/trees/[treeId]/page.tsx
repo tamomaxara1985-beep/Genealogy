@@ -166,6 +166,7 @@ export default function TreePage({
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const reconcileRan = useRef(false);
 
   // Search highlight
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
@@ -211,6 +212,20 @@ export default function TreePage({
       JSON.stringify(rootSiblingsExpanded)
     );
   }, [rootSiblingsExpanded, treeId]);
+
+  useEffect(() => {
+    if (!isOwner || !treeMeta || treeMeta.coParentBackfillAt) return;
+    if (reconcileRan.current) return;
+    reconcileRan.current = true;
+    void (async () => {
+      const res = await fetch(`/api/trees/${treeId}/reconcile-couples`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json().catch(() => ({ created: 0 }));
+        await mutateTree();
+        if (data.created > 0) await mutateRels();
+      }
+    })();
+  }, [isOwner, treeMeta, treeId, mutateRels, mutateTree]);
 
   const handleAddRelative = useCallback((personId: string, role: RelativeRole, personId2?: string) => {
     setPendingFromId(personId);
