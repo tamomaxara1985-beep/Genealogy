@@ -19,6 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { RESEARCHER_STATUSES, type ResearcherStatus } from "@/lib/researcher"
+import type { IResearcher } from "@/types"
 import { Users, Trash2 } from "lucide-react"
 
 interface AdminUser {
@@ -27,6 +32,7 @@ interface AdminUser {
   email: string
   role: "user" | "admin"
   createdAt: string
+  researcher?: IResearcher
 }
 
 const fetcher = (url: string) =>
@@ -42,6 +48,47 @@ export default function AdminUsersPage() {
   const { data: users = [], mutate } = useSWR<AdminUser[]>("/api/admin/users", fetcher)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const [researcherTarget, setResearcherTarget] = useState<AdminUser | null>(null)
+  const [rForm, setRForm] = useState({
+    fullName: "", contact: "", notes: "", assignmentDate: "",
+    status: "Assigned" as ResearcherStatus,
+  })
+  const [rSaving, setRSaving] = useState(false)
+
+  function openResearcher(user: AdminUser) {
+    const r = user.researcher
+    setRForm({
+      fullName: r?.fullName ?? "",
+      contact: r?.contact ?? "",
+      notes: r?.notes ?? "",
+      assignmentDate: r?.assignmentDate ?? "",
+      status: (r?.status as ResearcherStatus) ?? "Assigned",
+    })
+    setResearcherTarget(user)
+  }
+
+  async function saveResearcher() {
+    if (!researcherTarget || !rForm.fullName.trim() || !rForm.contact.trim()) return
+    setRSaving(true)
+    const res = await fetch(`/api/admin/users/${researcherTarget._id}/researcher`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(rForm),
+    })
+    if (res.ok) { await mutate(); setResearcherTarget(null) }
+    setRSaving(false)
+  }
+
+  async function unassignResearcher() {
+    if (!researcherTarget) return
+    setRSaving(true)
+    const res = await fetch(`/api/admin/users/${researcherTarget._id}/researcher`, {
+      method: "DELETE",
+    })
+    if (res.ok) { await mutate(); setResearcherTarget(null) }
+    setRSaving(false)
+  }
 
   async function handleRoleChange(userId: string, role: string | null) {
     if (!role) return
@@ -107,15 +154,23 @@ export default function AdminUsersPage() {
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isSelf}
-                      onClick={() => setDeleteTarget(user)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      {user.researcher && (
+                        <span className="text-[11px] text-gray-500">{user.researcher.status}</span>
+                      )}
+                      <Button variant="outline" size="sm" onClick={() => openResearcher(user)}>
+                        Researcher
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isSelf}
+                        onClick={() => setDeleteTarget(user)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -143,6 +198,58 @@ export default function AdminUsersPage() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
               {loading ? tc("deleting") : tc("delete")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!researcherTarget} onOpenChange={(open) => { if (!open) setResearcherTarget(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Researcher — {researcherTarget?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label>Full name</Label>
+              <Input value={rForm.fullName} onChange={(e) => setRForm({ ...rForm, fullName: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Contact</Label>
+              <Input
+                value={rForm.contact}
+                placeholder="email, phone, or preferred method"
+                onChange={(e) => setRForm({ ...rForm, contact: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Notes</Label>
+              <Textarea value={rForm.notes} onChange={(e) => setRForm({ ...rForm, notes: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Assignment date</Label>
+              <Input type="date" value={rForm.assignmentDate} onChange={(e) => setRForm({ ...rForm, assignmentDate: e.target.value })} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={rForm.status} onValueChange={(v) => setRForm({ ...rForm, status: v as ResearcherStatus })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {RESEARCHER_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            {researcherTarget?.researcher && (
+              <Button variant="outline" onClick={unassignResearcher} disabled={rSaving} className="text-destructive hover:text-destructive mr-auto">
+                Unassign
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setResearcherTarget(null)}>Cancel</Button>
+            <Button onClick={saveResearcher} disabled={rSaving || !rForm.fullName.trim() || !rForm.contact.trim()}>
+              {rSaving ? "Saving…" : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
