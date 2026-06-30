@@ -274,7 +274,8 @@ export function buildTreeData(
     } else if (cSlot) {
       targetHandle = `${cSlot === 1 ? "person1" : "person2"}-${isMother ? "mother" : "father"}`;
     } else {
-      targetHandle = isMother ? "mother" : "father";
+      // personNode child: single centered parent handle
+      targetHandle = "parents";
     }
 
     edges.push({
