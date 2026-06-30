@@ -127,7 +127,7 @@ export default function TreePage({
     `/api/trees/${treeId}/persons`,
     fetcher
   );
-  const { data: relationships = [], mutate: mutateRels } = useSWR<IRelationship[]>(
+  const { data: relationshipsRaw = [], mutate: mutateRels } = useSWR<IRelationship[]>(
     `/api/trees/${treeId}/relationships`,
     fetcher
   );
@@ -135,6 +135,16 @@ export default function TreePage({
     `/api/trees/${treeId}`,
     fetcher
   );
+
+  // Ignore relationships pointing to a person that no longer exists (orphans
+  // left by a deleted person) so counts and edges never include ghosts.
+  const relationships = useMemo(() => {
+    const ids = new Set(persons.map((p) => p._id));
+    return relationshipsRaw.filter(
+      (r) => ids.has(r.person1Id) && ids.has(r.person2Id)
+    );
+  }, [relationshipsRaw, persons]);
+
   const isOwner = treeMeta?.role === "owner";
   const readOnly = !!treeMeta && !isOwner;
 
