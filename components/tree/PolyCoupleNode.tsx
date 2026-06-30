@@ -114,13 +114,10 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
 
   return (
     <div className="relative">
-      {/* Target handles (top) — 2 per person; mother left, father right */}
-      <Handle type="target" position={Position.Top} id="left-mother"   style={{ left:  40 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="left-father"   style={{ left: 120 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="shared-mother" style={{ left: 260 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="shared-father" style={{ left: 340 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="right-mother"  style={{ left: 480 }} className="!bg-gray-300 !w-2 !h-2" />
-      <Handle type="target" position={Position.Top} id="right-father"  style={{ left: 560 }} className="!bg-gray-300 !w-2 !h-2" />
+      {/* one centered target handle above each card */}
+      <Handle type="target" position={Position.Top} id="left"   style={{ left:  80 }} className="!bg-gray-300 !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} id="shared" style={{ left: 300 }} className="!bg-gray-300 !w-2 !h-2" />
+      <Handle type="target" position={Position.Top} id="right"  style={{ left: 520 }} className="!bg-gray-300 !w-2 !h-2" />
 
       {/* Action buttons when selected */}
       {selected && onAddRelative && (
