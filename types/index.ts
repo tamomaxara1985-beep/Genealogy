@@ -4,7 +4,16 @@ export interface IUser {
   email: string
   image?: string
   role: 'user' | 'admin'
+  researcher?: IResearcher
   createdAt: Date
+}
+
+export interface IResearcher {
+  fullName: string
+  contact: string
+  notes?: string
+  assignmentDate?: string
+  status: 'Assigned' | 'In Progress' | 'Completed'
 }
 
 export interface ITree {
