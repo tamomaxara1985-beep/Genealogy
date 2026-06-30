@@ -263,18 +263,15 @@ export function buildTreeData(
     if (seenEdges.has(key)) return;
     seenEdges.add(key);
 
-    const parentPerson = persons.find((p) => p._id === r.person1Id);
-    const isMother = parentPerson?.gender === "female";
-
     const polySlot = polyTargetSlot.get(r.person2Id);
     const cSlot = coupleSlot.get(r.person2Id);
+    // one centered target handle per person, regardless of node type
     let targetHandle: string | undefined;
     if (polySlot) {
-      targetHandle = `${polySlot}-${isMother ? "mother" : "father"}`;
+      targetHandle = polySlot; // "left" | "shared" | "right"
     } else if (cSlot) {
-      targetHandle = `${cSlot === 1 ? "person1" : "person2"}-${isMother ? "mother" : "father"}`;
+      targetHandle = cSlot === 1 ? "person1" : "person2";
     } else {
-      // personNode child: single centered parent handle
       targetHandle = "parents";
     }
 
