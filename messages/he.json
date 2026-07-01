@@ -6,7 +6,9 @@
     "dna": "התאמות DNA",
     "admin": "מנהל",
     "signOut": "התנתקות",
-    "settings": "הגדרות"
+    "settings": "הגדרות",
+    "researcher": "חוקר",
+    "contact": "צור קשר"
   },
   "auth": {
     "signIn": "כניסה",
@@ -168,7 +170,8 @@
     "colPersons": "אנשים",
     "colRelationships": "קשרים",
     "colEvents": "אירועים",
-    "contact": "צור קשר"
+    "contact": "צור קשר",
+    "researcher": "חוקר"
   },
   "contact": {
     "title": "צור קשר",

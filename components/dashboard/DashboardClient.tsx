@@ -6,8 +6,6 @@ import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { GitBranch, Users, Calendar, ArrowRight } from "lucide-react"
-import type { IResearcher } from "@/types"
-
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 interface Stats {
@@ -15,7 +13,6 @@ interface Stats {
   personCount: number
   eventCount: number
   bio: string
-  researcher: IResearcher | null
 }
 
 export function DashboardClient() {
@@ -23,8 +20,6 @@ export function DashboardClient() {
   const tNav = useTranslations("nav")
   const tDash = useTranslations("dashboard")
   const tc = useTranslations("common")
-  const tRes = useTranslations("researcher")
-  const tRegions = useTranslations("regions")
   const { data, isLoading, mutate } = useSWR<Stats>("/api/dashboard/stats", fetcher)
   const [bio, setBio] = useState("")
   const [saving, setSaving] = useState(false)
@@ -96,24 +91,6 @@ export function DashboardClient() {
             </Button>
             {saved && <span className="text-sm text-green-600">{tDash("saved")}</span>}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{tRes("title")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          {data?.researcher ? (
-            <div className="space-y-2">
-              <p className="font-medium">{data.researcher.name} {data.researcher.surname}</p>
-              <p className="text-muted-foreground">{tRes("email")}: {data.researcher.email}</p>
-              <p className="text-muted-foreground">{tRes("phone")}: {data.researcher.phone}</p>
-              <p className="text-muted-foreground">{tRes("region")}: {tRegions(data.researcher.region)}</p>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">{tRes("none")}</p>
-          )}
         </CardContent>
       </Card>
 

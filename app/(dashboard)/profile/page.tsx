@@ -2,23 +2,14 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { connectDB } from "@/lib/db"
-import User from "@/lib/models/User"
-import type { IResearcher } from "@/types"
 
 export default async function ProfilePage() {
-  const [session, tNav, t, tRes, tRegions] = await Promise.all([
+  const [session, tNav, t] = await Promise.all([
     auth(),
     getTranslations("nav"),
     getTranslations("profile"),
-    getTranslations("researcher"),
-    getTranslations("regions"),
   ]);
   if (!session?.user) redirect("/login");
-
-  await connectDB()
-  const me = await User.findById(session.user.id, { researcher: 1 }).lean<{ researcher?: IResearcher } | null>()
-  const researcher = me?.researcher
 
   const initials = session.user.name
     ?.split(" ")
@@ -44,23 +35,6 @@ export default async function ProfilePage() {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           {t("memberSince")}
-        </CardContent>
-      </Card>
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>{tRes("title")}</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm">
-          {researcher ? (
-            <div className="space-y-2">
-              <p className="font-medium">{researcher.name} {researcher.surname}</p>
-              <p className="text-muted-foreground">{tRes("email")}: {researcher.email}</p>
-              <p className="text-muted-foreground">{tRes("phone")}: {researcher.phone}</p>
-              <p className="text-muted-foreground">{tRes("region")}: {tRegions(researcher.region)}</p>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">{tRes("none")}</p>
-          )}
         </CardContent>
       </Card>
     </div>

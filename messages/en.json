@@ -6,7 +6,9 @@
     "dna": "DNA Matches",
     "admin": "Admin",
     "signOut": "Sign out",
-    "settings": "Settings"
+    "settings": "Settings",
+    "researcher": "Researcher",
+    "contact": "Contact"
   },
   "auth": {
     "signIn": "Sign in",
@@ -168,7 +170,8 @@
     "colPersons": "Persons",
     "colRelationships": "Relationships",
     "colEvents": "Events",
-    "contact": "Contact"
+    "contact": "Contact",
+    "researcher": "Researcher"
   },
   "contact": {
     "title": "Contact Us",

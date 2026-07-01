@@ -19,11 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { REGION_CODES } from "@/lib/georgiaRegions"
-import type { IResearcher } from "@/types"
-import { Users, Trash2, Microscope } from "lucide-react"
+import { Users, Trash2 } from "lucide-react"
 
 interface AdminUser {
   _id: string
@@ -31,7 +27,6 @@ interface AdminUser {
   email: string
   role: "user" | "admin"
   createdAt: string
-  researcher?: IResearcher
 }
 
 const fetcher = (url: string) =>
@@ -43,56 +38,10 @@ const fetcher = (url: string) =>
 export default function AdminUsersPage() {
   const t = useTranslations("admin")
   const tc = useTranslations("common")
-  const tr = useTranslations("researcher")
-  const tRegions = useTranslations("regions")
   const { data: session } = useSession()
   const { data: users = [], mutate } = useSWR<AdminUser[]>("/api/admin/users", fetcher)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(false)
-
-  const [researcherTarget, setResearcherTarget] = useState<AdminUser | null>(null)
-  const [rForm, setRForm] = useState({
-    name: "", surname: "", email: "", phone: "", region: "",
-  })
-  const [rSaving, setRSaving] = useState(false)
-
-  const rValid =
-    rForm.name.trim() && rForm.surname.trim() && rForm.email.trim() &&
-    rForm.phone.trim() && rForm.region.trim()
-
-  function openResearcher(user: AdminUser) {
-    const r = user.researcher
-    setRForm({
-      name: r?.name ?? "",
-      surname: r?.surname ?? "",
-      email: r?.email ?? "",
-      phone: r?.phone ?? "",
-      region: r?.region ?? "",
-    })
-    setResearcherTarget(user)
-  }
-
-  async function saveResearcher() {
-    if (!researcherTarget || !rValid) return
-    setRSaving(true)
-    const res = await fetch(`/api/admin/users/${researcherTarget._id}/researcher`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(rForm),
-    })
-    if (res.ok) { await mutate(); setResearcherTarget(null) }
-    setRSaving(false)
-  }
-
-  async function unassignResearcher() {
-    if (!researcherTarget) return
-    setRSaving(true)
-    const res = await fetch(`/api/admin/users/${researcherTarget._id}/researcher`, {
-      method: "DELETE",
-    })
-    if (res.ok) { await mutate(); setResearcherTarget(null) }
-    setRSaving(false)
-  }
 
   async function handleRoleChange(userId: string, role: string | null) {
     if (!role) return
@@ -129,7 +78,6 @@ export default function AdminUsersPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("email")}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("role")}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("joined")}</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">{tr("title")}</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -158,38 +106,23 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {user.researcher
-                      ? `${user.researcher.name} ${user.researcher.surname}`
-                      : <span className="text-gray-400">—</span>}
-                  </td>
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant={user.researcher ? "outline" : "default"}
-                        size="sm"
-                        onClick={() => openResearcher(user)}
-                      >
-                        <Microscope className="h-3.5 w-3.5 mr-1" />
-                        {user.researcher ? tr("edit") : tr("add")}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={isSelf}
-                        onClick={() => setDeleteTarget(user)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isSelf}
+                      onClick={() => setDeleteTarget(user)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </td>
                 </tr>
               )
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">
+                <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground text-sm">
                   {t("noUsers")}
                 </td>
               </tr>
@@ -210,54 +143,6 @@ export default function AdminUsersPage() {
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>{tc("cancel")}</Button>
             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
               {loading ? tc("deleting") : tc("delete")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={!!researcherTarget} onOpenChange={(open) => { if (!open) setResearcherTarget(null) }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{tr("title")} — {researcherTarget?.name}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label>{tr("name")}</Label>
-              <Input value={rForm.name} onChange={(e) => setRForm({ ...rForm, name: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{tr("surname")}</Label>
-              <Input value={rForm.surname} onChange={(e) => setRForm({ ...rForm, surname: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{tr("email")}</Label>
-              <Input type="email" value={rForm.email} onChange={(e) => setRForm({ ...rForm, email: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{tr("phone")}</Label>
-              <Input type="tel" value={rForm.phone} onChange={(e) => setRForm({ ...rForm, phone: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{tr("region")}</Label>
-              <Select value={rForm.region} onValueChange={(v) => setRForm({ ...rForm, region: v ?? "" })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {REGION_CODES.map((c) => (
-                    <SelectItem key={c} value={c}>{tRegions(c)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            {researcherTarget?.researcher && (
-              <Button variant="outline" onClick={unassignResearcher} disabled={rSaving} className="text-destructive hover:text-destructive mr-auto">
-                {tc("delete")}
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => setResearcherTarget(null)}>{tc("cancel")}</Button>
-            <Button onClick={saveResearcher} disabled={rSaving || !rValid}>
-              {rSaving ? tc("saving") : tc("save")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -16,7 +16,7 @@ export async function GET() {
 
   const [trees, user] = await Promise.all([
     Tree.find({ ownerId: userId }).sort({ updatedAt: -1 }).lean(),
-    User.findById(userId).select("bio name researcher").lean(),
+    User.findById(userId).select("bio name").lean(),
   ])
   const treeIds = trees.map((t) => t._id)
 
@@ -34,6 +34,5 @@ export async function GET() {
     personCount,
     eventCount,
     bio: user?.bio ?? "",
-    researcher: user?.researcher ?? null,
   })
 }
