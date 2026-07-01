@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { RESEARCHER_STATUSES, type ResearcherStatus } from "@/lib/researcher"
+import { REGION_CODES } from "@/lib/georgiaRegions"
 import type { IResearcher } from "@/types"
 import { Users, Trash2 } from "lucide-react"
 
@@ -44,6 +43,8 @@ const fetcher = (url: string) =>
 export default function AdminUsersPage() {
   const t = useTranslations("admin")
   const tc = useTranslations("common")
+  const tr = useTranslations("researcher")
+  const tRegions = useTranslations("regions")
   const { data: session } = useSession()
   const { data: users = [], mutate } = useSWR<AdminUser[]>("/api/admin/users", fetcher)
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null)
@@ -51,25 +52,28 @@ export default function AdminUsersPage() {
 
   const [researcherTarget, setResearcherTarget] = useState<AdminUser | null>(null)
   const [rForm, setRForm] = useState({
-    fullName: "", contact: "", notes: "", assignmentDate: "",
-    status: "Assigned" as ResearcherStatus,
+    name: "", surname: "", email: "", phone: "", region: "",
   })
   const [rSaving, setRSaving] = useState(false)
+
+  const rValid =
+    rForm.name.trim() && rForm.surname.trim() && rForm.email.trim() &&
+    rForm.phone.trim() && rForm.region.trim()
 
   function openResearcher(user: AdminUser) {
     const r = user.researcher
     setRForm({
-      fullName: r?.fullName ?? "",
-      contact: r?.contact ?? "",
-      notes: r?.notes ?? "",
-      assignmentDate: r?.assignmentDate ?? "",
-      status: (r?.status as ResearcherStatus) ?? "Assigned",
+      name: r?.name ?? "",
+      surname: r?.surname ?? "",
+      email: r?.email ?? "",
+      phone: r?.phone ?? "",
+      region: r?.region ?? "",
     })
     setResearcherTarget(user)
   }
 
   async function saveResearcher() {
-    if (!researcherTarget || !rForm.fullName.trim() || !rForm.contact.trim()) return
+    if (!researcherTarget || !rValid) return
     setRSaving(true)
     const res = await fetch(`/api/admin/users/${researcherTarget._id}/researcher`, {
       method: "PUT",
@@ -155,11 +159,8 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {user.researcher && (
-                        <span className="text-[11px] text-gray-500">{user.researcher.status}</span>
-                      )}
                       <Button variant="outline" size="sm" onClick={() => openResearcher(user)}>
-                        Researcher
+                        {tr("title")}
                       </Button>
                       <Button
                         variant="outline"
@@ -206,36 +207,32 @@ export default function AdminUsersPage() {
       <Dialog open={!!researcherTarget} onOpenChange={(open) => { if (!open) setResearcherTarget(null) }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Researcher — {researcherTarget?.name}</DialogTitle>
+            <DialogTitle>{tr("title")} — {researcherTarget?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Full name</Label>
-              <Input value={rForm.fullName} onChange={(e) => setRForm({ ...rForm, fullName: e.target.value })} />
+              <Label>{tr("name")}</Label>
+              <Input value={rForm.name} onChange={(e) => setRForm({ ...rForm, name: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Contact</Label>
-              <Input
-                value={rForm.contact}
-                placeholder="email, phone, or preferred method"
-                onChange={(e) => setRForm({ ...rForm, contact: e.target.value })}
-              />
+              <Label>{tr("surname")}</Label>
+              <Input value={rForm.surname} onChange={(e) => setRForm({ ...rForm, surname: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Notes</Label>
-              <Textarea value={rForm.notes} onChange={(e) => setRForm({ ...rForm, notes: e.target.value })} />
+              <Label>{tr("email")}</Label>
+              <Input type="email" value={rForm.email} onChange={(e) => setRForm({ ...rForm, email: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Assignment date</Label>
-              <Input type="date" value={rForm.assignmentDate} onChange={(e) => setRForm({ ...rForm, assignmentDate: e.target.value })} />
+              <Label>{tr("phone")}</Label>
+              <Input type="tel" value={rForm.phone} onChange={(e) => setRForm({ ...rForm, phone: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Select value={rForm.status} onValueChange={(v) => setRForm({ ...rForm, status: v as ResearcherStatus })}>
+              <Label>{tr("region")}</Label>
+              <Select value={rForm.region} onValueChange={(v) => setRForm({ ...rForm, region: v ?? "" })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {RESEARCHER_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  {REGION_CODES.map((c) => (
+                    <SelectItem key={c} value={c}>{tRegions(c)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -244,12 +241,12 @@ export default function AdminUsersPage() {
           <DialogFooter className="gap-2">
             {researcherTarget?.researcher && (
               <Button variant="outline" onClick={unassignResearcher} disabled={rSaving} className="text-destructive hover:text-destructive mr-auto">
-                Unassign
+                {tc("delete")}
               </Button>
             )}
-            <Button variant="outline" onClick={() => setResearcherTarget(null)}>Cancel</Button>
-            <Button onClick={saveResearcher} disabled={rSaving || !rForm.fullName.trim() || !rForm.contact.trim()}>
-              {rSaving ? "Saving…" : "Save"}
+            <Button variant="outline" onClick={() => setResearcherTarget(null)}>{tc("cancel")}</Button>
+            <Button onClick={saveResearcher} disabled={rSaving || !rValid}>
+              {rSaving ? tc("saving") : tc("save")}
             </Button>
           </DialogFooter>
         </DialogContent>
