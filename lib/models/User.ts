@@ -8,11 +8,11 @@ export interface IUserDoc extends Document {
   role: "user" | "admin";
   bio?: string;
   researcher?: {
-    fullName: string;
-    contact: string;
-    notes?: string;
-    assignmentDate?: string;
-    status: "Assigned" | "In Progress" | "Completed";
+    name: string;
+    surname: string;
+    email: string;
+    phone: string;
+    region: string;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -29,15 +29,11 @@ const UserSchema = new Schema<IUserDoc>(
     researcher: {
       type: new Schema(
         {
-          fullName: { type: String, required: true },
-          contact: { type: String, required: true },
-          notes: { type: String },
-          assignmentDate: { type: String },
-          status: {
-            type: String,
-            enum: ["Assigned", "In Progress", "Completed"],
-            default: "Assigned",
-          },
+          name: { type: String, required: true },
+          surname: { type: String, required: true },
+          email: { type: String, required: true },
+          phone: { type: String, required: true },
+          region: { type: String, required: true },
         },
         { _id: false }
       ),

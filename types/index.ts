@@ -9,11 +9,11 @@ export interface IUser {
 }
 
 export interface IResearcher {
-  fullName: string
-  contact: string
-  notes?: string
-  assignmentDate?: string
-  status: 'Assigned' | 'In Progress' | 'Completed'
+  name: string
+  surname: string
+  email: string
+  phone: string
+  region: string
 }
 
 export interface ITree {
