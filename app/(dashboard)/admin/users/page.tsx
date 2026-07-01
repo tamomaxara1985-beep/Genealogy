@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { REGION_CODES } from "@/lib/georgiaRegions"
 import type { IResearcher } from "@/types"
-import { Users, Trash2 } from "lucide-react"
+import { Users, Trash2, Microscope } from "lucide-react"
 
 interface AdminUser {
   _id: string
@@ -129,6 +129,7 @@ export default function AdminUsersPage() {
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("email")}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("role")}</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">{t("joined")}</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-600">{tr("title")}</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -157,10 +158,20 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-gray-500">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {user.researcher
+                      ? `${user.researcher.name} ${user.researcher.surname}`
+                      : <span className="text-gray-400">—</span>}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openResearcher(user)}>
-                        {tr("title")}
+                      <Button
+                        variant={user.researcher ? "outline" : "default"}
+                        size="sm"
+                        onClick={() => openResearcher(user)}
+                      >
+                        <Microscope className="h-3.5 w-3.5 mr-1" />
+                        {user.researcher ? tr("edit") : tr("add")}
                       </Button>
                       <Button
                         variant="outline"
@@ -178,7 +189,7 @@ export default function AdminUsersPage() {
             })}
             {users.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-muted-foreground text-sm">
+                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground text-sm">
                   {t("noUsers")}
                 </td>
               </tr>
