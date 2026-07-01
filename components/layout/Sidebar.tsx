@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Trees, User, Dna, ShieldCheck } from "lucide-react";
+import { Home, Trees, User, Dna, ShieldCheck, Microscope, Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 
@@ -12,6 +12,8 @@ export async function Sidebar() {
     { href: "/dashboard", label: t("dashboard"), icon: Home },
     { href: "/trees", label: t("trees"), icon: Trees },
     { href: "/profile", label: t("profile"), icon: User },
+    { href: "/researcher", label: t("researcher"), icon: Microscope },
+    { href: "/contact", label: t("contact"), icon: Mail },
     { href: "/dna", label: t("dna"), icon: Dna },
   ];
 
