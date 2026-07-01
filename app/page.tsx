@@ -329,6 +329,14 @@ export default function LandingPage() {
               variant="ghost"
               className="h-9 px-3 text-[#5b4d3c] hover:bg-amber-800/10 hover:text-[#3a2f23]"
               nativeButton={false}
+              render={<Link href="/contact" />}
+            >
+              Contact
+            </Button>
+            <Button
+              variant="ghost"
+              className="h-9 px-3 text-[#5b4d3c] hover:bg-amber-800/10 hover:text-[#3a2f23]"
+              nativeButton={false}
               render={<Link href="/login" />}
             >
               Sign in
@@ -672,6 +680,9 @@ export default function LandingPage() {
                 FamilyRoots
               </span>
             </div>
+            <Link href="/contact" className="text-sm text-[#8a7c66] hover:text-[#3a2f23]">
+              Contact
+            </Link>
             <p className="text-sm text-[#8a7c66]">
               © {2026} FamilyRoots. Discover where you come from.
             </p>

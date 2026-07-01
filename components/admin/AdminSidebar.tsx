@@ -10,6 +10,7 @@ import {
   Users,
   FolderOpen,
   ShieldCheck,
+  Mail,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -25,6 +26,7 @@ export function AdminSidebar() {
     { href: "/admin/collections", label: t("collections"), icon: Database },
     { href: "/admin/users", label: t("users"), icon: Users },
     { href: "/admin/files", label: t("files"), icon: FolderOpen },
+    { href: "/admin/contact", label: t("contact"), icon: Mail },
   ]
 
   return (
