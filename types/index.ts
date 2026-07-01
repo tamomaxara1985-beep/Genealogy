@@ -4,7 +4,6 @@ export interface IUser {
   email: string
   image?: string
   role: 'user' | 'admin'
-  researcher?: IResearcher
   createdAt: Date
 }
 
