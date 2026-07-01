@@ -181,6 +181,29 @@
   "profile": {
     "memberSince": "Member since account creation."
   },
+  "researcher": {
+    "title": "Researcher",
+    "name": "Name",
+    "surname": "Surname",
+    "email": "Email",
+    "phone": "Phone",
+    "region": "Region",
+    "none": "No researcher assigned yet."
+  },
+  "regions": {
+    "tbilisi": "Tbilisi",
+    "abkhazia": "Abkhazia",
+    "adjara": "Adjara",
+    "guria": "Guria",
+    "imereti": "Imereti",
+    "kakheti": "Kakheti",
+    "kvemo-kartli": "Kvemo Kartli",
+    "mtskheta-mtianeti": "Mtskheta-Mtianeti",
+    "racha-lechkhumi": "Racha-Lechkhumi and Kvemo Svaneti",
+    "samegrelo": "Samegrelo-Zemo Svaneti",
+    "samtskhe-javakheti": "Samtskhe-Javakheti",
+    "shida-kartli": "Shida Kartli"
+  },
   "dna": {
     "gedcomTitle": "GEDCOM Import — Coming Soon",
     "gedcomDesc": "Upload a GEDCOM file to import your family tree and find DNA matches. This feature is in development."

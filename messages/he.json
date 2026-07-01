@@ -181,6 +181,29 @@
   "profile": {
     "memberSince": "חבר מאז יצירת החשבון."
   },
+  "researcher": {
+    "title": "חוקר",
+    "name": "שם",
+    "surname": "שם משפחה",
+    "email": "דוא\"ל",
+    "phone": "טלפון",
+    "region": "אזור",
+    "none": "טרם שובץ חוקר."
+  },
+  "regions": {
+    "tbilisi": "טביליסי",
+    "abkhazia": "אבחזיה",
+    "adjara": "אג'ריה",
+    "guria": "גוריה",
+    "imereti": "אימרתי",
+    "kakheti": "קחתי",
+    "kvemo-kartli": "קוומו קרטלי",
+    "mtskheta-mtianeti": "מצחתה-מתיאנתי",
+    "racha-lechkhumi": "רצ'ה-לצ'חומי וקוומו סוואנתי",
+    "samegrelo": "סמגרלו-זמו סוואנתי",
+    "samtskhe-javakheti": "סמצחה-ג'אווחתי",
+    "shida-kartli": "שידה קרטלי"
+  },
   "dna": {
     "gedcomTitle": "ייבוא GEDCOM — בקרוב",
     "gedcomDesc": "העלה קובץ GEDCOM לייבוא עץ המשפחה ולמציאת התאמות DNA. תכונה זו בפיתוח."
