@@ -1,12 +1,11 @@
-export const RESEARCHER_STATUSES = ["Assigned", "In Progress", "Completed"] as const;
-export type ResearcherStatus = (typeof RESEARCHER_STATUSES)[number];
+import { REGION_CODES } from "@/lib/georgiaRegions";
 
 export interface ResearcherValue {
-  fullName: string;
-  contact: string;
-  notes?: string;
-  assignmentDate: string;
-  status: ResearcherStatus;
+  name: string;
+  surname: string;
+  email: string;
+  phone: string;
+  region: string;
 }
 
 type Result =
@@ -17,26 +16,28 @@ function asTrimmedString(v: unknown): string {
   return typeof v === "string" ? v.trim() : "";
 }
 
-export function validateResearcher(input: unknown, today: string): Result {
+function isEmail(v: string): boolean {
+  const at = v.indexOf("@");
+  return at > 0 && at < v.length - 1 && !v.includes(" ");
+}
+
+export function validateResearcher(input: unknown): Result {
   const obj = (input ?? {}) as Record<string, unknown>;
 
-  const fullName = asTrimmedString(obj.fullName);
-  const contact = asTrimmedString(obj.contact);
-  if (!fullName) return { ok: false, error: "fullName is required" };
-  if (!contact) return { ok: false, error: "contact is required" };
+  const name = asTrimmedString(obj.name);
+  const surname = asTrimmedString(obj.surname);
+  const email = asTrimmedString(obj.email);
+  const phone = asTrimmedString(obj.phone);
+  const region = asTrimmedString(obj.region);
 
-  let status: ResearcherStatus = "Assigned";
-  if (obj.status !== undefined && obj.status !== null && obj.status !== "") {
-    if (!RESEARCHER_STATUSES.includes(obj.status as ResearcherStatus))
-      return { ok: false, error: "invalid status" };
-    status = obj.status as ResearcherStatus;
-  }
+  if (!name) return { ok: false, error: "name is required" };
+  if (!surname) return { ok: false, error: "surname is required" };
+  if (!email) return { ok: false, error: "email is required" };
+  if (!isEmail(email)) return { ok: false, error: "invalid email" };
+  if (!phone) return { ok: false, error: "phone is required" };
+  if (!region) return { ok: false, error: "region is required" };
+  if (!(REGION_CODES as readonly string[]).includes(region))
+    return { ok: false, error: "invalid region" };
 
-  const assignmentDate = asTrimmedString(obj.assignmentDate) || today;
-  const notes = asTrimmedString(obj.notes);
-
-  const value: ResearcherValue = { fullName, contact, assignmentDate, status };
-  if (notes) value.notes = notes;
-
-  return { ok: true, value };
+  return { ok: true, value: { name, surname, email, phone, region } };
 }

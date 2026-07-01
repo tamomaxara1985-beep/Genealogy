@@ -12,8 +12,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 
   const { userId } = await params;
   const body = await req.json();
-  const today = new Date().toISOString().slice(0, 10);
-  const result = validateResearcher(body, today);
+  const result = validateResearcher(body);
   if (!result.ok)
     return NextResponse.json({ error: result.error }, { status: 400 });
 

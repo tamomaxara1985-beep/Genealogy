@@ -181,6 +181,29 @@
   "profile": {
     "memberSince": "წევრი ანგარიშის შექმნიდან."
   },
+  "researcher": {
+    "title": "მკვლევარი",
+    "name": "სახელი",
+    "surname": "გვარი",
+    "email": "ელფოსტა",
+    "phone": "ტელეფონი",
+    "region": "რეგიონი",
+    "none": "მკვლევარი ჯერ არ არის მინიჭებული."
+  },
+  "regions": {
+    "tbilisi": "თბილისი",
+    "abkhazia": "აფხაზეთი",
+    "adjara": "აჭარა",
+    "guria": "გურია",
+    "imereti": "იმერეთი",
+    "kakheti": "კახეთი",
+    "kvemo-kartli": "ქვემო ქართლი",
+    "mtskheta-mtianeti": "მცხეთა-მთიანეთი",
+    "racha-lechkhumi": "რაჭა-ლეჩხუმი და ქვემო სვანეთი",
+    "samegrelo": "სამეგრელო-ზემო სვანეთი",
+    "samtskhe-javakheti": "სამცხე-ჯავახეთი",
+    "shida-kartli": "შიდა ქართლი"
+  },
   "dna": {
     "gedcomTitle": "GEDCOM-ის იმპორტი — მალე",
     "gedcomDesc": "ატვირთეთ GEDCOM ფაილი ოჯახის ხის იმპორტისა და დნმ დამთხვევების მოსაძებნად. ეს ფუნქცია მუშავდება."
