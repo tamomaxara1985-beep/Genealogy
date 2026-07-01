@@ -188,7 +188,9 @@
     "email": "Email",
     "phone": "Phone",
     "region": "Region",
-    "none": "No researcher assigned yet."
+    "none": "No researcher assigned yet.",
+    "add": "Add researcher",
+    "edit": "Edit"
   },
   "regions": {
     "tbilisi": "Tbilisi",
