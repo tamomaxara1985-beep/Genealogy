@@ -6,7 +6,9 @@
     "dna": "დნმ დამთხვევები",
     "admin": "ადმინი",
     "signOut": "გამოსვლა",
-    "settings": "პარამეტრები"
+    "settings": "პარამეტრები",
+    "researcher": "მკვლევარი",
+    "contact": "კონტაქტი"
   },
   "auth": {
     "signIn": "შესვლა",
@@ -168,7 +170,8 @@
     "colPersons": "პიროვნებები",
     "colRelationships": "ურთიერთობები",
     "colEvents": "მოვლენები",
-    "contact": "კონტაქტი"
+    "contact": "კონტაქტი",
+    "researcher": "მკვლევარი"
   },
   "contact": {
     "title": "დაგვიკავშირდით",
