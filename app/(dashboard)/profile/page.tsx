@@ -4,14 +4,15 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { connectDB } from "@/lib/db"
 import User from "@/lib/models/User"
-import { Badge } from "@/components/ui/badge"
 import type { IResearcher } from "@/types"
 
 export default async function ProfilePage() {
-  const [session, tNav, t] = await Promise.all([
+  const [session, tNav, t, tRes, tRegions] = await Promise.all([
     auth(),
     getTranslations("nav"),
     getTranslations("profile"),
+    getTranslations("researcher"),
+    getTranslations("regions"),
   ]);
   if (!session?.user) redirect("/login");
 
@@ -47,23 +48,18 @@ export default async function ProfilePage() {
       </Card>
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Researcher</CardTitle>
+          <CardTitle>{tRes("title")}</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
           {researcher ? (
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">{researcher.fullName}</span>
-                <Badge variant="secondary">{researcher.status}</Badge>
-              </div>
-              <p className="text-muted-foreground">{researcher.contact}</p>
-              {researcher.notes && <p className="text-muted-foreground">{researcher.notes}</p>}
-              {researcher.assignmentDate && (
-                <p className="text-xs text-muted-foreground">Assigned: {researcher.assignmentDate}</p>
-              )}
+              <p className="font-medium">{researcher.name} {researcher.surname}</p>
+              <p className="text-muted-foreground">{tRes("email")}: {researcher.email}</p>
+              <p className="text-muted-foreground">{tRes("phone")}: {researcher.phone}</p>
+              <p className="text-muted-foreground">{tRes("region")}: {tRegions(researcher.region)}</p>
             </div>
           ) : (
-            <p className="text-muted-foreground">No researcher assigned yet.</p>
+            <p className="text-muted-foreground">{tRes("none")}</p>
           )}
         </CardContent>
       </Card>
