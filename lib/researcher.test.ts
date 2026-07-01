@@ -1,43 +1,48 @@
 import { describe, it, expect } from "vitest";
 import { validateResearcher } from "./researcher";
 
-const TODAY = "2026-07-01";
+const VALID = {
+  name: "Jane",
+  surname: "Roe",
+  email: "jane@example.com",
+  phone: "+995 555 12 34 56",
+  region: "imereti",
+};
 
 describe("validateResearcher", () => {
   it("accepts a full valid payload", () => {
-    const r = validateResearcher(
-      { fullName: "Dr. Jane Roe", contact: "jane@x.com", notes: "n", assignmentDate: "2026-06-01", status: "In Progress" },
-      TODAY
-    );
-    expect(r).toEqual({
-      ok: true,
-      value: { fullName: "Dr. Jane Roe", contact: "jane@x.com", notes: "n", assignmentDate: "2026-06-01", status: "In Progress" },
+    const r = validateResearcher(VALID);
+    expect(r).toEqual({ ok: true, value: VALID });
+  });
+
+  it("trims whitespace on all fields", () => {
+    const r = validateResearcher({
+      name: "  Jane ",
+      surname: " Roe ",
+      email: " jane@example.com ",
+      phone: " 123 ",
+      region: " imereti ",
     });
+    expect(r.ok && r.value.name).toBe("Jane");
+    expect(r.ok && r.value.email).toBe("jane@example.com");
+    expect(r.ok && r.value.region).toBe("imereti");
   });
 
-  it("defaults status to Assigned and assignmentDate to today", () => {
-    const r = validateResearcher({ fullName: "A", contact: "b" }, TODAY);
-    expect(r).toEqual({
-      ok: true,
-      value: { fullName: "A", contact: "b", assignmentDate: TODAY, status: "Assigned" },
-    });
+  it("rejects each missing required field", () => {
+    for (const key of ["name", "surname", "email", "phone", "region"]) {
+      const bad = { ...VALID, [key]: "  " };
+      expect(validateResearcher(bad).ok).toBe(false);
+    }
+    expect(validateResearcher({}).ok).toBe(false);
   });
 
-  it("trims whitespace and omits empty notes", () => {
-    const r = validateResearcher({ fullName: "  A  ", contact: " b ", notes: "   " }, TODAY);
-    expect(r.ok && r.value.fullName).toBe("A");
-    expect(r.ok && r.value.contact).toBe("b");
-    expect(r.ok && "notes" in r.value).toBe(false);
+  it("rejects a malformed email", () => {
+    expect(validateResearcher({ ...VALID, email: "nope" }).ok).toBe(false);
+    expect(validateResearcher({ ...VALID, email: "a@" }).ok).toBe(false);
+    expect(validateResearcher({ ...VALID, email: "@b.com" }).ok).toBe(false);
   });
 
-  it("rejects missing fullName or contact", () => {
-    expect(validateResearcher({ contact: "b" }, TODAY).ok).toBe(false);
-    expect(validateResearcher({ fullName: "  ", contact: "b" }, TODAY).ok).toBe(false);
-    expect(validateResearcher({ fullName: "a" }, TODAY).ok).toBe(false);
-  });
-
-  it("rejects an invalid status", () => {
-    const r = validateResearcher({ fullName: "a", contact: "b", status: "Done" }, TODAY);
-    expect(r.ok).toBe(false);
+  it("rejects a region not in the list", () => {
+    expect(validateResearcher({ ...VALID, region: "narnia" }).ok).toBe(false);
   });
 });
