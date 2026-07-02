@@ -7,9 +7,16 @@ export interface IUser {
   createdAt: Date
 }
 
+export interface ILocalizedName {
+  en: string
+  ka: string
+  he: string
+}
+
 export interface IResearcher {
-  name: string
-  surname: string
+  _id: string
+  name: ILocalizedName
+  surname: ILocalizedName
   email: string
   phone: string
   region: string
