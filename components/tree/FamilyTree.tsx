@@ -137,11 +137,11 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
         <Controls />
         <MiniMap
           nodeColor={(n) => {
-            if (n.type === "coupleNode") return "#fde68a";
+            if (n.type === "coupleNode") return "#a7f3d0";
             const g = (n.data as { person?: { gender?: string } })?.person?.gender;
             if (g === "male") return "#bfdbfe";
             if (g === "female") return "#fbcfe8";
-            return "#fde68a";
+            return "#a7f3d0";
           }}
           maskColor="rgba(248,250,252,0.7)"
         />
