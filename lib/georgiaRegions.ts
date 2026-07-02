@@ -1,4 +1,5 @@
 export const REGION_CODES = [
+  "georgia",
   "tbilisi",
   "abkhazia",
   "adjara",
