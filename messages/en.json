@@ -234,7 +234,14 @@
     "region": "Region",
     "none": "No researcher assigned yet.",
     "add": "Add researcher",
-    "edit": "Edit"
+    "edit": "Edit",
+    "nameEn": "Name (English)",
+    "nameKa": "Name (Georgian)",
+    "nameHe": "Name (Hebrew)",
+    "surnameEn": "Surname (English)",
+    "surnameKa": "Surname (Georgian)",
+    "surnameHe": "Surname (Hebrew)",
+    "delete": "Delete researcher?"
   },
   "regions": {
     "georgia": "Georgia",
