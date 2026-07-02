@@ -110,7 +110,10 @@
     "revoke": "Revoke",
     "sharedWithNobody": "Not shared with anyone yet.",
     "emailPlaceholder": "name@example.com",
-    "viewOnlyBadge": "View-only"
+    "viewOnlyBadge": "View-only",
+    "print": "ბეჭდვა",
+    "printing": "მზადდება…",
+    "printError": "PDF ვერ შეიქმნა. სცადეთ თავიდან."
   },
   "common": {
     "save": "შენახვა",

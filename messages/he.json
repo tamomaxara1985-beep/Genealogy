@@ -110,7 +110,10 @@
     "revoke": "Revoke",
     "sharedWithNobody": "Not shared with anyone yet.",
     "emailPlaceholder": "name@example.com",
-    "viewOnlyBadge": "View-only"
+    "viewOnlyBadge": "View-only",
+    "print": "הדפסה",
+    "printing": "מכין…",
+    "printError": "לא ניתן ליצור PDF. נסו שוב."
   },
   "common": {
     "save": "שמור",
