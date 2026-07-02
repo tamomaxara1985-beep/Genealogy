@@ -4,6 +4,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
   useNodesState,
   useEdgesState,
   type Edge,
@@ -11,11 +12,21 @@ import {
   BackgroundVariant,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
+import { exportTreeToPdf, type PaperSize } from "@/lib/exportTree";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Printer, Loader2, ChevronDown } from "lucide-react";
 import type { TreeEdge } from "@/types";
 
 const nodeTypes = {
@@ -24,14 +35,19 @@ const nodeTypes = {
   polyCoupleNode: PolyCoupleNode,
 };
 
+const PAPER_SIZES: PaperSize[] = ["A4", "A3", "A2", "A1"];
+
 type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
 
 interface Props {
   nodes: AnyNode[];
   edges: TreeEdge[];
+  title?: string;
 }
 
-export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
+export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
+  const t = useTranslations("tree");
+
   // Derive stable ID keys so useMemo deps are simple expressions
   const nodeIds = rawNodes.map((n) => n.id).join(",");
   const edgeIds = rawEdges.map((e) => e.id).join(",");
@@ -48,6 +64,7 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
 
   const rfInstance = useRef<ReactFlowInstance<AnyNode, Edge> | null>(null);
   const isFirstLayout = useRef(true);
+  const [printing, setPrinting] = useState(false);
 
   // Sync layout; re-fit viewport when node set changes (e.g. second spouse added)
   useEffect(() => {
@@ -60,6 +77,17 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
   }, [layoutNodes, setNodes]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
+
+  async function handlePrint(paper: PaperSize) {
+    setPrinting(true);
+    try {
+      await exportTreeToPdf({ nodes, paper, title });
+    } catch {
+      alert(t("printError"));
+    } finally {
+      setPrinting(false);
+    }
+  }
 
   return (
     <div className="w-full flex-1 min-h-[600px] rounded-xl border bg-slate-50">
@@ -76,6 +104,35 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges }: Props) {
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
+        <Panel position="top-right">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={printing || nodes.length === 0}
+                  className="gap-1.5 bg-white"
+                />
+              }
+            >
+              {printing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Printer className="h-4 w-4" />
+              )}
+              {printing ? t("printing") : t("print")}
+              <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {PAPER_SIZES.map((p) => (
+                <DropdownMenuItem key={p} onClick={() => handlePrint(p)}>
+                  {p}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </Panel>
         <Background variant={BackgroundVariant.Dots} color="#cbd5e1" gap={20} size={1} />
         <Controls />
         <MiniMap

@@ -580,7 +580,7 @@ export default function TreePage({
           </div>
         </div>
       ) : (
-        <FamilyTree nodes={nodes} edges={edges} />
+        <FamilyTree nodes={nodes} edges={edges} title={treeMeta?.name} />
       )}
 
       {/* Add / Add-relative dialog */}
