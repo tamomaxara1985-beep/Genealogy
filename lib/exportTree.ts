@@ -51,6 +51,88 @@ function renderTitlePng(
   return { dataUrl: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height };
 }
 
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("image-load"));
+    img.src = src;
+  });
+}
+
+/**
+ * Rasterize the whole tree (nodes + edges) to a PNG data URL.
+ *
+ * html-to-image wraps the DOM in <foreignObject> and rasterizes it; Chromium
+ * renders the node <div>s but DROPS React Flow's inline edge <svg> layer. So we
+ * capture nodes with a TRANSPARENT background, separately serialize the edges
+ * into a standalone SVG (which rasterizes reliably), and composite edges under
+ * the nodes on one canvas. Edge stroke comes from a CSS class, which is lost on
+ * rasterization, so we copy each path's computed style inline onto a clone
+ * (never mutating the live canvas).
+ */
+async function renderTreeRaster(
+  viewport: HTMLElement,
+  imgW: number,
+  imgH: number,
+  x: number,
+  y: number,
+  zoom: number
+): Promise<string> {
+  const transform = `translate(${x}px, ${y}px) scale(${zoom})`;
+
+  // 1) Nodes — transparent background so edges below show through the gaps.
+  const nodesUrl = await toPng(viewport, {
+    width: imgW,
+    height: imgH,
+    pixelRatio: 1,
+    style: { width: `${imgW}px`, height: `${imgH}px`, transform },
+  });
+
+  // 2) Edges — standalone SVG built from a clone with inlined computed styles.
+  const edgesLayer = viewport.querySelector<HTMLElement>(".react-flow__edges");
+  const canvas = document.createElement("canvas");
+  canvas.width = imgW;
+  canvas.height = imgH;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, imgW, imgH);
+
+  if (edgesLayer) {
+    const clone = edgesLayer.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll("svg").forEach((s) => {
+      s.setAttribute("width", String(imgW));
+      s.setAttribute("height", String(imgH));
+      (s as SVGElement).style.overflow = "visible";
+    });
+    const livePaths = edgesLayer.querySelectorAll("path");
+    const clonePaths = clone.querySelectorAll("path");
+    livePaths.forEach((lp, i) => {
+      const cp = clonePaths[i] as SVGPathElement | undefined;
+      if (!cp) return;
+      const cs = getComputedStyle(lp);
+      cp.style.stroke = cs.stroke;
+      cp.style.strokeWidth = cs.strokeWidth;
+      cp.style.fill = cs.fill;
+      cp.style.strokeDasharray = cs.strokeDasharray;
+      cp.style.strokeOpacity = cs.strokeOpacity;
+    });
+    const edgesSvg =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${imgW}" height="${imgH}">` +
+      `<g transform="translate(${x} ${y}) scale(${zoom})">${clone.innerHTML}</g></svg>`;
+    const edgesImg = await loadImage(
+      "data:image/svg+xml;charset=utf-8," + encodeURIComponent(edgesSvg)
+    );
+    ctx.drawImage(edgesImg, 0, 0, imgW, imgH); // edges under
+  }
+
+  // 3) Nodes over edges.
+  const nodesImg = await loadImage(nodesUrl);
+  ctx.drawImage(nodesImg, 0, 0, imgW, imgH);
+
+  return canvas.toDataURL("image/png");
+}
+
 /** Fit an image's aspect ratio into an available box; returns the drawn size. */
 export function computeFit(
   imgW: number,
@@ -91,17 +173,7 @@ export async function exportTreeToPdf({
   const el = document.querySelector<HTMLElement>(".react-flow__viewport");
   if (!el) throw new Error("no-canvas");
 
-  const dataUrl = await toPng(el, {
-    backgroundColor: "#ffffff",
-    width: imgW,
-    height: imgH,
-    pixelRatio: 1,
-    style: {
-      width: `${imgW}px`,
-      height: `${imgH}px`,
-      transform: `translate(${x}px, ${y}px) scale(${zoom})`,
-    },
-  });
+  const dataUrl = await renderTreeRaster(el, imgW, imgH, x, y, zoom);
 
   const landscape = bounds.width >= bounds.height;
   const doc = new jsPDF({
