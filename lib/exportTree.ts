@@ -4,8 +4,52 @@ import { jsPDF } from "jspdf";
 
 export type PaperSize = "A4" | "A3" | "A2" | "A1";
 
-const PAD = 40;      // graph-space padding around the tree
-const MAX_PX = 4000; // cap on the raster's longest side
+const PAD = 40;       // graph-space padding around the tree
+const MAX_PX = 4000;  // cap on the raster's longest side
+const TITLE_MM = 14;  // vertical band reserved for the title + date
+
+/**
+ * Render the title + date to a PNG via a browser canvas so the PDF title
+ * uses real system fonts (Georgian/Hebrew/etc), which jsPDF's built-in
+ * Latin-only core font cannot display. Returns the data URL + pixel size.
+ */
+function renderTitlePng(
+  title: string,
+  subtitle: string
+): { dataUrl: string; w: number; h: number } {
+  const SCALE = 4;
+  const titlePx = 34;
+  const subPx = 18;
+  const gap = 6;
+  const padX = 24;
+  const font1 = `600 ${titlePx}px Inter, Arial, sans-serif`;
+  const font2 = `${subPx}px Inter, Arial, sans-serif`;
+
+  const measure = document.createElement("canvas").getContext("2d")!;
+  measure.font = font1;
+  const w1 = measure.measureText(title).width;
+  measure.font = font2;
+  const w2 = measure.measureText(subtitle).width;
+
+  const contentW = Math.max(w1, w2) + padX * 2;
+  const contentH = titlePx + gap + subPx;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.ceil(contentW * SCALE);
+  canvas.height = Math.ceil(contentH * SCALE);
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(SCALE, SCALE);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "#26332c";
+  ctx.font = font1;
+  ctx.fillText(title, contentW / 2, 0);
+  ctx.fillStyle = "#6a6a72";
+  ctx.font = font2;
+  ctx.fillText(subtitle, contentW / 2, titlePx + gap);
+
+  return { dataUrl: canvas.toDataURL("image/png"), w: canvas.width, h: canvas.height };
+}
 
 /** Fit an image's aspect ratio into an available box; returns the drawn size. */
 export function computeFit(
@@ -69,7 +113,7 @@ export async function exportTreeToPdf({
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
   const margin = 10;
-  const titleH = title ? 12 : 0;
+  const titleH = title ? TITLE_MM : 0;
   const availW = pageW - margin * 2;
   const availH = pageH - margin * 2 - titleH;
 
@@ -78,16 +122,16 @@ export async function exportTreeToPdf({
   const dy = margin + titleH + (availH - drawH) / 2;
 
   if (title) {
-    doc.setFontSize(16);
-    doc.text(title, pageW / 2, margin + 7, { align: "center" });
-    doc.setFontSize(9);
-    doc.setTextColor(120);
-    doc.text(`Generated ${new Date().toLocaleDateString()}`, pageW / 2, margin + 12, {
-      align: "center",
-    });
-    doc.setTextColor(0);
+    // Render the title band via a canvas (real fonts, Unicode-safe), then
+    // fit it into the reserved band width without distortion.
+    const banner = renderTitlePng(title, `Generated ${new Date().toLocaleDateString()}`);
+    const fit = computeFit(banner.w, banner.h, availW, TITLE_MM);
+    const tx = (pageW - fit.drawW) / 2;
+    doc.addImage(banner.dataUrl, "PNG", tx, margin, fit.drawW, fit.drawH);
   }
 
   doc.addImage(dataUrl, "PNG", dx, dy, drawW, drawH);
-  doc.save(`${(title || "family-tree").replace(/[^\w.-]+/g, "_")}.pdf`);
+  // Keep Unicode letters/numbers in the file name; collapse the rest to "_".
+  const base = (title || "family-tree").replace(/[^\p{L}\p{N}._-]+/gu, "_");
+  doc.save(`${base}.pdf`);
 }
