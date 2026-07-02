@@ -24,7 +24,7 @@ export async function Sidebar() {
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
           >
             <Icon className="h-4 w-4" />
             {label}
@@ -33,7 +33,7 @@ export async function Sidebar() {
         {isAdmin && (
           <Link
             href="/admin"
-            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+            className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
           >
             <ShieldCheck className="h-4 w-4" />
             {t("admin")}

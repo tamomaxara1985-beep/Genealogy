@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
   return (
     <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-2">
-        <Users className="h-5 w-5 text-amber-500" />
+        <Users className="h-5 w-5 text-emerald-500" />
         <h1 className="text-xl font-bold">{t("users")} ({users.length})</h1>
       </div>
       <div className="rounded-md border overflow-hidden">

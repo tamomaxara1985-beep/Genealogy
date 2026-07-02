@@ -129,7 +129,7 @@ export function CloudinaryUpload(props: Props) {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="truncate max-w-xs text-amber-600 hover:underline"
+                className="truncate max-w-xs text-emerald-600 hover:underline"
               >
                 Document {i + 1}
               </a>

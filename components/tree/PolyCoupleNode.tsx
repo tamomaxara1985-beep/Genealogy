@@ -37,7 +37,7 @@ const genderSelectedBorder: Record<string, string> = {
   male:    "border-blue-500",
   female:  "border-pink-500",
   other:   "border-purple-500",
-  unknown: "border-amber-500",
+  unknown: "border-emerald-500",
 };
 const genderAvatar: Record<string, string> = {
   male:    "bg-blue-50 text-blue-700",
@@ -97,9 +97,9 @@ function MarriageLine({ isDivorced, divorceDate }: { isDivorced?: boolean; divor
   }
   return (
     <div className="flex items-center w-[60px] flex-shrink-0">
-      <div className="flex-1 h-[1.5px] bg-amber-400" />
-      <span className="text-amber-500 text-sm mx-1 leading-none select-none">♥</span>
-      <div className="flex-1 h-[1.5px] bg-amber-400" />
+      <div className="flex-1 h-[1.5px] bg-emerald-400" />
+      <span className="text-emerald-500 text-sm mx-1 leading-none select-none">♥</span>
+      <div className="flex-1 h-[1.5px] bg-emerald-400" />
     </div>
   );
 }
@@ -124,44 +124,44 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
         <>
           {/* leftSpouse parents */}
           <button
-            className="nodrag nopan absolute -top-16 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-16 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(leftSpouse._id, "father"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {leftSpouse.firstName}&apos;s father
+            <span className="text-emerald-500 font-bold">+</span> {leftSpouse.firstName}&apos;s father
           </button>
           <button
-            className="nodrag nopan absolute -top-9 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-9 left-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(leftSpouse._id, "mother"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {leftSpouse.firstName}&apos;s mother
+            <span className="text-emerald-500 font-bold">+</span> {leftSpouse.firstName}&apos;s mother
           </button>
           {/* shared parents */}
           <button
-            className="nodrag nopan absolute -top-16 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-16 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             style={{ left: 220 }}
             onClick={(e) => { e.stopPropagation(); onAddRelative(shared._id, "father"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {shared.firstName}&apos;s father
+            <span className="text-emerald-500 font-bold">+</span> {shared.firstName}&apos;s father
           </button>
           <button
-            className="nodrag nopan absolute -top-9 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-9 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             style={{ left: 220 }}
             onClick={(e) => { e.stopPropagation(); onAddRelative(shared._id, "mother"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {shared.firstName}&apos;s mother
+            <span className="text-emerald-500 font-bold">+</span> {shared.firstName}&apos;s mother
           </button>
           {/* rightSpouse parents */}
           <button
-            className="nodrag nopan absolute -top-16 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-16 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(rightSpouse._id, "father"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {rightSpouse.firstName}&apos;s father
+            <span className="text-emerald-500 font-bold">+</span> {rightSpouse.firstName}&apos;s father
           </button>
           <button
-            className="nodrag nopan absolute -top-9 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+            className="nodrag nopan absolute -top-9 right-0 z-10 flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
             onClick={(e) => { e.stopPropagation(); onAddRelative(rightSpouse._id, "mother"); }}
           >
-            <span className="text-amber-500 font-bold">+</span> {rightSpouse.firstName}&apos;s mother
+            <span className="text-emerald-500 font-bold">+</span> {rightSpouse.firstName}&apos;s mother
           </button>
         </>
       )}
@@ -178,7 +178,7 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
       {/* Root siblings toggle — below the root spouse's card (left=80, shared=300, right=520) */}
       {rootSlot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
         <button
-          className="nodrag nopan absolute -bottom-8 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors"
+          className="nodrag nopan absolute -bottom-8 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
           style={{ left: rootSlot === "left" ? 56 : rootSlot === "shared" ? 276 : 496 }}
           onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
           title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
@@ -197,10 +197,10 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
             {CHILD_ROLES.map(({ role, label }) => (
               <button
                 key={`left-${role}`}
-                className="nodrag nopan flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+                className="nodrag nopan flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
                 onClick={(e) => { e.stopPropagation(); onAddRelative(leftSpouse._id, role, shared._id); }}
               >
-                <span className="text-amber-500 font-bold">+</span> {label}
+                <span className="text-emerald-500 font-bold">+</span> {label}
               </button>
             ))}
           </div>
@@ -208,10 +208,10 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
             {CHILD_ROLES.map(({ role, label }) => (
               <button
                 key={`right-${role}`}
-                className="nodrag nopan flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap"
+                className="nodrag nopan flex items-center gap-1 bg-white border border-gray-200 rounded-lg shadow px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap"
                 onClick={(e) => { e.stopPropagation(); onAddRelative(shared._id, role, rightSpouse._id); }}
               >
-                <span className="text-amber-500 font-bold">+</span> {label}
+                <span className="text-emerald-500 font-bold">+</span> {label}
               </button>
             ))}
           </div>

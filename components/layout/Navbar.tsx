@@ -27,7 +27,7 @@ export function Navbar() {
 
   return (
     <header className="h-14 border-b bg-white flex items-center justify-between px-6">
-      <Link href="/dashboard" className="text-xl font-bold text-amber-800">
+      <Link href="/dashboard" className="text-xl font-bold text-emerald-800">
         FamilyRoots
       </Link>
       <div className="flex items-center gap-3">

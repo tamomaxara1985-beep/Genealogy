@@ -103,7 +103,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
               return (
                 <tr
                   key={key}
-                  className={cn("border-b last:border-0", hasOverride ? "bg-amber-50" : "")}
+                  className={cn("border-b last:border-0", hasOverride ? "bg-emerald-50" : "")}
                 >
                   <td className="px-4 py-2 font-mono text-xs text-gray-600">{key}</td>
                   <td className="px-4 py-2 text-gray-500 text-xs">{defaults[key]}</td>
@@ -119,7 +119,7 @@ export function ContentEditor({ defaults, initialOverrides, locale }: ContentEdi
                       />
                       <Button
                         size="sm"
-                        className="h-7 px-3 text-xs shrink-0 bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
+                        className="h-7 px-3 text-xs shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-40"
                         onClick={() => save(key)}
                         disabled={pending[key] === undefined || saving[key]}
                       >

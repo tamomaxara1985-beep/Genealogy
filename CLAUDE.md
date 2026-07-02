@@ -93,7 +93,7 @@ Node types: `personNode` → `PersonNode.tsx`, `coupleNode` → `CoupleNode.tsx`
 - Server components by default; `"use client"` only for hooks/events
 - Controlled forms use single `set(key, value)` pattern (see `PersonForm.tsx`)
 - `cn()` from `lib/utils.ts` (clsx + tailwind-merge) for all className composition
-- Amber color scheme: `#f59e0b` / `amber-*` Tailwind classes
+- Emerald color scheme: `#059669` / `emerald-*` Tailwind classes
 
 ### Planned Phases
 

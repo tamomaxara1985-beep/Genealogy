@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db"
 import SiteSettings from "@/lib/models/SiteSettings"
 
 const DEFAULT_SETTINGS = {
-  primaryColor: "oklch(0.205 0 0)",
+  primaryColor: "oklch(0.596 0.145 162.5)",
   fontFamily: "Inter",
   fontSize: "md" as "sm" | "md" | "lg" | "xl",
   borderRadius: 0.625,

@@ -24,7 +24,7 @@ export default async function ProfilePage() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center text-amber-800 text-xl font-bold">
+            <div className="h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 text-xl font-bold">
               {initials}
             </div>
             <div>

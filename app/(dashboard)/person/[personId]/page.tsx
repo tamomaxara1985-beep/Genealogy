@@ -171,7 +171,7 @@ export default function PersonProfilePage({
     return (
       <Link
         href={`/person/${id}`}
-        className="text-sm font-medium hover:text-amber-600 hover:underline"
+        className="text-sm font-medium hover:text-emerald-600 hover:underline"
       >
         {p.firstName} {p.lastName}
       </Link>
@@ -307,7 +307,7 @@ export default function PersonProfilePage({
                   <div key={hideId} className="flex items-center justify-between opacity-60">
                     <PersonLink id={siblingId} />
                     <button
-                      className="text-[11px] text-gray-400 hover:text-amber-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300 transition-colors"
+                      className="text-[11px] text-gray-400 hover:text-emerald-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-emerald-300 transition-colors"
                       onClick={() => handleRelinkSibling(hideId)}
                     >
                       relink
@@ -340,7 +340,7 @@ export default function PersonProfilePage({
                       {isOwner && (
                         <div className="flex gap-1 shrink-0">
                           <button
-                            className="text-[11px] text-gray-400 hover:text-amber-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-amber-300 transition-colors"
+                            className="text-[11px] text-gray-400 hover:text-emerald-600 px-1.5 py-0.5 rounded border border-gray-200 hover:border-emerald-300 transition-colors"
                             onClick={() => {
                               setDivorceRelId(r._id);
                               setDivorceDate(r.endDate ?? "");
@@ -420,7 +420,7 @@ export default function PersonProfilePage({
                           href={url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-amber-600 hover:underline"
+                          className="text-xs text-emerald-600 hover:underline"
                         >
                           📎 Document {i + 1}
                         </a>
@@ -456,7 +456,7 @@ export default function PersonProfilePage({
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Role</label>
               <select
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={linkRole}
                 onChange={(e) => setLinkRole(e.target.value as LinkRole)}
               >
@@ -468,7 +468,7 @@ export default function PersonProfilePage({
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Person</label>
               <select
-                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 value={linkPersonId}
                 onChange={(e) => setLinkPersonId(e.target.value)}
               >
@@ -496,7 +496,7 @@ export default function PersonProfilePage({
               <label className="text-sm font-medium">Divorce date (optional)</label>
               <input
                 type="text"
-                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 placeholder="e.g. 1985 or 12 Mar 1985"
                 value={divorceDate}
                 onChange={(e) => setDivorceDate(e.target.value)}

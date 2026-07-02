@@ -43,14 +43,14 @@ const genderBorder: Record<string, string> = {
   male:    "border-blue-300",
   female:  "border-pink-300",
   other:   "border-purple-300",
-  unknown: "border-amber-200",
+  unknown: "border-emerald-200",
 };
 
 const genderSelectedBorder: Record<string, string> = {
   male:    "border-blue-500",
   female:  "border-pink-500",
   other:   "border-purple-500",
-  unknown: "border-amber-500",
+  unknown: "border-emerald-500",
 };
 
 const genderAvatar: Record<string, string> = {
@@ -76,10 +76,10 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
         ADD_BUTTONS.map(({ role, label, pos }) => (
           <button
             key={role}
-            className={`${posClass[pos]} nodrag nopan z-10 flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg shadow-md px-2 py-1.5 text-xs font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 whitespace-nowrap transition-colors`}
+            className={`${posClass[pos]} nodrag nopan z-10 flex items-center gap-1.5 bg-white border border-gray-200 rounded-lg shadow-md px-2 py-1.5 text-xs font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 whitespace-nowrap transition-colors`}
             onClick={(e) => { e.stopPropagation(); onAddRelative(person._id, role); }}
           >
-            <span className="h-4 w-4 rounded-full bg-amber-50 border border-amber-300 flex items-center justify-center text-amber-600 font-bold text-[9px]">+</span>
+            <span className="h-4 w-4 rounded-full bg-emerald-50 border border-emerald-300 flex items-center justify-center text-emerald-600 font-bold text-[9px]">+</span>
             {label}
           </button>
         ))}
@@ -87,7 +87,7 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
       {/* Collapse button */}
       {onToggleCollapse && (
         <button
-          className="nodrag nopan absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-amber-400 transition-colors"
+          className="nodrag nopan absolute -top-7 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center w-5 h-5 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-50 hover:border-emerald-400 transition-colors"
           onClick={(e) => { e.stopPropagation(); onToggleCollapse(person._id); }}
           title={isCollapsed ? "Show ancestors" : "Hide ancestors"}
         >
@@ -106,7 +106,7 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
       {/* Root siblings toggle — right side of root card only */}
       {isRoot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
         <button
-          className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-14 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-amber-400 hover:text-amber-700 transition-colors"
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-14 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
           onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
           title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
         >

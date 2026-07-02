@@ -125,7 +125,7 @@ function Reveal({
 
 /* === PRODUCT PREVIEW ============================================
    A faithful static mockup of the tree canvas, reusing the real
-   node vocabulary (gender border, living bar, initials avatar, amber
+   node vocabulary (gender border, living bar, initials avatar, emerald
    ♥ marriage line). Not a live capture — no auth/DB needed — but it
    reads as a genuine screenshot of the app on the hero.
    ================================================================ */
@@ -185,20 +185,20 @@ function PvCard({
 function Marriage() {
   return (
     <div className="flex w-7 flex-shrink-0 items-center">
-      <div className="h-px flex-1 bg-amber-400" />
-      <span className="mx-0.5 text-xs leading-none text-amber-500">♥</span>
-      <div className="h-px flex-1 bg-amber-400" />
+      <div className="h-px flex-1 bg-emerald-400" />
+      <span className="mx-0.5 text-xs leading-none text-emerald-500">♥</span>
+      <div className="h-px flex-1 bg-emerald-400" />
     </div>
   );
 }
 
 function TreePreview() {
   return (
-    <div className="w-full max-w-md rounded-xl border border-amber-900/10 bg-white shadow-2xl shadow-amber-950/15 ring-1 ring-black/5">
+    <div className="w-full max-w-md rounded-xl border border-emerald-900/10 bg-white shadow-2xl shadow-emerald-950/15 ring-1 ring-black/5">
       {/* Browser chrome */}
       <div className="flex items-center gap-2 rounded-t-xl border-b border-gray-100 bg-gray-50 px-3 py-2">
         <span className="size-2.5 rounded-full bg-red-400/80" />
-        <span className="size-2.5 rounded-full bg-amber-400/80" />
+        <span className="size-2.5 rounded-full bg-emerald-400/80" />
         <span className="size-2.5 rounded-full bg-green-400/80" />
         <span className="ml-2 truncate rounded-md bg-white px-2 py-0.5 text-[10px] text-gray-400 ring-1 ring-gray-200">
           familyroots.app/trees/hale-family
@@ -294,7 +294,7 @@ export default function LandingPage() {
   return (
     <main
       ref={scrollerRef}
-      className={`${display.variable} relative h-dvh overflow-y-scroll scroll-smooth bg-[#f5ecd9] text-[#41372b] sm:snap-y sm:snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+      className={`${display.variable} relative h-dvh overflow-y-scroll scroll-smooth bg-[#eef5ef] text-[#33413a] sm:snap-y sm:snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
     >
       {/* === Parchment grain overlay (fixed, very subtle) === */}
       <div
@@ -314,12 +314,12 @@ export default function LandingPage() {
             className="flex items-center gap-2.5"
             aria-label="FamilyRoots — go to top"
           >
-            <span className="flex size-9 items-center justify-center rounded-xl bg-amber-700/10 text-amber-800 ring-1 ring-amber-800/15">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-700/10 text-emerald-800 ring-1 ring-emerald-800/15">
               <TreePine className="size-5" aria-hidden />
             </span>
             <span
               style={{ fontFamily: "var(--font-fraunces)" }}
-              className="text-2xl font-semibold tracking-tight text-[#3a2f23]"
+              className="text-2xl font-semibold tracking-tight text-[#2c3a33]"
             >
               FamilyRoots
             </span>
@@ -327,7 +327,7 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              className="h-9 px-3 text-[#5b4d3c] hover:bg-amber-800/10 hover:text-[#3a2f23]"
+              className="h-9 px-3 text-[#4c5f54] hover:bg-emerald-800/10 hover:text-[#2c3a33]"
               nativeButton={false}
               render={<Link href="/contact" />}
             >
@@ -335,14 +335,14 @@ export default function LandingPage() {
             </Button>
             <Button
               variant="ghost"
-              className="h-9 px-3 text-[#5b4d3c] hover:bg-amber-800/10 hover:text-[#3a2f23]"
+              className="h-9 px-3 text-[#4c5f54] hover:bg-emerald-800/10 hover:text-[#2c3a33]"
               nativeButton={false}
               render={<Link href="/login" />}
             >
               Sign in
             </Button>
             <Button
-              className="h-9 bg-amber-700 px-4 text-amber-50 shadow-sm hover:bg-amber-800"
+              className="h-9 bg-emerald-700 px-4 text-emerald-50 shadow-sm hover:bg-emerald-800"
               nativeButton={false}
               render={<Link href="/register" />}
             >
@@ -365,14 +365,14 @@ export default function LandingPage() {
             aria-current={active === i}
             className="group relative flex items-center"
           >
-            <span className="pointer-events-none absolute right-6 whitespace-nowrap rounded-md bg-[#3a2f23] px-2 py-1 text-xs font-medium text-amber-50 opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="pointer-events-none absolute right-6 whitespace-nowrap rounded-md bg-[#2c3a33] px-2 py-1 text-xs font-medium text-emerald-50 opacity-0 transition-opacity group-hover:opacity-100">
               {label}
             </span>
             <span
-              className={`block rounded-full ring-1 ring-amber-800/40 transition-all duration-300 ${
+              className={`block rounded-full ring-1 ring-emerald-800/40 transition-all duration-300 ${
                 active === i
-                  ? "size-3 bg-amber-700"
-                  : "size-2 bg-transparent group-hover:bg-amber-700/40"
+                  ? "size-3 bg-emerald-700"
+                  : "size-2 bg-transparent group-hover:bg-emerald-700/40"
               }`}
             />
           </button>
@@ -388,12 +388,12 @@ export default function LandingPage() {
       >
         {/* Layered warm backdrop */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#faf4e6] via-[#f5ecd9] to-[#efe2c6]" />
-          <div className="absolute left-1/2 top-[-10rem] size-[46rem] -translate-x-1/2 rounded-full bg-amber-300/30 blur-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#faf4e6] via-[#eef5ef] to-[#efe2c6]" />
+          <div className="absolute left-1/2 top-[-10rem] size-[46rem] -translate-x-1/2 rounded-full bg-emerald-300/30 blur-3xl" />
           <div className="absolute bottom-[-12rem] right-[-6rem] size-[34rem] rounded-full bg-orange-300/20 blur-3xl" />
           {/* Faint heritage tree lines */}
           <svg
-            className="absolute inset-x-0 bottom-0 mx-auto h-[60%] w-full max-w-4xl text-amber-800/10"
+            className="absolute inset-x-0 bottom-0 mx-auto h-[60%] w-full max-w-4xl text-emerald-800/10"
             viewBox="0 0 400 260"
             fill="none"
             preserveAspectRatio="xMidYMax meet"
@@ -421,7 +421,7 @@ export default function LandingPage() {
           {/* Text column */}
           <div className="text-center lg:text-left">
             <Reveal>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-800/20 bg-[#fcf8ee] px-3.5 py-1.5 text-sm font-medium text-amber-800 shadow-sm">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-800/20 bg-[#fcf8ee] px-3.5 py-1.5 text-sm font-medium text-emerald-800 shadow-sm">
                 <Sparkles className="size-3.5" aria-hidden />
                 AI-powered family history
               </span>
@@ -429,14 +429,14 @@ export default function LandingPage() {
             <Reveal delay={120}>
               <h1
                 style={{ fontFamily: "var(--font-fraunces)" }}
-                className="mt-6 text-balance text-5xl font-semibold leading-[1.03] tracking-tight text-[#34291d] sm:text-6xl lg:text-7xl"
+                className="mt-6 text-balance text-5xl font-semibold leading-[1.03] tracking-tight text-[#26332c] sm:text-6xl lg:text-7xl"
               >
                 Discover your{" "}
-                <span className="italic text-amber-700">family story</span>
+                <span className="italic text-emerald-700">family story</span>
               </h1>
             </Reveal>
             <Reveal delay={240}>
-              <p className="mx-auto mt-6 max-w-xl text-pretty text-lg leading-relaxed text-[#6a5b48] lg:mx-0">
+              <p className="mx-auto mt-6 max-w-xl text-pretty text-lg leading-relaxed text-[#5a6e62] lg:mx-0">
                 Build your family tree, bring old documents to life, and let AI
                 uncover the stories of the people who came before you.
               </p>
@@ -444,7 +444,7 @@ export default function LandingPage() {
             <Reveal delay={360}>
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
                 <Button
-                  className="h-12 w-full gap-2 bg-amber-700 px-7 text-base text-amber-50 shadow-md hover:bg-amber-800 sm:w-auto"
+                  className="h-12 w-full gap-2 bg-emerald-700 px-7 text-base text-emerald-50 shadow-md hover:bg-emerald-800 sm:w-auto"
                   nativeButton={false}
                   render={<Link href="/register" />}
                 >
@@ -453,7 +453,7 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   variant="outline"
-                  className="h-12 w-full border-amber-800/25 bg-[#fcf8ee] px-7 text-base text-[#4a3d2d] hover:bg-[#f3e8cf] sm:w-auto"
+                  className="h-12 w-full border-emerald-800/25 bg-[#fcf8ee] px-7 text-base text-[#3c4c43] hover:bg-[#f3e8cf] sm:w-auto"
                   nativeButton={false}
                   render={<Link href="/login" />}
                 >
@@ -462,7 +462,7 @@ export default function LandingPage() {
               </div>
             </Reveal>
             <Reveal delay={480}>
-              <p className="mt-5 text-sm text-[#8a7c66]">
+              <p className="mt-5 text-sm text-[#79897e]">
                 Free to start · No credit card required
               </p>
             </Reveal>
@@ -480,7 +480,7 @@ export default function LandingPage() {
         <button
           onClick={() => goTo(1)}
           aria-label="Next slide"
-          className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 text-amber-800/60 transition-colors hover:text-amber-800 sm:block motion-safe:animate-bounce"
+          className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 text-emerald-800/60 transition-colors hover:text-emerald-800 sm:block motion-safe:animate-bounce"
         >
           <ArrowDown className="size-6" aria-hidden />
         </button>
@@ -491,15 +491,15 @@ export default function LandingPage() {
           =================================================================== */}
       <section
 
-        className="relative flex min-h-dvh snap-start snap-always items-center justify-center overflow-hidden bg-[#34291d] px-5 text-amber-50"
+        className="relative flex min-h-dvh snap-start snap-always items-center justify-center overflow-hidden bg-[#26332c] px-5 text-emerald-50"
       >
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
-          <div className="absolute left-1/4 top-1/3 size-[40rem] -translate-x-1/2 rounded-full bg-amber-600/15 blur-3xl" />
+          <div className="absolute left-1/4 top-1/3 size-[40rem] -translate-x-1/2 rounded-full bg-emerald-600/15 blur-3xl" />
           <div className="absolute bottom-0 right-0 size-[30rem] rounded-full bg-orange-700/15 blur-3xl" />
         </div>
         <div className="relative z-10 mx-auto max-w-4xl text-center">
           <Reveal>
-            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-400/80">
+            <span className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-400/80">
               Why it matters
             </span>
           </Reveal>
@@ -509,12 +509,12 @@ export default function LandingPage() {
               className="mt-8 text-balance text-4xl font-medium leading-[1.18] tracking-tight sm:text-5xl md:text-6xl"
             >
               Every name on your tree was once a{" "}
-              <span className="italic text-amber-400">whole life</span> — its
+              <span className="italic text-emerald-400">whole life</span> — its
               own loves, journeys, and quiet ordinary days.
             </p>
           </Reveal>
           <Reveal delay={280}>
-            <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-amber-100/70">
+            <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-emerald-100/70">
               FamilyRoots helps you find them, remember them, and pass their
               stories forward.
             </p>
@@ -527,20 +527,20 @@ export default function LandingPage() {
           =================================================================== */}
       <section
 
-        className="relative flex min-h-dvh snap-start snap-always items-center overflow-hidden bg-gradient-to-b from-[#f5ecd9] to-[#efe2c6] px-5"
+        className="relative flex min-h-dvh snap-start snap-always items-center overflow-hidden bg-gradient-to-b from-[#eef5ef] to-[#efe2c6] px-5"
       >
         <div className="mx-auto w-full max-w-6xl py-16">
           <div className="mx-auto max-w-2xl text-center">
             <Reveal>
               <h2
                 style={{ fontFamily: "var(--font-fraunces)" }}
-                className="text-4xl font-semibold tracking-tight text-[#34291d] sm:text-5xl"
+                className="text-4xl font-semibold tracking-tight text-[#26332c] sm:text-5xl"
               >
                 Everything you need to trace your roots
               </h2>
             </Reveal>
             <Reveal delay={120}>
-              <p className="mt-4 text-lg text-[#6a5b48]">
+              <p className="mt-4 text-lg text-[#5a6e62]">
                 Friendly tools that make genealogy feel effortless.
               </p>
             </Reveal>
@@ -548,17 +548,17 @@ export default function LandingPage() {
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
               <Reveal key={f.title} delay={200 + i * 110}>
-                <div className="group h-full rounded-2xl border border-amber-800/10 bg-[#fcf8ee] p-6 shadow-sm transition-all duration-300 motion-safe:hover:-translate-y-1.5 hover:shadow-lg hover:shadow-amber-900/5">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-amber-700/10 text-amber-800 ring-1 ring-amber-800/10 transition-colors group-hover:bg-amber-700 group-hover:text-amber-50">
+                <div className="group h-full rounded-2xl border border-emerald-800/10 bg-[#fcf8ee] p-6 shadow-sm transition-all duration-300 motion-safe:hover:-translate-y-1.5 hover:shadow-lg hover:shadow-emerald-900/5">
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-emerald-700/10 text-emerald-800 ring-1 ring-emerald-800/10 transition-colors group-hover:bg-emerald-700 group-hover:text-emerald-50">
                     <f.icon className="size-5" aria-hidden />
                   </span>
                   <h3
                     style={{ fontFamily: "var(--font-fraunces)" }}
-                    className="mt-5 text-xl font-semibold text-[#34291d]"
+                    className="mt-5 text-xl font-semibold text-[#26332c]"
                   >
                     {f.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[#6a5b48]">
+                  <p className="mt-2 text-sm leading-relaxed text-[#5a6e62]">
                     {f.desc}
                   </p>
                 </div>
@@ -576,20 +576,20 @@ export default function LandingPage() {
         className="relative flex min-h-dvh snap-start snap-always items-center overflow-hidden bg-[#efe2c6] px-5"
       >
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-0">
-          <div className="absolute right-1/4 top-0 size-[34rem] rounded-full bg-amber-300/25 blur-3xl" />
+          <div className="absolute right-1/4 top-0 size-[34rem] rounded-full bg-emerald-300/25 blur-3xl" />
         </div>
         <div className="relative z-10 mx-auto w-full max-w-6xl py-16">
           <div className="mx-auto max-w-2xl text-center">
             <Reveal>
               <h2
                 style={{ fontFamily: "var(--font-fraunces)" }}
-                className="text-4xl font-semibold tracking-tight text-[#34291d] sm:text-5xl"
+                className="text-4xl font-semibold tracking-tight text-[#26332c] sm:text-5xl"
               >
                 From a single name to a living history
               </h2>
             </Reveal>
             <Reveal delay={120}>
-              <p className="mt-4 text-lg text-[#6a5b48]">
+              <p className="mt-4 text-lg text-[#5a6e62]">
                 Three easy steps to get started.
               </p>
             </Reveal>
@@ -601,22 +601,22 @@ export default function LandingPage() {
                 {i < steps.length - 1 && (
                   <span
                     aria-hidden
-                    className="absolute left-[calc(50%+2.5rem)] top-9 hidden h-px w-[calc(100%-5rem)] bg-amber-800/20 md:block"
+                    className="absolute left-[calc(50%+2.5rem)] top-9 hidden h-px w-[calc(100%-5rem)] bg-emerald-800/20 md:block"
                   />
                 )}
-                <span className="relative mx-auto flex size-18 items-center justify-center rounded-full bg-[#fcf8ee] text-amber-800 shadow-md ring-1 ring-amber-800/15">
+                <span className="relative mx-auto flex size-18 items-center justify-center rounded-full bg-[#fcf8ee] text-emerald-800 shadow-md ring-1 ring-emerald-800/15">
                   <s.icon className="size-7" aria-hidden />
-                  <span className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-amber-700 text-sm font-bold text-amber-50">
+                  <span className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-emerald-50">
                     {i + 1}
                   </span>
                 </span>
                 <h3
                   style={{ fontFamily: "var(--font-fraunces)" }}
-                  className="mt-6 text-2xl font-semibold text-[#34291d]"
+                  className="mt-6 text-2xl font-semibold text-[#26332c]"
                 >
                   {s.title}
                 </h3>
-                <p className="mx-auto mt-3 max-w-xs leading-relaxed text-[#6a5b48]">
+                <p className="mx-auto mt-3 max-w-xs leading-relaxed text-[#5a6e62]">
                   {s.desc}
                 </p>
               </Reveal>
@@ -635,27 +635,27 @@ export default function LandingPage() {
         <div className="flex flex-1 items-center justify-center">
           <div className="mx-auto max-w-2xl text-center">
             <Reveal>
-              <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-amber-700/15 text-amber-800 ring-1 ring-amber-800/15">
+              <span className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-emerald-700/15 text-emerald-800 ring-1 ring-emerald-800/15">
                 <Heart className="size-7" aria-hidden />
               </span>
             </Reveal>
             <Reveal delay={120}>
               <h2
                 style={{ fontFamily: "var(--font-fraunces)" }}
-                className="mt-7 text-balance text-5xl font-semibold tracking-tight text-[#34291d] sm:text-6xl"
+                className="mt-7 text-balance text-5xl font-semibold tracking-tight text-[#26332c] sm:text-6xl"
               >
                 Your family&apos;s story is{" "}
-                <span className="italic text-amber-700">waiting</span>
+                <span className="italic text-emerald-700">waiting</span>
               </h2>
             </Reveal>
             <Reveal delay={240}>
-              <p className="mx-auto mt-6 max-w-lg text-lg text-[#6a5b48]">
+              <p className="mx-auto mt-6 max-w-lg text-lg text-[#5a6e62]">
                 Begin building your tree today — it&apos;s free to start.
               </p>
             </Reveal>
             <Reveal delay={360}>
               <Button
-                className="mt-9 h-13 gap-2 bg-amber-700 px-8 text-base text-amber-50 shadow-md hover:bg-amber-800"
+                className="mt-9 h-13 gap-2 bg-emerald-700 px-8 text-base text-emerald-50 shadow-md hover:bg-emerald-800"
                 nativeButton={false}
                 render={<Link href="/register" />}
               >
@@ -667,23 +667,23 @@ export default function LandingPage() {
         </div>
 
         {/* Footer pinned to bottom of last slide */}
-        <footer className="border-t border-amber-800/15 py-6">
+        <footer className="border-t border-emerald-800/15 py-6">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-amber-700/15 text-amber-800">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-700/15 text-emerald-800">
                 <TreePine className="size-4" aria-hidden />
               </span>
               <span
                 style={{ fontFamily: "var(--font-fraunces)" }}
-                className="font-semibold text-[#3a2f23]"
+                className="font-semibold text-[#2c3a33]"
               >
                 FamilyRoots
               </span>
             </div>
-            <Link href="/contact" className="text-sm text-[#8a7c66] hover:text-[#3a2f23]">
+            <Link href="/contact" className="text-sm text-[#79897e] hover:text-[#2c3a33]">
               Contact
             </Link>
-            <p className="text-sm text-[#8a7c66]">
+            <p className="text-sm text-[#79897e]">
               © {2026} FamilyRoots. Discover where you come from.
             </p>
           </div>

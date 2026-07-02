@@ -75,7 +75,7 @@ export default function AdminContactPage() {
   return (
     <div className="max-w-4xl space-y-8">
       <div className="flex items-center gap-2">
-        <Mail className="h-5 w-5 text-amber-500" />
+        <Mail className="h-5 w-5 text-emerald-500" />
         <h1 className="text-xl font-bold">{t("info")}</h1>
       </div>
 
@@ -158,7 +158,7 @@ export default function AdminContactPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={saveInfo} disabled={saving} className="bg-amber-500 hover:bg-amber-600 text-white">
+          <Button onClick={saveInfo} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white">
             {saving ? tc("saving") : t("save")}
           </Button>
           {saved && <span className="text-sm text-green-600">{t("saved")}</span>}
@@ -203,7 +203,7 @@ export default function AdminContactPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>{openMsg?.subject}</DialogTitle></DialogHeader>
           <div className="space-y-2 text-sm">
-            <p><span className="font-medium">{openMsg?.fullName}</span> · <a href={`mailto:${openMsg?.email}`} className="text-amber-700 hover:underline">{openMsg?.email}</a></p>
+            <p><span className="font-medium">{openMsg?.fullName}</span> · <a href={`mailto:${openMsg?.email}`} className="text-emerald-700 hover:underline">{openMsg?.email}</a></p>
             <p className="whitespace-pre-line text-muted-foreground">{openMsg?.message}</p>
           </div>
           <DialogFooter className="gap-2">

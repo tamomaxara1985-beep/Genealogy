@@ -63,7 +63,7 @@ export default function AdminFilesPage() {
   return (
     <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-2">
-        <FolderOpen className="h-5 w-5 text-amber-500" />
+        <FolderOpen className="h-5 w-5 text-emerald-500" />
         <h1 className="text-xl font-bold">{t("filesCount", { count: files.length })}</h1>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

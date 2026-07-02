@@ -57,8 +57,8 @@ export function DashboardClient() {
           <Card key={label}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-100">
-                  <Icon className="h-5 w-5 text-amber-600" />
+                <div className="p-2 rounded-lg bg-emerald-100">
+                  <Icon className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{isLoading ? "—" : value}</p>
@@ -76,7 +76,7 @@ export function DashboardClient() {
         </CardHeader>
         <CardContent className="space-y-3">
           <textarea
-            className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-amber-400"
+            className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-400"
             placeholder={tDash("bioPlaceholder")}
             value={bio}
             onChange={(e) => { setBio(e.target.value); setSaved(false) }}
@@ -85,7 +85,7 @@ export function DashboardClient() {
             <Button
               onClick={saveBio}
               disabled={saving}
-              className="bg-amber-500 hover:bg-amber-600 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {saving ? tc("saving") : tc("save")}
             </Button>
@@ -96,7 +96,7 @@ export function DashboardClient() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">{tNav("trees")}</h2>
-        <Button variant="ghost" size="sm" className="gap-1 text-amber-600" onClick={() => router.push("/trees")}>
+        <Button variant="ghost" size="sm" className="gap-1 text-emerald-600" onClick={() => router.push("/trees")}>
           {tDash("viewAll")} <ArrowRight className="h-3 w-3" />
         </Button>
       </div>

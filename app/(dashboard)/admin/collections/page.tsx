@@ -42,13 +42,13 @@ export default async function AdminCollectionsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Database className="h-5 w-5 text-amber-500" />
+        <Database className="h-5 w-5 text-emerald-500" />
         <h1 className="text-xl font-bold">{t("collections")}</h1>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {counts.map(({ name, count }) => (
           <Link key={name} href={`/admin/collections/${name}`}>
-            <Card className="hover:border-amber-400 transition-colors cursor-pointer">
+            <Card className="hover:border-emerald-400 transition-colors cursor-pointer">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{collectionLabel[name] ?? name}</CardTitle>
               </CardHeader>

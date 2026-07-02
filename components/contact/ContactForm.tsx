@@ -77,7 +77,7 @@ export function ContactForm() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={sending || !valid} className="bg-amber-700 hover:bg-amber-800 text-amber-50">
+        <Button type="submit" disabled={sending || !valid} className="bg-emerald-700 hover:bg-emerald-800 text-emerald-50">
           {sending ? t("sending") : t("send")}
         </Button>
         {done && <span className="text-sm text-green-700">{t("sent")}</span>}

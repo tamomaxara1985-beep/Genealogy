@@ -98,7 +98,7 @@ export function ChatWidget() {
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
         <div className="w-[380px] h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 bg-amber-500 text-white">
+          <div className="flex items-center justify-between px-4 py-3 bg-emerald-500 text-white">
             <span className="font-semibold text-sm">AI Research Assistant</span>
             <button
               onClick={() => setOpen(false)}
@@ -129,12 +129,12 @@ export function ChatWidget() {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about your ancestors..."
                 disabled={streaming}
-                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-amber-400 disabled:opacity-50"
+                className="flex-1 text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-emerald-400 disabled:opacity-50"
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || streaming}
-                className="bg-amber-500 hover:bg-amber-600 disabled:opacity-40 text-white rounded-lg px-3 py-2 transition-colors"
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-lg px-3 py-2 transition-colors"
               >
                 <Send size={16} />
               </button>
@@ -144,7 +144,7 @@ export function ChatWidget() {
 
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="w-14 h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+        className="w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
       >
         {open ? <X size={22} /> : <MessageCircle size={22} />}
       </button>

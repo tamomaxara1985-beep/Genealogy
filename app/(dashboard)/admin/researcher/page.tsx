@@ -72,12 +72,12 @@ export default function AdminResearcherPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Microscope className="h-5 w-5 text-amber-500" />
+          <Microscope className="h-5 w-5 text-emerald-500" />
           <h1 className="text-xl font-bold">{t("researcher")}</h1>
         </div>
         {!form && (
           <Button onClick={() => setForm({ ...BLANK, name: { ...EMPTY_NAME }, surname: { ...EMPTY_NAME } })}
-            className="bg-amber-500 hover:bg-amber-600 text-white">
+            className="bg-emerald-600 hover:bg-emerald-700 text-white">
             {tr("add")}
           </Button>
         )}
@@ -158,7 +158,7 @@ export default function AdminResearcherPage() {
             </Select>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={save} disabled={saving || !valid} className="bg-amber-500 hover:bg-amber-600 text-white">
+            <Button onClick={save} disabled={saving || !valid} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               {saving ? tc("saving") : tc("save")}
             </Button>
             <Button variant="outline" onClick={() => setForm(null)}>{tc("cancel")}</Button>

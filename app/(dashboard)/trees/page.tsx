@@ -80,7 +80,7 @@ export default function TreesPage() {
             {owned.map((tree) => (
               <Card
                 key={tree._id}
-                className="cursor-pointer hover:border-amber-400 transition-colors"
+                className="cursor-pointer hover:border-emerald-400 transition-colors"
                 onClick={() => router.push(`/trees/${tree._id}`)}
               >
                 <CardHeader>
@@ -96,7 +96,7 @@ export default function TreesPage() {
 
             {owned.length === 0 && (
               <Card
-                className="border-dashed border-2 flex items-center justify-center min-h-40 cursor-pointer hover:border-amber-400"
+                className="border-dashed border-2 flex items-center justify-center min-h-40 cursor-pointer hover:border-emerald-400"
                 onClick={() => setShowForm(true)}
               >
                 <CardContent className="text-center pt-6">
@@ -113,12 +113,12 @@ export default function TreesPage() {
                 {shared.map((tree) => (
                   <Card
                     key={tree._id}
-                    className="cursor-pointer hover:border-amber-400 transition-colors"
+                    className="cursor-pointer hover:border-emerald-400 transition-colors"
                     onClick={() => router.push(`/trees/${tree._id}`)}
                   >
                     <CardHeader className="flex flex-row items-center justify-between gap-2">
                       <CardTitle className="text-lg">{tree.name}</CardTitle>
-                      <span className="text-[11px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-0.5 whitespace-nowrap">
+                      <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 whitespace-nowrap">
                         {t("viewOnly")}
                       </span>
                     </CardHeader>

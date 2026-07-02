@@ -8,7 +8,7 @@ export default async function AdminThemePage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex items-center gap-2">
-        <Palette className="h-5 w-5 text-amber-500" />
+        <Palette className="h-5 w-5 text-emerald-500" />
         <h1 className="text-xl font-bold">{t("theme")}</h1>
       </div>
       <ThemeEditor initial={settings} />

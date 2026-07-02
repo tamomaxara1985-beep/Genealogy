@@ -99,7 +99,7 @@ export function TreeToolbar({ persons, onHighlight, onSurnameFilter, collapsedCo
             variant="outline"
             size="sm"
             onClick={onExpandAll}
-            className="border-amber-400 text-amber-600 hover:bg-amber-50 hover:text-amber-700 whitespace-nowrap"
+            className="border-emerald-400 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 whitespace-nowrap"
           >
             {t("expandAll")}
           </Button>

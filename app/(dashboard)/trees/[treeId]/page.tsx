@@ -565,7 +565,7 @@ export default function TreePage({
             </>
           )}
           {readOnly && (
-            <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+            <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1">
               {t("viewOnlyBadge")}
             </span>
           )}
@@ -626,7 +626,7 @@ export default function TreePage({
                           checked={slotChecked}
                           disabled={existingCoParentId === ""}
                           onChange={() => {}}
-                          className="accent-amber-500"
+                          className="accent-emerald-500"
                         />
                         <span className="shrink-0">{pendingName} and</span>
                         <Select
@@ -667,7 +667,7 @@ export default function TreePage({
                         name="parents"
                         checked={checked}
                         onChange={() => { setSelectedParentIds(opt.ids); setExistingCoParentId(""); }}
-                        className="accent-amber-500"
+                        className="accent-emerald-500"
                       />
                       {opt.label}
                     </label>
