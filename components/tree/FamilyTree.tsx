@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
+import { MultiCoupleNode, type MultiCoupleNodeType } from "./MultiCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
 import { nodesContentSignature, edgesSignature } from "@/lib/treeNodesSignature";
 import { exportTreeToPdf, type PaperSize } from "@/lib/exportTree";
@@ -34,11 +35,12 @@ const nodeTypes = {
   personNode: PersonNode,
   coupleNode: CoupleNode,
   polyCoupleNode: PolyCoupleNode,
+  multiCoupleNode: MultiCoupleNode,
 };
 
 const PAPER_SIZES: PaperSize[] = ["A4", "A3", "A2", "A1"];
 
-type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
+type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType | MultiCoupleNodeType;
 
 interface Props {
   nodes: AnyNode[];

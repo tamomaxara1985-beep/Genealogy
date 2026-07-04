@@ -2,8 +2,9 @@ import type { IPerson, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
 import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
+import type { MultiCoupleNodeType } from "@/components/tree/MultiCoupleNode";
 
-type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
+type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType | MultiCoupleNodeType;
 type SiblingInfo = Record<string, { count: number; expanded: boolean }> | undefined;
 
 function personSig(p: IPerson, siblingInfo: SiblingInfo): string {
@@ -41,6 +42,15 @@ export function nodesContentSignature(nodes: AnyNode[]): string {
           personSig(d.shared, d.siblingInfo),
           personSig(d.rightSpouse, d.siblingInfo),
           `div:${d.isDivorced1 ?? false}:${d.divorceDate1 ?? ""}:${d.isDivorced2 ?? false}:${d.divorceDate2 ?? ""}`,
+        ].join("|");
+      }
+      if (n.type === "multiCoupleNode") {
+        const d = n.data;
+        return [
+          n.id,
+          personSig(d.shared, d.siblingInfo),
+          ...d.marriages.map((m) => personSig(m.spouse, d.siblingInfo)),
+          ...d.marriages.map((m, k) => `div${k}:${m.isDivorced ?? false}:${m.divorceDate ?? ""}`),
         ].join("|");
       }
       const d = n.data;

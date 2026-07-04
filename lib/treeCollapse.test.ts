@@ -35,9 +35,8 @@ describe("getCoreVisible", () => {
     expect(getCoreVisible("root", rels).has("sib")).toBe(false);
   });
 
-  it("excludes an ancestor's non-ancestor extra spouse", () => {
-    // dad is an ancestor; dad's second wife 'stepmom' is not root's ancestor
+  it("includes an ancestor's additional spouse (spouse of any visible person)", () => {
     const rels = [pc("dad", "root"), sp("dad", "stepmom")];
-    expect(getCoreVisible("root", rels).has("stepmom")).toBe(false);
+    expect(getCoreVisible("root", rels).has("stepmom")).toBe(true);
   });
 });

@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { nodesContentSignature, edgesSignature } from "./treeNodesSignature";
 import type { IPerson, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
+import type { MultiCoupleNodeType } from "@/components/tree/MultiCoupleNode";
 
 const person = (over: Partial<IPerson> = {}): IPerson =>
   ({ _id: "p1", treeId: "t", firstName: "Lina", lastName: "K", gender: "female",
@@ -63,5 +64,28 @@ describe("edgesSignature", () => {
 
   it("is stable when nothing structural changes", () => {
     expect(edgesSignature([edge()])).toBe(edgesSignature([edge()]));
+  });
+});
+
+const multiNode = (spouses: IPerson[]): MultiCoupleNodeType =>
+  ({ id: "multi_h", type: "multiCoupleNode", position: { x: 0, y: 0 },
+     data: {
+       shared: person({ _id: "h" }),
+       marriages: spouses.map((s) => ({ spouse: s })),
+       width: 160 + 220 * spouses.length,
+       onSelect: () => {},
+     } } as MultiCoupleNodeType);
+
+describe("nodesContentSignature multiCoupleNode", () => {
+  it("changes when a spouse's name changes", () => {
+    const a = nodesContentSignature([multiNode([person({ _id: "w1", firstName: "Ann" })])]);
+    const b = nodesContentSignature([multiNode([person({ _id: "w1", firstName: "Anna" })])]);
+    expect(a).not.toBe(b);
+  });
+
+  it("changes when a spouse is added", () => {
+    const a = nodesContentSignature([multiNode([person({ _id: "w1" }), person({ _id: "w2" })])]);
+    const b = nodesContentSignature([multiNode([person({ _id: "w1" }), person({ _id: "w2" }), person({ _id: "w3" })])]);
+    expect(a).not.toBe(b);
   });
 });
