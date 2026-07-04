@@ -18,7 +18,7 @@ import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
-import { nodesContentSignature } from "@/lib/treeNodesSignature";
+import { nodesContentSignature, edgesSignature } from "@/lib/treeNodesSignature";
 import { exportTreeToPdf, type PaperSize } from "@/lib/exportTree";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,15 +51,17 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
 
   // Derive stable ID keys so useMemo deps are simple expressions
   const nodeIds = rawNodes.map((n) => n.id).join(",");
-  const edgeIds = rawEdges.map((e) => e.id).join(",");
+  // Edge signature keys on endpoints/handles, not just ids: an edge retargets
+  // (person → couple node) without its id changing, and that must re-apply.
+  const edgeSig = edgesSignature(rawEdges);
   const contentSig = nodesContentSignature(rawNodes);
 
   const layoutNodes = useMemo(
     () => applyDagreLayout(rawNodes, rawEdges),
-    // Re-layout when the node/edge SET changes, or when card content changes
+    // Re-layout when the node set, edge structure/endpoints, or card content changes
     // (content edits keep identical dagre positions since layout is structural).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodeIds, edgeIds, contentSig]
+    [nodeIds, edgeSig, contentSig]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
@@ -85,7 +87,7 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
     return () => clearTimeout(t);
   }, [nodeIds]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
+  useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeSig]);
 
   async function handlePrint(paper: PaperSize) {
     setPrinting(true);

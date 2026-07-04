@@ -1,4 +1,4 @@
-import type { IPerson } from "@/types";
+import type { IPerson, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
 import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
@@ -46,5 +46,20 @@ export function nodesContentSignature(nodes: AnyNode[]): string {
       const d = n.data;
       return [n.id, personSig(d.person, d.siblingInfo), `c:${d.isCollapsed ?? false}`].join("|");
     })
+    .join(";");
+}
+
+/**
+ * Deterministic signature of the edges' identity AND endpoints/handles.
+ * Changes iff an edge is added/removed OR an existing edge's source, target,
+ * or a handle changes — which happens when a person merges into (or leaves) a
+ * couple node: the edge id stays the same but its endpoint retargets from the
+ * person node id to the couple node id. Keying edge sync on this (rather than
+ * on edge ids alone) ensures the canvas re-applies edges when their endpoints
+ * move, instead of leaving them pointing at a node id that no longer exists.
+ */
+export function edgesSignature(edges: TreeEdge[]): string {
+  return edges
+    .map((e) => `${e.id}:${e.source}:${e.sourceHandle ?? ""}:${e.target}:${e.targetHandle ?? ""}`)
     .join(";");
 }

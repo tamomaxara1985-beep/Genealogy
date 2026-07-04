@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { nodesContentSignature } from "./treeNodesSignature";
-import type { IPerson } from "@/types";
+import { nodesContentSignature, edgesSignature } from "./treeNodesSignature";
+import type { IPerson, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 
 const person = (over: Partial<IPerson> = {}): IPerson =>
@@ -35,5 +35,33 @@ describe("nodesContentSignature", () => {
     const a = nodesContentSignature([personNode(person({ gender: "female" }))]);
     const b = nodesContentSignature([personNode(person({ gender: "male" }))]);
     expect(a).not.toBe(b);
+  });
+});
+
+const edge = (over: Partial<TreeEdge> = {}): TreeEdge =>
+  ({ id: "r1", source: "a", target: "b", type: "smoothstep", ...over });
+
+describe("edgesSignature", () => {
+  it("changes when an edge's target changes but its id stays the same", () => {
+    // person 'b' merges into a couple node → edge id r1 unchanged, target retargets
+    const before = edgesSignature([edge({ target: "b" })]);
+    const after = edgesSignature([edge({ target: "couple_x" })]);
+    expect(before).not.toBe(after);
+  });
+
+  it("changes when an edge's source retargets to a couple node", () => {
+    const before = edgesSignature([edge({ source: "a" })]);
+    const after = edgesSignature([edge({ source: "couple_y" })]);
+    expect(before).not.toBe(after);
+  });
+
+  it("changes when a targetHandle changes", () => {
+    const before = edgesSignature([edge({ targetHandle: "person1" })]);
+    const after = edgesSignature([edge({ targetHandle: "person2" })]);
+    expect(before).not.toBe(after);
+  });
+
+  it("is stable when nothing structural changes", () => {
+    expect(edgesSignature([edge()])).toBe(edgesSignature([edge()]));
   });
 });
