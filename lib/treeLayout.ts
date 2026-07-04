@@ -123,7 +123,10 @@ export function applyDagreLayout<T extends MinimalNode>(
   g.setGraph({ rankdir: "TB", ranksep: RANKSEP, nodesep: NODESEP, marginx: 100, marginy: 100 });
 
   nodes.forEach((n) => {
-    g.setNode(n.id, { width: widthOfType(n.type), height: NODE_H });
+    const w = n.type === "multiCoupleNode"
+      ? ((n as { data?: { width?: number } }).data?.width ?? POLY_COUPLE_W)
+      : widthOfType(n.type);
+    g.setNode(n.id, { width: w, height: NODE_H });
   });
   edges.forEach((e) => g.setEdge(e.source, e.target));
 
@@ -137,7 +140,15 @@ export function applyDagreLayout<T extends MinimalNode>(
   });
 
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
-  const widthOf = (id: string) => widthOfType(nodeById.get(id)?.type);
+  const widthOfNode = (id: string): number => {
+    const n = nodeById.get(id);
+    if (n?.type === "multiCoupleNode") {
+      const w = (n as { data?: { width?: number } }).data?.width;
+      if (typeof w === "number" && w > 0) return w;
+    }
+    return widthOfType(n?.type);
+  };
+  const widthOf = widthOfNode;
 
   // Resolve each child node's parents, split by side.
   // wife = person1 / left card, husband = person2 / right card,
