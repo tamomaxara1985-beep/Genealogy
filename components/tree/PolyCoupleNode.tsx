@@ -1,7 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 // Layout (width = 600px):
@@ -19,10 +19,8 @@ export type PolyCoupleNodeType = Node<
     divorceDate2?: string;
     onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
     onSelect?: (person: IPerson) => void;
-    rootSlot?: "left" | "shared" | "right";
-    rootSiblingCount?: number;
-    rootSiblingsExpanded?: boolean;
-    onToggleRootSiblings?: () => void;
+    siblingInfo?: Record<string, { count: number; expanded: boolean }>;
+    onToggleSiblings?: (personId: string) => void;
   },
   "polyCoupleNode"
 >;
@@ -110,7 +108,10 @@ const CHILD_ROLES: { role: RelativeRole; label: string }[] = [
 ];
 
 export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>) {
-  const { leftSpouse, shared, rightSpouse, isDivorced1, divorceDate1, isDivorced2, divorceDate2, onAddRelative, onSelect, rootSlot, rootSiblingCount, rootSiblingsExpanded, onToggleRootSiblings } = data;
+  const { leftSpouse, shared, rightSpouse, isDivorced1, divorceDate1, isDivorced2, divorceDate2, onAddRelative, onSelect, siblingInfo, onToggleSiblings } = data;
+  const sibL = siblingInfo?.[leftSpouse._id];
+  const sibS = siblingInfo?.[shared._id];
+  const sibR = siblingInfo?.[rightSpouse._id];
 
   return (
     <div className="relative">
@@ -175,18 +176,35 @@ export function PolyCoupleNode({ data, selected }: NodeProps<PolyCoupleNodeType>
         <PersonCard person={rightSpouse} selected={selected} onClick={() => onSelect?.(rightSpouse)} />
       </div>
 
-      {/* Root siblings toggle — below the root spouse's card (left=80, shared=300, right=520) */}
-      {rootSlot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
+      {/* Sibling reveal controls — left edge of each card */}
+      {onToggleSiblings && sibL && sibL.count > 0 && (
         <button
-          className="nodrag nopan absolute -bottom-8 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-          style={{ left: rootSlot === "left" ? 56 : rootSlot === "shared" ? 276 : 496 }}
-          onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
-          title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 shadow-sm text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+          style={{ left: -28 }}
+          onClick={(e) => { e.stopPropagation(); onToggleSiblings(leftSpouse._id); }}
+          title={sibL.expanded ? "Hide siblings" : `Show ${sibL.count} sibling${sibL.count === 1 ? "" : "s"}`}
         >
-          {rootSiblingsExpanded
-            ? <ChevronUp size={11} className="text-gray-500" />
-            : <ChevronDown size={11} className="text-gray-500" />}
-          <span>{rootSiblingCount}</span>
+          {sibL.expanded ? <Minus size={12} /> : sibL.count}
+        </button>
+      )}
+      {onToggleSiblings && sibS && sibS.count > 0 && (
+        <button
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 shadow-sm text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+          style={{ left: 192 }}
+          onClick={(e) => { e.stopPropagation(); onToggleSiblings(shared._id); }}
+          title={sibS.expanded ? "Hide siblings" : `Show ${sibS.count} sibling${sibS.count === 1 ? "" : "s"}`}
+        >
+          {sibS.expanded ? <Minus size={12} /> : sibS.count}
+        </button>
+      )}
+      {onToggleSiblings && sibR && sibR.count > 0 && (
+        <button
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 shadow-sm text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+          style={{ left: 412 }}
+          onClick={(e) => { e.stopPropagation(); onToggleSiblings(rightSpouse._id); }}
+          title={sibR.expanded ? "Hide siblings" : `Show ${sibR.count} sibling${sibR.count === 1 ? "" : "s"}`}
+        >
+          {sibR.expanded ? <Minus size={12} /> : sibR.count}
         </button>
       )}
 

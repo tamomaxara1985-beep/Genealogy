@@ -1,7 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Plus, Minus } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 export type PersonNodeType = Node<
@@ -11,10 +11,8 @@ export type PersonNodeType = Node<
     onSelect?: (person: IPerson) => void;
     onToggleCollapse?: (personId: string) => void;
     isCollapsed?: boolean;
-    isRoot?: boolean;
-    rootSiblingCount?: number;
-    rootSiblingsExpanded?: boolean;
-    onToggleRootSiblings?: () => void;
+    siblingInfo?: Record<string, { count: number; expanded: boolean }>;
+    onToggleSiblings?: (personId: string) => void;
   },
   "personNode"
 >;
@@ -61,7 +59,8 @@ const genderAvatar: Record<string, string> = {
 };
 
 export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
-  const { person, onAddRelative, onSelect, onToggleCollapse, isCollapsed, isRoot, rootSiblingCount, rootSiblingsExpanded, onToggleRootSiblings } = data;
+  const { person, onAddRelative, onSelect, onToggleCollapse, isCollapsed, siblingInfo, onToggleSiblings } = data;
+  const sibInfo = siblingInfo?.[person._id];
   const initials = `${person.firstName[0] ?? "?"}${person.lastName[0] ?? ""}`;
   const gender = person.gender ?? "unknown";
   const isLiving = person.isLiving;
@@ -103,17 +102,14 @@ export function PersonNode({ data, selected }: NodeProps<PersonNodeType>) {
         </div>
       )}
 
-      {/* Root siblings toggle — right side of root card only */}
-      {isRoot && onToggleRootSiblings && (rootSiblingCount ?? 0) > 0 && (
+      {/* Sibling reveal control — left edge of the card */}
+      {onToggleSiblings && sibInfo && sibInfo.count > 0 && (
         <button
-          className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-14 z-10 flex items-center gap-1 bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-[11px] font-medium text-gray-600 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
-          onClick={(e) => { e.stopPropagation(); onToggleRootSiblings(); }}
-          title={rootSiblingsExpanded ? "Hide siblings" : `Show ${rootSiblingCount} sibling${rootSiblingCount === 1 ? "" : "s"}`}
+          className="nodrag nopan absolute top-1/2 -translate-y-1/2 -left-7 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-white border border-gray-300 shadow-sm text-[11px] font-semibold text-gray-600 hover:bg-gray-50 hover:border-emerald-400 hover:text-emerald-700 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onToggleSiblings(person._id); }}
+          title={sibInfo.expanded ? "Hide siblings" : `Show ${sibInfo.count} sibling${sibInfo.count === 1 ? "" : "s"}`}
         >
-          {rootSiblingsExpanded
-            ? <ChevronUp size={11} className="text-gray-500" />
-            : <ChevronDown size={11} className="text-gray-500" />}
-          <span>{rootSiblingCount}</span>
+          {sibInfo.expanded ? <Minus size={12} /> : sibInfo.count}
         </button>
       )}
 
