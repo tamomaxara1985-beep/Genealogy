@@ -25,12 +25,14 @@ import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { DeleteTreeDialog } from "@/components/tree/DeleteTreeDialog";
+import { RenameTreeDialog } from "@/components/tree/RenameTreeDialog";
 import { buildTreeData } from "@/lib/buildTreeData";
 import { getAncestors, getSiblings, getCoreVisible } from "@/lib/treeCollapse";
 import { getRootPersonId } from "@/lib/treeRoot";
 import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
+import { Pencil } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -197,6 +199,9 @@ export default function TreePage({
 
   // Delete tree dialog
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Rename tree dialog
+  const [renameOpen, setRenameOpen] = useState(false);
 
   // Load from localStorage after mount (avoids SSR/hydration mismatch)
   useEffect(() => {
@@ -596,6 +601,15 @@ export default function TreePage({
           {isOwner && (
             <>
               <Button variant="outline" onClick={() => setShareOpen(true)}>{t("share")}</Button>
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t("renameTree")}
+                title={t("renameTree")}
+                onClick={() => setRenameOpen(true)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
               <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
               <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
               <Button
@@ -880,6 +894,17 @@ export default function TreePage({
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
           onDeleted={() => router.push("/trees")}
+        />
+      )}
+
+      {isOwner && treeMeta && (
+        <RenameTreeDialog
+          key={treeMeta.name}
+          treeId={treeId}
+          currentName={treeMeta.name}
+          open={renameOpen}
+          onOpenChange={setRenameOpen}
+          onRenamed={() => mutateTree()}
         />
       )}
 
