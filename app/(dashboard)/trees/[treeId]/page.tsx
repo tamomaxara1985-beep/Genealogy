@@ -27,7 +27,7 @@ import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { DeleteTreeDialog } from "@/components/tree/DeleteTreeDialog";
 import { RenameTreeDialog } from "@/components/tree/RenameTreeDialog";
 import { buildTreeData } from "@/lib/buildTreeData";
-import { getAncestors, getSiblings, getCoreVisible } from "@/lib/treeCollapse";
+import { getAncestors, getSiblings, getCoreVisible, getSpouses } from "@/lib/treeCollapse";
 import { getRootPersonId } from "@/lib/treeRoot";
 import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -290,6 +290,10 @@ export default function TreePage({
     if (!rootId) return s;
     s.add(rootId);
     getAncestors(rootId, relationships).forEach((id) => s.add(id));
+    getSpouses(rootId, relationships).forEach((sp) => {
+      s.add(sp);
+      getAncestors(sp, relationships).forEach((id) => s.add(id));
+    });
     return s;
   }, [rootId, relationships]);
 
