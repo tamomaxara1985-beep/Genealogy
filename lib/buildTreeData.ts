@@ -2,8 +2,9 @@ import type { IPerson, IRelationship, RelativeRole, TreeEdge } from "@/types";
 import type { PersonNodeType } from "@/components/tree/PersonNode";
 import type { CoupleNodeType } from "@/components/tree/CoupleNode";
 import type { PolyCoupleNodeType } from "@/components/tree/PolyCoupleNode";
+import type { MultiCoupleNodeType } from "@/components/tree/MultiCoupleNode";
 
-type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType;
+type AnyNode = PersonNodeType | CoupleNodeType | PolyCoupleNodeType | MultiCoupleNodeType;
 
 interface Callbacks {
   onAddRelative?: (personId: string, role: RelativeRole, personId2?: string) => void;
@@ -31,11 +32,12 @@ export function buildTreeData(
   const coupleSlot = new Map<string, 1 | 2>();         // regular CoupleNode slot
 
   // Poly-couple routing (person with exactly 2 spouses → polyCoupleNode)
-  const polyByPair = new Map<string, { nodeId: string; handle: "left" | "right" }>();
-  const polyTargetSlot = new Map<string, "left" | "shared" | "right">();
+  const polyByPair = new Map<string, { nodeId: string; handle: string }>();
+  const polyTargetSlot = new Map<string, string>();
 
   const coupleNodes: CoupleNodeType[] = [];
   const polyCoupleNodes: PolyCoupleNodeType[] = [];
+  const multiCoupleNodes: MultiCoupleNodeType[] = [];
 
   // Group spouse rels per person to detect poly-couples
   const spouseRelsByPerson = new Map<string, IRelationship[]>();
@@ -58,6 +60,60 @@ export function buildTreeData(
     if (bg === "male" && ag !== "male") return 1;
     return 0;
   });
+
+  // Persons with 3+ distinct spouses → one multiCoupleNode (shared + spouse chain).
+  for (const [sharedId, rels] of polyEntries) {
+    if (personInAnyCouple.has(sharedId)) continue;
+    if (rels.some((r) => processedRelIds.has(r._id))) continue;
+
+    const seen = new Map<string, IRelationship>();
+    for (const r of rels) {
+      const spId = r.person1Id === sharedId ? r.person2Id : r.person1Id;
+      if (!seen.has(spId)) seen.set(spId, r);
+    }
+    if (seen.size < 3) continue; // 1 → couple, 2 → poly
+
+    const shared = persons.find((pp) => pp._id === sharedId);
+    if (!shared) continue;
+    const entries = [...seen.entries()]
+      .map(([spId, rel]) => ({ spouse: persons.find((pp) => pp._id === spId), rel }))
+      .filter((e): e is { spouse: IPerson; rel: IRelationship } => !!e.spouse);
+    if (entries.length < 3) continue;
+    if (entries.some((e) => personInAnyCouple.has(e.spouse._id))) continue;
+
+    rels.forEach((r) => processedRelIds.add(r._id));
+    personInAnyCouple.add(sharedId);
+    entries.forEach((e) => personInAnyCouple.add(e.spouse._id));
+
+    const multiId = `multi_${sharedId}`;
+    couplesByPerson.set(sharedId, [multiId]);
+    polyTargetSlot.set(sharedId, "shared");
+    entries.forEach((e, k) => {
+      const handle = `m${k}`;
+      polyByPair.set(`${e.spouse._id}|${sharedId}`, { nodeId: multiId, handle });
+      polyByPair.set(`${sharedId}|${e.spouse._id}`, { nodeId: multiId, handle });
+      couplesByPerson.set(e.spouse._id, [multiId]);
+      polyTargetSlot.set(e.spouse._id, `spouse${k}`);
+    });
+
+    const dim = hasFilter && !highlighted.has(sharedId) && entries.every((e) => !highlighted.has(e.spouse._id));
+
+    multiCoupleNodes.push({
+      id: multiId,
+      type: "multiCoupleNode",
+      position: { x: 0, y: 0 },
+      style: dim ? { opacity: 0.25, transition: "opacity 0.2s" } : { opacity: 1 },
+      data: {
+        shared,
+        marriages: entries.map((e) => ({ spouse: e.spouse, isDivorced: !!e.rel.endDate, divorceDate: e.rel.endDate })),
+        width: 160 + 220 * entries.length,
+        onAddRelative: callbacks.onAddRelative,
+        onSelect: callbacks.onSelect,
+        siblingInfo: callbacks.siblingInfo,
+        onToggleSiblings: callbacks.onToggleSiblings,
+      },
+    } as MultiCoupleNodeType);
+  }
 
   for (const [sharedId, rels] of polyEntries) {
     // Skip if already committed to another polyCoupleNode as a spouse
@@ -222,6 +278,7 @@ export function buildTreeData(
     }
     const first = couplesByPerson.get(parentId)?.[0] ?? parentId;
     if (first.startsWith("poly_")) return { nodeId: first, handle: "left" };
+    if (first.startsWith("multi_")) return { nodeId: first, handle: "m0" };
     return { nodeId: first };
   }
 
@@ -262,7 +319,7 @@ export function buildTreeData(
     });
   });
 
-  const nodes: AnyNode[] = [...coupleNodes, ...polyCoupleNodes, ...personNodes];
+  const nodes: AnyNode[] = [...coupleNodes, ...polyCoupleNodes, ...multiCoupleNodes, ...personNodes];
 
   return { nodes, edges };
 }
