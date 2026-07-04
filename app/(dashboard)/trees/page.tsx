@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useTrees } from "@/hooks/useTrees"
+import { DeleteTreeDialog } from "@/components/tree/DeleteTreeDialog"
+import { Trash2 } from "lucide-react"
+import type { ITree } from "@/types"
 
 export default function TreesPage() {
   const router = useRouter()
@@ -17,6 +20,7 @@ export default function TreesPage() {
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState("")
   const [creating, setCreating] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ITree | null>(null)
 
   async function createTree(e: React.FormEvent) {
     e.preventDefault()
@@ -83,8 +87,20 @@ export default function TreesPage() {
                 className="cursor-pointer hover:border-emerald-400 transition-colors"
                 onClick={() => router.push(`/trees/${tree._id}`)}
               >
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between gap-2">
                   <CardTitle className="text-lg">{tree.name}</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:border-red-300"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setDeleteTarget(tree)
+                    }}
+                    aria-label={t("deleteTree")}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </CardHeader>
                 {tree.description && (
                   <CardContent>
@@ -133,6 +149,16 @@ export default function TreesPage() {
             </>
           )}
         </>
+      )}
+
+      {deleteTarget && (
+        <DeleteTreeDialog
+          treeId={deleteTarget._id}
+          treeName={deleteTarget.name}
+          open={!!deleteTarget}
+          onOpenChange={(o) => { if (!o) setDeleteTarget(null) }}
+          onDeleted={() => { setDeleteTarget(null); mutate() }}
+        />
       )}
     </div>
   )

@@ -113,7 +113,11 @@
     "viewOnlyBadge": "View-only",
     "print": "Print",
     "printing": "Preparing…",
-    "printError": "Could not generate the PDF. Please try again."
+    "printError": "Could not generate the PDF. Please try again.",
+    "deleteTree": "Delete tree",
+    "deleteTreeWarning": "This permanently deletes \"{name}\" and all its people, relationships, and events. This cannot be undone.",
+    "deleteTreeTypeName": "Type the tree name to confirm",
+    "deleteError": "Could not delete the tree. Please try again."
   },
   "common": {
     "save": "Save",

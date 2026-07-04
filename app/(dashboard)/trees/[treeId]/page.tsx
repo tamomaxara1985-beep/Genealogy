@@ -3,6 +3,7 @@
 import { use, useState, useCallback, useRef, useMemo, useEffect } from "react";
 import useSWR from "swr";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,6 +24,7 @@ import { uploadFile } from "@/components/ui/cloudinary-upload";
 import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
+import { DeleteTreeDialog } from "@/components/tree/DeleteTreeDialog";
 import { buildTreeData } from "@/lib/buildTreeData";
 import { getAncestors, getSiblings, getCoreVisible } from "@/lib/treeCollapse";
 import { getRootPersonId } from "@/lib/treeRoot";
@@ -119,6 +121,7 @@ export default function TreePage({
   params: Promise<{ treeId: string }>;
 }) {
   const { treeId } = use(params);
+  const router = useRouter();
   const t = useTranslations("tree");
   const tp = useTranslations("person");
   const tc = useTranslations("common");
@@ -191,6 +194,9 @@ export default function TreePage({
   const [shareEmail, setShareEmail] = useState("");
   const [shareError, setShareError] = useState<string | null>(null);
   const [shareBusy, setShareBusy] = useState(false);
+
+  // Delete tree dialog
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Load from localStorage after mount (avoids SSR/hydration mismatch)
   useEffect(() => {
@@ -592,6 +598,13 @@ export default function TreePage({
               <Button variant="outline" onClick={() => setShareOpen(true)}>{t("share")}</Button>
               <Button variant="outline" onClick={() => setLinkOpen(true)}>{t("linkPeople")}</Button>
               <Button onClick={() => setAddPersonOpen(true)}>{t("addPerson")}</Button>
+              <Button
+                variant="outline"
+                className="text-red-600 hover:text-red-700 hover:border-red-300"
+                onClick={() => setDeleteOpen(true)}
+              >
+                {t("deleteTree")}
+              </Button>
             </>
           )}
           {readOnly && (
@@ -859,6 +872,16 @@ export default function TreePage({
           </div>
         </DialogContent>
       </Dialog>
+
+      {isOwner && treeMeta && (
+        <DeleteTreeDialog
+          treeId={treeId}
+          treeName={treeMeta.name}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          onDeleted={() => router.push("/trees")}
+        />
+      )}
 
       {/* Person detail dialog */}
       <Dialog
