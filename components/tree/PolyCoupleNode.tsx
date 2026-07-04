@@ -1,7 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Minus } from "lucide-react";
+import { Minus } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 // Layout (width = 600px):

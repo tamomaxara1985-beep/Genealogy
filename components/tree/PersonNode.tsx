@@ -1,7 +1,7 @@
 "use client";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronUp, ChevronDown, Plus, Minus } from "lucide-react";
+import { ChevronUp, ChevronDown, Minus } from "lucide-react";
 import type { IPerson, RelativeRole } from "@/types";
 
 export type PersonNodeType = Node<
