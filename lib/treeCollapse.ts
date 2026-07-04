@@ -87,11 +87,8 @@ export function getSiblings(
  *  - the root
  *  - all of the root's ancestors (both parents each generation → full pedigree)
  *  - all of the root's descendants
- *  - the spouses of the root and of each descendant (co-parents, so couples render)
- *
- * Spouses of ancestors are NOT added: both parents of each generation are
- * already ancestors, so ancestor couples form on their own. This keeps an
- * ancestor's unrelated additional marriage out of the default view.
+ *  - the spouse of any visible person (root, ancestors, or descendants)
+ *    so additional spouses render wherever their partner is visible
  */
 export function getCoreVisible(
   rootId: string,
@@ -103,11 +100,14 @@ export function getCoreVisible(
   const descendants = getDescendants(rootId, relationships);
   descendants.forEach((id) => core.add(id));
 
-  const spouseTargets = new Set<string>([rootId, ...descendants]);
+  // Add the spouse of any visible person (root, ancestors, or descendants) so
+  // additional spouses render wherever their partner is visible. Only the
+  // spouse card is added — not the spouse's own ancestors.
+  const coreSnapshot = new Set(core);
   for (const r of relationships) {
     if (r.type !== "spouse") continue;
-    if (spouseTargets.has(r.person1Id)) core.add(r.person2Id);
-    if (spouseTargets.has(r.person2Id)) core.add(r.person1Id);
+    if (coreSnapshot.has(r.person1Id)) core.add(r.person2Id);
+    if (coreSnapshot.has(r.person2Id)) core.add(r.person1Id);
   }
   return core;
 }
