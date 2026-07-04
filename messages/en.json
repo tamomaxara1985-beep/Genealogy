@@ -117,7 +117,9 @@
     "deleteTree": "Delete tree",
     "deleteTreeWarning": "This permanently deletes \"{name}\" and all its people, relationships, and events. This cannot be undone.",
     "deleteTreeTypeName": "Type the tree name to confirm",
-    "deleteError": "Could not delete the tree. Please try again."
+    "deleteError": "Could not delete the tree. Please try again.",
+    "renameTree": "Rename tree",
+    "renameError": "Could not rename the tree. Please try again."
   },
   "common": {
     "save": "Save",
