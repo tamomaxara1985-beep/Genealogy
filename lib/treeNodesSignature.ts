@@ -9,7 +9,7 @@ type SiblingInfo = Record<string, { count: number; expanded: boolean }> | undefi
 function personSig(p: IPerson, siblingInfo: SiblingInfo): string {
   const s = siblingInfo?.[p._id];
   const sib = s ? `${s.count}/${s.expanded}` : "";
-  return `${p._id}:${p.firstName}:${p.lastName}:${p.birthDate ?? ""}:${p.deathDate ?? ""}:${p.isLiving}:${p.photoUrl ?? ""}:${sib}`;
+  return `${p._id}:${p.firstName}:${p.lastName}:${p.birthDate ?? ""}:${p.deathDate ?? ""}:${p.isLiving}:${p.photoUrl ?? ""}:${p.gender}:${sib}`;
 }
 
 /**

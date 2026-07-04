@@ -24,10 +24,11 @@ export function DashboardClient() {
   const [bio, setBio] = useState("")
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    if (data?.bio !== undefined) setBio(data.bio)
-  }, [data?.bio])
+    if (!dirty && data?.bio !== undefined) setBio(data.bio)
+  }, [data?.bio, dirty])
 
   async function saveBio() {
     setSaving(true)
@@ -38,6 +39,7 @@ export function DashboardClient() {
     })
     setSaving(false)
     setSaved(true)
+    setDirty(false)
     mutate({ ...data!, bio }, false)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -79,7 +81,7 @@ export function DashboardClient() {
             className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-400"
             placeholder={tDash("bioPlaceholder")}
             value={bio}
-            onChange={(e) => { setBio(e.target.value); setSaved(false) }}
+            onChange={(e) => { setBio(e.target.value); setSaved(false); setDirty(true) }}
           />
           <div className="flex items-center gap-3">
             <Button

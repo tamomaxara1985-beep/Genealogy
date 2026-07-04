@@ -30,4 +30,10 @@ describe("nodesContentSignature", () => {
     const b = nodesContentSignature([personNode(person({ isLiving: false }))]);
     expect(a).not.toBe(b);
   });
+
+  it("changes when gender changes", () => {
+    const a = nodesContentSignature([personNode(person({ gender: "female" }))]);
+    const b = nodesContentSignature([personNode(person({ gender: "male" }))]);
+    expect(a).not.toBe(b);
+  });
 });
