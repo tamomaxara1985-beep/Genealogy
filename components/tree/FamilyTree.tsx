@@ -83,7 +83,6 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
     }
     const t = setTimeout(() => rfInstance.current?.fitView({ padding: 0.25, duration: 300 }), 50);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeIds]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
