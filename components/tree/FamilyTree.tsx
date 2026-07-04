@@ -18,6 +18,7 @@ import { PersonNode, type PersonNodeType } from "./PersonNode";
 import { CoupleNode, type CoupleNodeType } from "./CoupleNode";
 import { PolyCoupleNode, type PolyCoupleNodeType } from "./PolyCoupleNode";
 import { applyDagreLayout } from "@/lib/treeLayout";
+import { nodesContentSignature } from "@/lib/treeNodesSignature";
 import { exportTreeToPdf, type PaperSize } from "@/lib/exportTree";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,12 +52,14 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
   // Derive stable ID keys so useMemo deps are simple expressions
   const nodeIds = rawNodes.map((n) => n.id).join(",");
   const edgeIds = rawEdges.map((e) => e.id).join(",");
+  const contentSig = nodesContentSignature(rawNodes);
 
   const layoutNodes = useMemo(
     () => applyDagreLayout(rawNodes, rawEdges),
-    // Re-layout only when node/edge IDs change
+    // Re-layout when the node/edge SET changes, or when card content changes
+    // (content edits keep identical dagre positions since layout is structural).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodeIds, edgeIds]
+    [nodeIds, edgeIds, contentSig]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
@@ -66,15 +69,21 @@ export function FamilyTree({ nodes: rawNodes, edges: rawEdges, title }: Props) {
   const isFirstLayout = useRef(true);
   const [printing, setPrinting] = useState(false);
 
-  // Sync layout; re-fit viewport when node set changes (e.g. second spouse added)
+  // Push fresh layout/data into the canvas on any change (structure OR content edit).
   useEffect(() => {
     setNodes(layoutNodes);
-    if (!isFirstLayout.current) {
-      const t = setTimeout(() => rfInstance.current?.fitView({ padding: 0.25, duration: 300 }), 50);
-      return () => clearTimeout(t);
-    }
-    isFirstLayout.current = false;
   }, [layoutNodes, setNodes]);
+
+  // Re-fit the viewport only when the node SET changes (add/remove/expand),
+  // NOT on content edits — editing a field must not move or re-center the view.
+  useEffect(() => {
+    if (isFirstLayout.current) {
+      isFirstLayout.current = false;
+      return;
+    }
+    const t = setTimeout(() => rfInstance.current?.fitView({ padding: 0.25, duration: 300 }), 50);
+    return () => clearTimeout(t);
+  }, [nodeIds]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setEdges(rawEdges as Edge[]); }, [edgeIds]);
 
