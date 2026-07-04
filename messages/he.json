@@ -113,7 +113,11 @@
     "viewOnlyBadge": "View-only",
     "print": "הדפסה",
     "printing": "מכין…",
-    "printError": "לא ניתן ליצור PDF. נסו שוב."
+    "printError": "לא ניתן ליצור PDF. נסו שוב.",
+    "deleteTree": "מחיקת עץ",
+    "deleteTreeWarning": "פעולה זו תמחק לצמיתות את העץ „{name}\" ואת כל האנשים, הקשרים והאירועים שבו. לא ניתן לבטל.",
+    "deleteTreeTypeName": "הקלד את שם העץ לאישור",
+    "deleteError": "לא ניתן למחוק את העץ. נסו שוב."
   },
   "common": {
     "save": "שמור",
