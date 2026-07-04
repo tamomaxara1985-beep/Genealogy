@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getCoreVisible } from "./treeCollapse";
+import { getCoreVisible, getSpouses } from "./treeCollapse";
 import type { IRelationship } from "@/types";
 
 const pc = (parent: string, child: string): IRelationship =>
@@ -38,5 +38,22 @@ describe("getCoreVisible", () => {
   it("includes an ancestor's additional spouse (spouse of any visible person)", () => {
     const rels = [pc("dad", "root"), sp("dad", "stepmom")];
     expect(getCoreVisible("root", rels).has("stepmom")).toBe(true);
+  });
+
+  it("getSpouses returns partners in both directions", () => {
+    const rels = [sp("a", "b"), sp("c", "a")];
+    const out = getSpouses("a", rels);
+    expect([...out].sort()).toEqual(["b", "c"]);
+  });
+
+  it("getCoreVisible includes the root's spouse's parents (in-law pedigree)", () => {
+    const rels = [sp("root", "wife"), pc("wifeDad", "wife"), pc("wifeMom", "wife"), pc("wifeGpa", "wifeDad")];
+    const core = getCoreVisible("root", rels);
+    ["wife", "wifeDad", "wifeMom", "wifeGpa"].forEach((id) => expect(core.has(id)).toBe(true));
+  });
+
+  it("getCoreVisible does NOT include the root spouse's siblings (in-law collateral stays collapsed)", () => {
+    const rels = [sp("root", "wife"), pc("wifeDad", "wife"), pc("wifeDad", "wifeSister")];
+    expect(getCoreVisible("root", rels).has("wifeSister")).toBe(false);
   });
 });

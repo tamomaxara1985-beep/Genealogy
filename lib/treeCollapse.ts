@@ -83,10 +83,28 @@ export function getSiblings(
 }
 
 /**
+ * Partner ids of a person via spouse relationships (both directions).
+ */
+export function getSpouses(
+  personId: string,
+  relationships: IRelationship[]
+): Set<string> {
+  const out = new Set<string>();
+  for (const r of relationships) {
+    if (r.type !== "spouse") continue;
+    if (r.person1Id === personId) out.add(r.person2Id);
+    else if (r.person2Id === personId) out.add(r.person1Id);
+  }
+  return out;
+}
+
+/**
  * Person IDs visible by default in the pedigree view:
  *  - the root
  *  - all of the root's ancestors (both parents each generation → full pedigree)
  *  - all of the root's descendants
+ *  - the root's spouse(s) and their ancestors (in-law pedigree on the spouse's side;
+ *    collateral stays collapsed by default)
  *  - the spouse of any visible person (root, ancestors, or descendants)
  *    so additional spouses render wherever their partner is visible
  */
@@ -99,6 +117,13 @@ export function getCoreVisible(
 
   const descendants = getDescendants(rootId, relationships);
   descendants.forEach((id) => core.add(id));
+
+  // Root's spouse(s) and their ancestors — show the in-law pedigree on the
+  // spouse's side of the root couple (collateral stays collapsed by default).
+  for (const sp of getSpouses(rootId, relationships)) {
+    core.add(sp);
+    getAncestors(sp, relationships).forEach((id) => core.add(id));
+  }
 
   // Add the spouse of any visible person (root, ancestors, or descendants) so
   // additional spouses render wherever their partner is visible. Only the
