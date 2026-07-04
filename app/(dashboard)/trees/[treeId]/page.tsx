@@ -24,7 +24,7 @@ import { PersonForm } from "@/components/person/PersonForm";
 import { FamilyTree } from "@/components/tree/FamilyTree";
 import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { buildTreeData } from "@/lib/buildTreeData";
-import { getAncestors, getSiblings, getDescendants } from "@/lib/treeCollapse";
+import { getAncestors, getSiblings, getCoreVisible } from "@/lib/treeCollapse";
 import { getRootPersonId } from "@/lib/treeRoot";
 import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -184,7 +184,7 @@ export default function TreePage({
   const [activeSurname, setActiveSurname] = useState<string | null>(null);
 
   const [collapsedPersonIds, setCollapsedPersonIds] = useState<Set<string>>(new Set());
-  const [rootSiblingsExpanded, setRootSiblingsExpanded] = useState(false);
+  const [expandedSiblingIds, setExpandedSiblingIds] = useState<Set<string>>(new Set());
 
   // Share dialog
   const [shareOpen, setShareOpen] = useState(false);
@@ -210,18 +210,18 @@ export default function TreePage({
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(`tree-root-siblings-${treeId}`);
+      const stored = localStorage.getItem(`tree-expanded-siblings-${treeId}`);
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (stored) setRootSiblingsExpanded(JSON.parse(stored) === true);
+      if (stored) setExpandedSiblingIds(new Set<string>(JSON.parse(stored)));
     } catch {}
   }, [treeId]);
 
   useEffect(() => {
     localStorage.setItem(
-      `tree-root-siblings-${treeId}`,
-      JSON.stringify(rootSiblingsExpanded)
+      `tree-expanded-siblings-${treeId}`,
+      JSON.stringify([...expandedSiblingIds])
     );
-  }, [rootSiblingsExpanded, treeId]);
+  }, [expandedSiblingIds, treeId]);
 
   useEffect(() => {
     if (!isOwner || !treeMeta || treeMeta.coParentBackfillAt) return;
@@ -272,20 +272,41 @@ export default function TreePage({
     });
   }, []);
 
-  const expandAll = useCallback(() => {
-    setCollapsedPersonIds(new Set());
-  }, []);
-
   const rootId = useMemo(() => getRootPersonId(persons), [persons]);
 
-  const rootSiblingIds = useMemo(
-    () => (rootId ? getSiblings(rootId, relationships) : new Set<string>()),
-    [rootId, relationships]
-  );
+  const spineIds = useMemo(() => {
+    const s = new Set<string>();
+    if (!rootId) return s;
+    s.add(rootId);
+    getAncestors(rootId, relationships).forEach((id) => s.add(id));
+    return s;
+  }, [rootId, relationships]);
 
-  const toggleRootSiblings = useCallback(() => {
-    setRootSiblingsExpanded((v) => !v);
+  const siblingInfo = useMemo(() => {
+    const info: Record<string, { count: number; expanded: boolean }> = {};
+    spineIds.forEach((id) => {
+      const count = getSiblings(id, relationships).size;
+      if (count > 0) info[id] = { count, expanded: expandedSiblingIds.has(id) };
+    });
+    return info;
+  }, [spineIds, relationships, expandedSiblingIds]);
+
+  const toggleSiblings = useCallback((personId: string) => {
+    setExpandedSiblingIds((prev) => {
+      const next = new Set(prev);
+      next.has(personId) ? next.delete(personId) : next.add(personId);
+      return next;
+    });
   }, []);
+
+  const expandAll = useCallback(() => {
+    setCollapsedPersonIds(new Set());
+    const all = new Set<string>();
+    spineIds.forEach((id) => {
+      if (getSiblings(id, relationships).size > 0) all.add(id);
+    });
+    setExpandedSiblingIds(all);
+  }, [spineIds, relationships]);
 
   async function submitShare(e: React.FormEvent) {
     e.preventDefault();
@@ -317,17 +338,28 @@ export default function TreePage({
 
   const hiddenIds = useMemo(() => {
     const hidden = new Set<string>();
+    if (rootId) {
+      const core = getCoreVisible(rootId, relationships);
+      const revealed = new Set<string>();
+      expandedSiblingIds.forEach((id) => {
+        getSiblings(id, relationships).forEach((sib) => revealed.add(sib));
+      });
+      // include spouses of revealed siblings so they pair into couple nodes
+      for (const r of relationships) {
+        if (r.type !== "spouse") continue;
+        if (revealed.has(r.person1Id)) revealed.add(r.person2Id);
+        if (revealed.has(r.person2Id)) revealed.add(r.person1Id);
+      }
+      persons.forEach((p) => {
+        if (!core.has(p._id) && !revealed.has(p._id)) hidden.add(p._id);
+      });
+    }
+    // existing manual "hide ancestors" collapse (orthogonal, upward prune)
     collapsedPersonIds.forEach((id) => {
       getAncestors(id, relationships).forEach((aid) => hidden.add(aid));
     });
-    if (!rootSiblingsExpanded) {
-      rootSiblingIds.forEach((sibId) => {
-        hidden.add(sibId);
-        getDescendants(sibId, relationships).forEach((d) => hidden.add(d));
-      });
-    }
     return hidden;
-  }, [collapsedPersonIds, relationships, rootSiblingsExpanded, rootSiblingIds]);
+  }, [rootId, relationships, persons, expandedSiblingIds, collapsedPersonIds]);
 
   async function submitNewPerson(data: Partial<IPerson>) {
     setSaving(true);
@@ -537,10 +569,8 @@ export default function TreePage({
       onSelect: handleSelect,
       onToggleCollapse: toggleCollapse,
       collapsedPersonIds,
-      rootPersonId: rootId,
-      rootSiblingCount: rootSiblingIds.size,
-      rootSiblingsExpanded,
-      onToggleRootSiblings: toggleRootSiblings,
+      siblingInfo,
+      onToggleSiblings: toggleSiblings,
     },
     highlighted
   );
