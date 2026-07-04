@@ -7,9 +7,93 @@ const NODE_H = 90;
 const NODESEP = 160;
 const RANKSEP = 220;
 const GAP = NODESEP; // horizontal gap between adjacent ancestor subtrees
+const MIN_ROW_GAP = 64; // minimum horizontal space between two cards in the same generation row
 
 type MinimalNode = { id: string; type?: string };
 type MinimalEdge = { source: string; target: string; targetHandle?: string };
+
+/**
+ * Final overlap-resolution pass over the fan/dagre X positions.
+ *
+ * The pedigree fan places each anchor's ancestor cone independently and only
+ * nudges whole anchor fans apart; where different ancestral lines converge on
+ * shared or adjacent nodes, cards in the same generation row can end up
+ * overlapping. This sweeps each row left→right and, whenever two cards are
+ * closer than `minGap`, shifts the later card right by the shortfall — and
+ * co-shifts that card's entire ancestor cone by the same delta so the cone
+ * stays rigid (ancestors keep sitting above their descendant). All shifts are
+ * rightward, so positions increase monotonically and the loop converges; it is
+ * capped defensively. Returns the adjusted center-X map (does not mutate input).
+ *
+ * @param ids        node ids to place
+ * @param centerX    current center-x per id (fan or dagre fallback)
+ * @param y          row key per id (dagre generation Y)
+ * @param width      node width by id
+ * @param parentsOf  direct parents (ancestor edge) of a node — used to co-shift the cone
+ * @param minGap     minimum gap between adjacent cards in a row
+ */
+export function enforceRowGaps(
+  ids: string[],
+  centerX: Map<string, number>,
+  y: Map<string, number>,
+  width: (id: string) => number,
+  parentsOf: (id: string) => string[],
+  minGap: number
+): Map<string, number> {
+  const cx = new Map(centerX);
+
+  // Transitive ancestors of a node (its upward cone), cycle-guarded.
+  const ancestorsCache = new Map<string, string[]>();
+  function ancestorsOf(id: string): string[] {
+    const cached = ancestorsCache.get(id);
+    if (cached) return cached;
+    const out: string[] = [];
+    const seen = new Set<string>([id]);
+    const stack = [...parentsOf(id)];
+    while (stack.length) {
+      const p = stack.pop()!;
+      if (seen.has(p)) continue;
+      seen.add(p);
+      out.push(p);
+      for (const gp of parentsOf(p)) if (!seen.has(gp)) stack.push(gp);
+    }
+    ancestorsCache.set(id, out);
+    return out;
+  }
+
+  function shiftCone(id: string, delta: number) {
+    cx.set(id, (cx.get(id) ?? 0) + delta);
+    for (const a of ancestorsOf(id)) cx.set(a, (cx.get(a) ?? 0) + delta);
+  }
+
+  // Group ids by row.
+  const rows = new Map<number, string[]>();
+  for (const id of ids) {
+    if (!cx.has(id) || !y.has(id)) continue;
+    const key = Math.round(y.get(id)!);
+    (rows.get(key) ?? rows.set(key, []).get(key)!).push(id);
+  }
+
+  const cap = ids.length + 5;
+  for (let pass = 0; pass < cap; pass++) {
+    let moved = false;
+    for (const row of rows.values()) {
+      row.sort((a, b) => cx.get(a)! - cx.get(b)!);
+      for (let i = 1; i < row.length; i++) {
+        const prev = row[i - 1];
+        const cur = row[i];
+        const need = cx.get(prev)! + width(prev) / 2 + minGap + width(cur) / 2;
+        if (cx.get(cur)! < need - 0.5) {
+          shiftCone(cur, need - cx.get(cur)!);
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
+  return cx;
+}
 
 function widthOfType(type?: string): number {
   return type === "polyCoupleNode" ? POLY_COUPLE_W : type === "coupleNode" ? COUPLE_W : PERSON_W;
@@ -120,13 +204,29 @@ export function applyDagreLayout<T extends MinimalNode>(
     cursor = cx + half + GAP;
   }
 
-  // Convert to top-left for React Flow. Fan-visited nodes use fanX; the rest keep
-  // dagre X. Y is always dagre's.
+  // Resolve any remaining same-row overlaps (fan cones from different anchors can
+  // still collide where ancestral lines converge). Fan-visited nodes use fanX; the
+  // rest keep dagre X. Y is always dagre's.
+  const placedIds = nodes.map((n) => n.id).filter((id) => centerPos.has(id));
+  const centerXMap = new Map<string, number>();
+  const yMap = new Map<string, number>();
+  for (const id of placedIds) {
+    centerXMap.set(id, fanX.get(id) ?? centerPos.get(id)!.x);
+    yMap.set(id, centerPos.get(id)!.y);
+  }
+  const coneParents = (id: string): string[] => {
+    const p = parentsOf.get(id);
+    if (!p) return [];
+    return [p.wife, p.husband, p.single].filter((v): v is string => !!v);
+  };
+  const adjustedX = enforceRowGaps(placedIds, centerXMap, yMap, widthOf, coneParents, MIN_ROW_GAP);
+
+  // Convert to top-left for React Flow.
   return nodes.map((n) => {
     const pos = centerPos.get(n.id);
     const w = widthOf(n.id);
     if (!pos) return { ...n, position: { x: 0, y: 0 } };
-    const cx = fanX.get(n.id) ?? pos.x;
+    const cx = adjustedX.get(n.id) ?? fanX.get(n.id) ?? pos.x;
     return { ...n, position: { x: cx - w / 2, y: pos.y - NODE_H / 2 } };
   });
 }
