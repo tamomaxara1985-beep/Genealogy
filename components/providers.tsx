@@ -1,7 +1,21 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { SWRConfig } from "swr";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider>
+      <SWRConfig
+        value={{
+          refreshInterval: 20000,
+          revalidateOnFocus: true,
+          revalidateOnReconnect: true,
+          dedupingInterval: 5000,
+        }}
+      >
+        {children}
+      </SWRConfig>
+    </SessionProvider>
+  );
 }
