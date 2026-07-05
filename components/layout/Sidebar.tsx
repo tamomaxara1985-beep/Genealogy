@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Home, Trees, User, Dna, ShieldCheck, Microscope, Mail, Search, Inbox } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { RequestsBadge } from "@/components/layout/NavBadges";
 
 export async function Sidebar() {
   const session = await auth();
@@ -30,6 +31,7 @@ export async function Sidebar() {
           >
             <Icon className="h-4 w-4" />
             {label}
+            {href === "/requests" && <RequestsBadge />}
           </Link>
         ))}
         {isAdmin && (

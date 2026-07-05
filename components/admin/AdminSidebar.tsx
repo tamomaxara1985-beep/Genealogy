@@ -14,6 +14,7 @@ import {
   Microscope,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { MessagesBadge } from "@/components/layout/NavBadges"
 
 export function AdminSidebar() {
   const pathname = usePathname()
@@ -51,6 +52,7 @@ export function AdminSidebar() {
           >
             <Icon className="h-4 w-4" />
             {label}
+            {href === "/admin/contact" && <MessagesBadge />}
           </Link>
         ))}
       </nav>
