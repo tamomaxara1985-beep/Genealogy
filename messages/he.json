@@ -8,7 +8,9 @@
     "signOut": "התנתקות",
     "settings": "הגדרות",
     "researcher": "חוקר",
-    "contact": "צור קשר"
+    "contact": "צור קשר",
+    "search": "Search",
+    "requests": "Requests"
   },
   "auth": {
     "signIn": "כניסה",

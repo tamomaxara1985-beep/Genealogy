@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, Trees, User, Dna, ShieldCheck, Microscope, Mail } from "lucide-react";
+import { Home, Trees, User, Dna, ShieldCheck, Microscope, Mail, Search, Inbox } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 
@@ -11,6 +11,8 @@ export async function Sidebar() {
   const nav = [
     { href: "/dashboard", label: t("dashboard"), icon: Home },
     { href: "/trees", label: t("trees"), icon: Trees },
+    { href: "/search", label: t("search"), icon: Search },
+    { href: "/requests", label: t("requests"), icon: Inbox },
     { href: "/profile", label: t("profile"), icon: User },
     { href: "/researcher", label: t("researcher"), icon: Microscope },
     { href: "/contact", label: t("contact"), icon: Mail },
