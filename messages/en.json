@@ -8,7 +8,9 @@
     "signOut": "Sign out",
     "settings": "Settings",
     "researcher": "Researcher",
-    "contact": "Contact"
+    "contact": "Contact",
+    "search": "Search",
+    "requests": "Requests"
   },
   "auth": {
     "signIn": "Sign in",

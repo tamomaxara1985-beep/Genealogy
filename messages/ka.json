@@ -8,7 +8,9 @@
     "signOut": "გამოსვლა",
     "settings": "პარამეტრები",
     "researcher": "მკვლევარი",
-    "contact": "კონტაქტი"
+    "contact": "კონტაქტი",
+    "search": "Search",
+    "requests": "Requests"
   },
   "auth": {
     "signIn": "შესვლა",
