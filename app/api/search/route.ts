@@ -5,7 +5,7 @@ import Person from "@/lib/models/Person";
 import Tree from "@/lib/models/Tree";
 import User from "@/lib/models/User";
 import AccessRequest from "@/lib/models/AccessRequest";
-import { validateSearchQuery, escapeRegex, computeAccess } from "@/lib/search";
+import { validateSearchParams, escapeRegex, computeAccess } from "@/lib/search";
 
 const LIMIT = 50;
 
@@ -15,18 +15,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
-  const parsed = validateSearchQuery(searchParams.get("q"), searchParams.get("field"));
+  const parsed = validateSearchParams({
+    firstName: searchParams.get("firstName"),
+    lastName: searchParams.get("lastName"),
+    location: searchParams.get("location"),
+  });
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
-  const { term, field } = parsed.value;
+  const { firstName, lastName, location } = parsed.value;
 
   await connectDB();
-  const rx = new RegExp(escapeRegex(term), "i");
-  const personFilter =
-    field === "name"
-      ? { $or: [{ firstName: rx }, { lastName: rx }] }
-      : field === "place"
-      ? { $or: [{ birthPlace: rx }, { deathPlace: rx }] }
-      : { $or: [{ firstName: rx }, { lastName: rx }, { birthPlace: rx }, { deathPlace: rx }] };
+  const rx = (s: string) => new RegExp(escapeRegex(s), "i");
+  // AND across provided fields; location matches either birth or death place.
+  const and: Record<string, unknown>[] = [];
+  if (firstName) and.push({ firstName: rx(firstName) });
+  if (lastName) and.push({ lastName: rx(lastName) });
+  if (location) and.push({ $or: [{ birthPlace: rx(location) }, { deathPlace: rx(location) }] });
+  const personFilter = and.length === 1 ? and[0] : { $and: and };
 
   const persons = await Person.find(personFilter).limit(LIMIT + 1).lean();
   const truncated = persons.length > LIMIT;

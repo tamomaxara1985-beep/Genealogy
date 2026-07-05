@@ -1,25 +1,34 @@
 import type { AccessStatus } from "@/lib/accessRequest";
 
-export type SearchField = "name" | "place" | "all";
-
 export function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-type QueryResult =
-  | { ok: true; value: { term: string; field: SearchField } }
+export type SearchParams = { firstName: string; lastName: string; location: string };
+
+type ParamsResult =
+  | { ok: true; value: SearchParams }
   | { ok: false; error: string };
 
-export function validateSearchQuery(q: unknown, field: unknown): QueryResult {
-  const term = typeof q === "string" ? q.trim() : "";
-  if (term.length < 2) return { ok: false, error: "search term too short" };
-  if (term.length > 100) return { ok: false, error: "search term too long" };
-  if (field != null && field !== "name" && field !== "place" && field !== "all") {
-    return { ok: false, error: "invalid field" };
-  }
-  // Default: search across name and place together.
-  const f: SearchField = field === "name" || field === "place" ? field : "all";
-  return { ok: true, value: { term, field: f } };
+// Validate the three optional search fields. Each is trimmed; any subset may be
+// provided, but at least one must be non-empty and the combined input must be at
+// least 2 characters (guards against matching the entire collection).
+export function validateSearchParams(input: unknown): ParamsResult {
+  const o = (input ?? {}) as Record<string, unknown>;
+  const firstName = typeof o.firstName === "string" ? o.firstName.trim() : "";
+  const lastName = typeof o.lastName === "string" ? o.lastName.trim() : "";
+  const location = typeof o.location === "string" ? o.location.trim() : "";
+
+  if (firstName.length > 100 || lastName.length > 100 || location.length > 100)
+    return { ok: false, error: "search term too long" };
+
+  const provided = [firstName, lastName, location].filter(Boolean);
+  if (provided.length === 0)
+    return { ok: false, error: "at least one field is required" };
+  if (provided.join("").length < 2)
+    return { ok: false, error: "search term too short" };
+
+  return { ok: true, value: { firstName, lastName, location } };
 }
 
 export function computeAccess(

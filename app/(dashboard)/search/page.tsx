@@ -6,7 +6,9 @@ import type { ISearchResult } from "@/types";
 import { cn } from "@/lib/utils";
 
 export default function SearchPage() {
-  const [term, setTerm] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [location, setLocation] = useState("");
   const [results, setResults] = useState<ISearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -14,12 +16,18 @@ export default function SearchPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   const seqRef = useRef(0);
 
-  // Search as you type (debounced). Clears results when the term is too short.
+  // Search as you type (debounced). Each field is optional; searches when at
+  // least one field is filled and the combined input is at least 2 characters.
   useEffect(() => {
-    const q = term.trim();
+    const params = {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      location: location.trim(),
+    };
+    const combined = params.firstName + params.lastName + params.location;
     const seq = ++seqRef.current;
     const t = setTimeout(async () => {
-      if (q.length < 2) {
+      if (combined.length < 2) {
         setResults([]);
         setSearched(false);
         setLoading(false);
@@ -27,7 +35,7 @@ export default function SearchPage() {
       }
       setLoading(true);
       try {
-        const r = await runSearch(q);
+        const r = await runSearch(params);
         if (seq !== seqRef.current) return; // stale response, ignore
         setResults(r.results);
         setSearched(true);
@@ -36,7 +44,7 @@ export default function SearchPage() {
       }
     }, 300);
     return () => clearTimeout(t);
-  }, [term]);
+  }, [firstName, lastName, location]);
 
   async function requestAccess(treeId: string) {
     setActionError(null);
@@ -55,12 +63,24 @@ export default function SearchPage() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Search family trees</h1>
-      <div className="mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
         <input
-          value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="First/last name or city/country…"
-          className="w-full border rounded-md px-3 py-2 text-sm"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          placeholder="First name"
+          className="border rounded-md px-3 py-2 text-sm"
+        />
+        <input
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          placeholder="Last name"
+          className="border rounded-md px-3 py-2 text-sm"
+        />
+        <input
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          placeholder="Location (city/country)"
+          className="border rounded-md px-3 py-2 text-sm"
         />
       </div>
 

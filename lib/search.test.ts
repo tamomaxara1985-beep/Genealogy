@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { escapeRegex, validateSearchQuery, computeAccess } from "./search";
+import { escapeRegex, validateSearchParams, computeAccess } from "./search";
 
 describe("escapeRegex", () => {
   it("escapes regex-special characters", () => {
@@ -7,18 +7,30 @@ describe("escapeRegex", () => {
   });
 });
 
-describe("validateSearchQuery", () => {
-  it("trims term, defaults field to all", () => {
-    expect(validateSearchQuery("  Ann  ", undefined)).toEqual({ ok: true, value: { term: "Ann", field: "all" } });
+describe("validateSearchParams", () => {
+  it("trims and accepts any single field", () => {
+    expect(validateSearchParams({ firstName: "  Ann  " })).toEqual({
+      ok: true,
+      value: { firstName: "Ann", lastName: "", location: "" },
+    });
+    expect(validateSearchParams({ lastName: "Roe" }).ok).toBe(true);
+    expect(validateSearchParams({ location: "Tbilisi" }).ok).toBe(true);
   });
-  it("accepts explicit name and place fields", () => {
-    expect(validateSearchQuery("Ann", "name")).toEqual({ ok: true, value: { term: "Ann", field: "name" } });
-    expect(validateSearchQuery("Tbilisi", "place")).toEqual({ ok: true, value: { term: "Tbilisi", field: "place" } });
+  it("accepts combinations of fields (AND search)", () => {
+    expect(validateSearchParams({ firstName: "Ann", lastName: "Roe", location: "Tbilisi" })).toEqual({
+      ok: true,
+      value: { firstName: "Ann", lastName: "Roe", location: "Tbilisi" },
+    });
   });
-  it("rejects short terms and unknown fields", () => {
-    expect(validateSearchQuery("a", "name").ok).toBe(false);
-    expect(validateSearchQuery("Ann", "bogus").ok).toBe(false);
-    expect(validateSearchQuery("x".repeat(101), "name").ok).toBe(false);
+  it("rejects when all fields empty", () => {
+    expect(validateSearchParams({}).ok).toBe(false);
+    expect(validateSearchParams({ firstName: "  ", lastName: "", location: "" }).ok).toBe(false);
+  });
+  it("rejects combined input shorter than 2 chars", () => {
+    expect(validateSearchParams({ firstName: "a" }).ok).toBe(false);
+  });
+  it("rejects an over-long field", () => {
+    expect(validateSearchParams({ location: "x".repeat(101) }).ok).toBe(false);
   });
 });
 
