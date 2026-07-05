@@ -14,8 +14,10 @@ export function validateSearchQuery(q: unknown, field: unknown): QueryResult {
   const term = typeof q === "string" ? q.trim() : "";
   if (term.length < 2) return { ok: false, error: "search term too short" };
   if (term.length > 100) return { ok: false, error: "search term too long" };
-  const f: SearchField = field === "place" ? "place" : field === "name" || field == null ? "name" : "invalid" as SearchField;
-  if (f !== "name" && f !== "place") return { ok: false, error: "invalid field" };
+  if (field != null && field !== "name" && field !== "place") {
+    return { ok: false, error: "invalid field" };
+  }
+  const f: SearchField = field === "place" ? "place" : "name";
   return { ok: true, value: { term, field: f } };
 }
 
