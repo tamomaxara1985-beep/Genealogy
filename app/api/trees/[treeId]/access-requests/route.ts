@@ -39,12 +39,16 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const owner = await User.findById(target.ownerId).select("email");
   if (owner?.email) {
-    await sendAccessRequestEmail(
-      owner.email,
-      session.user.name ?? "A FamilyRoots user",
-      target.name,
-      parsed.value.message
-    );
+    try {
+      await sendAccessRequestEmail(
+        owner.email,
+        session.user.name ?? "A FamilyRoots user",
+        target.name,
+        parsed.value.message
+      );
+    } catch (err) {
+      console.error("[access-requests] owner notification email failed", err);
+    }
   }
   return NextResponse.json({ status: updated.status });
 }
