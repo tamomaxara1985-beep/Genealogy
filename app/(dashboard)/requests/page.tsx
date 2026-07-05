@@ -10,6 +10,12 @@ async function act(id: string, action: "approve" | "deny" | "revoke") {
   });
 }
 
+async function remove(id: string) {
+  await fetch(`/api/access-requests/${id}`, { method: "DELETE" });
+}
+
+const deletable = (s: AccessStatusDTO) => s === "denied" || s === "revoked";
+
 const badge: Record<AccessStatusDTO, string> = {
   pending: "text-amber-600",
   approved: "text-emerald-700",
@@ -24,6 +30,13 @@ export default function RequestsPage() {
   async function run(id: string, action: "approve" | "deny" | "revoke") {
     await act(id, action);
     incoming.mutate();
+  }
+
+  async function del(id: string) {
+    await remove(id);
+    // A deleted record disappears from both parties' views.
+    incoming.mutate();
+    outgoing.mutate();
   }
 
   return (
@@ -48,6 +61,9 @@ export default function RequestsPage() {
                 {r.status === "approved" && (
                   <button onClick={() => run(r.id, "revoke")} className="border border-red-300 text-red-600 rounded-md px-3 py-1 text-xs font-medium">Revoke</button>
                 )}
+                {deletable(r.status) && (
+                  <button onClick={() => del(r.id)} className="border rounded-md px-3 py-1 text-xs font-medium text-gray-600">Delete</button>
+                )}
               </div>
             </li>
           ))}
@@ -64,7 +80,12 @@ export default function RequestsPage() {
                 <p className="font-medium">{r.treeName}</p>
                 <p className="text-xs text-gray-400">Owner: {r.counterpartyName}</p>
               </div>
-              <span className={`text-xs font-medium ${badge[r.status]}`}>{r.status}</span>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className={`text-xs font-medium ${badge[r.status]}`}>{r.status}</span>
+                {deletable(r.status) && (
+                  <button onClick={() => del(r.id)} className="border rounded-md px-3 py-1 text-xs font-medium text-gray-600">Delete</button>
+                )}
+              </div>
             </li>
           ))}
         </ul>

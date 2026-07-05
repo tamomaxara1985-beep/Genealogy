@@ -40,3 +40,32 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   return NextResponse.json({ status: nextStatus });
 }
+
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const session = await auth();
+  if (!session?.user?.id)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id } = await params;
+
+  await connectDB();
+  const request = await AccessRequest.findById(id);
+  if (!request) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Either party (the requester or the tree owner) may remove the record.
+  const isRequester = request.requesterId.toString() === session.user.id;
+  const { role } = await resolveTreeAccess(request.treeId.toString(), session);
+  if (!isRequester && role !== "owner")
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  // Only terminal, non-granting requests are deletable. Approved requests still
+  // hold an entry in Tree.sharedEmails — revoke first so access is actually removed.
+  if (request.status !== "denied" && request.status !== "revoked")
+    return NextResponse.json(
+      { error: "Only denied or revoked requests can be deleted" },
+      { status: 400 }
+    );
+
+  await request.deleteOne();
+  return NextResponse.json({ ok: true });
+}
