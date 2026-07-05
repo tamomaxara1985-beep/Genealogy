@@ -42,3 +42,49 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
     `,
   });
 }
+
+export async function sendOwnerMessageEmail(
+  to: string,
+  fromEmail: string,
+  fromName: string,
+  subject: string,
+  message: string
+) {
+  await transporter.sendMail({
+    from: `"FamilyRoots" <${SMTP_USER}>`,
+    to,
+    replyTo: fromEmail,
+    subject: `[FamilyRoots] ${subject}`,
+    text: `${fromName} (${fromEmail}) sent you a message via FamilyRoots:\n\n${message}\n\nReply directly to this email to respond.`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+        <h2 style="color:#059669;margin:0 0 16px;">New message via FamilyRoots</h2>
+        <p style="color:#374151;font-size:14px;">From: <strong>${fromName}</strong> (${fromEmail})</p>
+        <p style="color:#374151;font-size:14px;line-height:1.6;white-space:pre-wrap;">${message}</p>
+        <p style="color:#9ca3af;font-size:12px;">Reply directly to this email to respond.</p>
+      </div>`,
+  });
+}
+
+export async function sendAccessRequestEmail(
+  to: string,
+  requesterName: string,
+  treeName: string,
+  message: string
+) {
+  await transporter.sendMail({
+    from: `"FamilyRoots" <${SMTP_USER}>`,
+    to,
+    subject: `[FamilyRoots] Access request for "${treeName}"`,
+    text: `${requesterName} requested access to your tree "${treeName}".${message ? `\n\nNote: ${message}` : ""}\n\nReview it in your FamilyRoots Requests page.`,
+    html: `
+      <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;">
+        <h2 style="color:#059669;margin:0 0 16px;">New access request</h2>
+        <p style="color:#374151;font-size:14px;line-height:1.6;">
+          <strong>${requesterName}</strong> requested access to your tree <strong>${treeName}</strong>.
+        </p>
+        ${message ? `<p style="color:#374151;font-size:14px;line-height:1.6;white-space:pre-wrap;">Note: ${message}</p>` : ""}
+        <p style="color:#9ca3af;font-size:12px;">Review it in your FamilyRoots Requests page.</p>
+      </div>`,
+  });
+}
