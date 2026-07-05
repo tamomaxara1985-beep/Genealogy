@@ -1,6 +1,6 @@
 import type { AccessStatus } from "@/lib/accessRequest";
 
-export type SearchField = "name" | "place";
+export type SearchField = "name" | "place" | "all";
 
 export function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -14,10 +14,11 @@ export function validateSearchQuery(q: unknown, field: unknown): QueryResult {
   const term = typeof q === "string" ? q.trim() : "";
   if (term.length < 2) return { ok: false, error: "search term too short" };
   if (term.length > 100) return { ok: false, error: "search term too long" };
-  if (field != null && field !== "name" && field !== "place") {
+  if (field != null && field !== "name" && field !== "place" && field !== "all") {
     return { ok: false, error: "invalid field" };
   }
-  const f: SearchField = field === "place" ? "place" : "name";
+  // Default: search across name and place together.
+  const f: SearchField = field === "name" || field === "place" ? field : "all";
   return { ok: true, value: { term, field: f } };
 }
 

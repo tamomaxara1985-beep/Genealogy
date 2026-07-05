@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
   const personFilter =
     field === "name"
       ? { $or: [{ firstName: rx }, { lastName: rx }] }
-      : { $or: [{ birthPlace: rx }, { deathPlace: rx }] };
+      : field === "place"
+      ? { $or: [{ birthPlace: rx }, { deathPlace: rx }] }
+      : { $or: [{ firstName: rx }, { lastName: rx }, { birthPlace: rx }, { deathPlace: rx }] };
 
   const persons = await Person.find(personFilter).limit(LIMIT + 1).lean();
   const truncated = persons.length > LIMIT;

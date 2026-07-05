@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { runSearch } from "@/hooks/useSearch";
 import type { ISearchResult } from "@/types";
@@ -7,25 +7,36 @@ import { cn } from "@/lib/utils";
 
 export default function SearchPage() {
   const [term, setTerm] = useState("");
-  const [field, setField] = useState<"name" | "place">("name");
   const [results, setResults] = useState<ISearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [msgFor, setMsgFor] = useState<ISearchResult | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const seqRef = useRef(0);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (term.trim().length < 2) return;
-    setLoading(true);
-    try {
-      const r = await runSearch(term.trim(), field);
-      setResults(r.results);
-      setSearched(true);
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Search as you type (debounced). Clears results when the term is too short.
+  useEffect(() => {
+    const q = term.trim();
+    const seq = ++seqRef.current;
+    const t = setTimeout(async () => {
+      if (q.length < 2) {
+        setResults([]);
+        setSearched(false);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const r = await runSearch(q);
+        if (seq !== seqRef.current) return; // stale response, ignore
+        setResults(r.results);
+        setSearched(true);
+      } finally {
+        if (seq === seqRef.current) setLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [term]);
 
   async function requestAccess(treeId: string) {
     setActionError(null);
@@ -44,23 +55,14 @@ export default function SearchPage() {
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Search family trees</h1>
-      <form onSubmit={submit} className="flex gap-2 mb-6">
-        <select
-          value={field}
-          onChange={(e) => setField(e.target.value as "name" | "place")}
-          className="border rounded-md px-2 text-sm"
-        >
-          <option value="name">Name</option>
-          <option value="place">Place</option>
-        </select>
+      <div className="mb-6">
         <input
           value={term}
           onChange={(e) => setTerm(e.target.value)}
           placeholder="First/last name or city/country…"
-          className="flex-1 border rounded-md px-3 py-2 text-sm"
+          className="w-full border rounded-md px-3 py-2 text-sm"
         />
-        <button className="bg-emerald-600 text-white rounded-md px-4 text-sm font-medium">Search</button>
-      </form>
+      </div>
 
       {actionError && <p className="text-sm text-red-600 mb-3">{actionError}</p>}
 

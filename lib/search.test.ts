@@ -8,10 +8,11 @@ describe("escapeRegex", () => {
 });
 
 describe("validateSearchQuery", () => {
-  it("trims term, defaults field to name", () => {
-    expect(validateSearchQuery("  Ann  ", undefined)).toEqual({ ok: true, value: { term: "Ann", field: "name" } });
+  it("trims term, defaults field to all", () => {
+    expect(validateSearchQuery("  Ann  ", undefined)).toEqual({ ok: true, value: { term: "Ann", field: "all" } });
   });
-  it("accepts place field", () => {
+  it("accepts explicit name and place fields", () => {
+    expect(validateSearchQuery("Ann", "name")).toEqual({ ok: true, value: { term: "Ann", field: "name" } });
     expect(validateSearchQuery("Tbilisi", "place")).toEqual({ ok: true, value: { term: "Tbilisi", field: "place" } });
   });
   it("rejects short terms and unknown fields", () => {
