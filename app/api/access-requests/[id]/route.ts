@@ -52,19 +52,27 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   const request = await AccessRequest.findById(id);
   if (!request) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  // Either party (the requester or the tree owner) may remove the record.
   const isRequester = request.requesterId.toString() === session.user.id;
   const { role } = await resolveTreeAccess(request.treeId.toString(), session);
   if (!isRequester && role !== "owner")
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  // Only terminal, non-granting requests are deletable. Approved requests still
-  // hold an entry in Tree.sharedEmails — revoke first so access is actually removed.
-  if (request.status !== "denied" && request.status !== "revoked")
+  const status = request.status;
+  // Approved requests still hold an entry in Tree.sharedEmails — revoke first so
+  // access is actually removed, otherwise deleting would leave a stale share.
+  if (status === "approved")
     return NextResponse.json(
-      { error: "Only denied or revoked requests can be deleted" },
+      { error: "Approved requests cannot be deleted; revoke access first" },
       { status: 400 }
     );
+  // A pending request can only be cancelled by the requester who sent it. The
+  // owner acts on a pending request by denying it, not deleting it.
+  if (status === "pending" && !isRequester)
+    return NextResponse.json(
+      { error: "Only the requester can cancel a pending request" },
+      { status: 403 }
+    );
+  // denied / revoked are deletable by either party.
 
   await request.deleteOne();
   return NextResponse.json({ ok: true });

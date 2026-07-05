@@ -82,6 +82,9 @@ export default function RequestsPage() {
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <span className={`text-xs font-medium ${badge[r.status]}`}>{r.status}</span>
+                {r.status === "pending" && (
+                  <button onClick={() => del(r.id)} className="border rounded-md px-3 py-1 text-xs font-medium text-gray-600">Cancel</button>
+                )}
                 {deletable(r.status) && (
                   <button onClick={() => del(r.id)} className="border rounded-md px-3 py-1 text-xs font-medium text-gray-600">Delete</button>
                 )}
