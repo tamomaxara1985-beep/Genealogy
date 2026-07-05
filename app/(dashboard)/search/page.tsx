@@ -12,23 +12,32 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [msgFor, setMsgFor] = useState<ISearchResult | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (term.trim().length < 2) return;
     setLoading(true);
-    const r = await runSearch(term.trim(), field);
-    setResults(r.results);
-    setSearched(true);
-    setLoading(false);
+    try {
+      const r = await runSearch(term.trim(), field);
+      setResults(r.results);
+      setSearched(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function requestAccess(treeId: string) {
-    await fetch(`/api/trees/${treeId}/access-requests`, {
+    setActionError(null);
+    const res = await fetch(`/api/trees/${treeId}/access-requests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: "" }),
     });
+    if (!res.ok) {
+      setActionError("Could not send request. Please try again.");
+      return;
+    }
     setResults((rs) => rs.map((r) => (r.treeId === treeId ? { ...r, access: "pending" } : r)));
   }
 
@@ -52,6 +61,8 @@ export default function SearchPage() {
         />
         <button className="bg-emerald-600 text-white rounded-md px-4 text-sm font-medium">Search</button>
       </form>
+
+      {actionError && <p className="text-sm text-red-600 mb-3">{actionError}</p>}
 
       {loading && <p className="text-sm text-gray-500">Searching…</p>}
       {searched && !loading && results.length === 0 && (
@@ -109,13 +120,18 @@ function MessageDialog({ result, onClose }: { result: ISearchResult; onClose: ()
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function send() {
-    await fetch(`/api/trees/${result.treeId}/contact-owner`, {
+    const res = await fetch(`/api/trees/${result.treeId}/contact-owner`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ subject, message }),
     });
+    if (!res.ok) {
+      setError("Could not send message. Please try again.");
+      return;
+    }
     setSent(true);
   }
 
@@ -127,6 +143,7 @@ function MessageDialog({ result, onClose }: { result: ISearchResult; onClose: ()
           <p className="text-sm text-emerald-700">Message sent.</p>
         ) : (
           <>
+            {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
