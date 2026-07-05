@@ -112,3 +112,25 @@ export interface ChatMessage {
   role: "user" | "assistant"
   content: string
 }
+
+export type AccessStatusDTO = "pending" | "approved" | "denied" | "revoked";
+
+export interface ISearchResult {
+  personId: string
+  personName: string
+  place: string
+  treeId: string
+  treeName: string
+  ownerName: string
+  access: "owner" | "viewer" | "pending" | "none"
+}
+
+export interface IAccessRequestView {
+  id: string
+  treeId: string
+  treeName: string
+  counterpartyName: string
+  counterpartyEmail?: string
+  message?: string
+  status: AccessStatusDTO
+}
