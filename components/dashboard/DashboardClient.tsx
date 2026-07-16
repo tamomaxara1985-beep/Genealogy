@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
@@ -21,14 +21,14 @@ export function DashboardClient() {
   const tDash = useTranslations("dashboard")
   const tc = useTranslations("common")
   const { data, isLoading, mutate } = useSWR<Stats>("/api/dashboard/stats", fetcher)
-  const [bio, setBio] = useState("")
+  // `draft` is null until the user edits; the displayed value derives from the
+  // server value otherwise. This avoids copying fetched data into state via an
+  // effect (which triggers cascading renders) while still preserving edits.
+  const [draft, setDraft] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  const [dirty, setDirty] = useState(false)
 
-  useEffect(() => {
-    if (!dirty && data?.bio !== undefined) setBio(data.bio)
-  }, [data?.bio, dirty])
+  const bio = draft ?? data?.bio ?? ""
 
   async function saveBio() {
     setSaving(true)
@@ -39,8 +39,8 @@ export function DashboardClient() {
     })
     setSaving(false)
     setSaved(true)
-    setDirty(false)
     mutate({ ...data!, bio }, false)
+    setDraft(null)
     setTimeout(() => setSaved(false), 2000)
   }
 
@@ -81,7 +81,7 @@ export function DashboardClient() {
             className="w-full min-h-40 rounded-md border border-input bg-background px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-emerald-400"
             placeholder={tDash("bioPlaceholder")}
             value={bio}
-            onChange={(e) => { setBio(e.target.value); setSaved(false); setDirty(true) }}
+            onChange={(e) => { setDraft(e.target.value); setSaved(false) }}
           />
           <div className="flex items-center gap-3">
             <Button
