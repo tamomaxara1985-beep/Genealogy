@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/apiAuth";
 import { connectDB } from "@/lib/db";
 import Tree from "@/lib/models/Tree";
 import User from "@/lib/models/User";
@@ -8,7 +8,7 @@ import { sendOwnerMessageEmail } from "@/lib/mail";
 type Params = { params: Promise<{ treeId: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
-  const session = await auth();
+  const session = await getSession(req);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
