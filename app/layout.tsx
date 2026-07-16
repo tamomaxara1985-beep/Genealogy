@@ -1,8 +1,9 @@
 // app/layout.tsx
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { NextIntlClientProvider } from "next-intl"
 import { getLocale, getMessages } from "next-intl/server"
 import { Providers } from "@/components/providers"
+import { RegisterSW } from "@/components/pwa/RegisterSW"
 import { getSiteSettings, buildThemeStyle, getFontUrl } from "@/lib/siteSettings"
 import { getSiteContent, applyContentOverrides } from "@/lib/siteContent"
 import "./globals.css"
@@ -10,6 +11,18 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "FamilyRoots — Discover Your Family History",
   description: "Build, explore, and share your family tree with AI-powered tools",
+  appleWebApp: {
+    capable: true,
+    title: "FamilyRoots",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: "#059669",
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {themeStyle && <style dangerouslySetInnerHTML={{ __html: themeStyle }} />}
       </head>
       <body>
+        <RegisterSW />
         <NextIntlClientProvider locale={locale} messages={mergedMessages}>
           <Providers>{children}</Providers>
         </NextIntlClientProvider>
