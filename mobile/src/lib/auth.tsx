@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { useSWRConfig } from "swr";
 import { api, onUnauthorized } from "./api";
 import { tokenStore } from "./tokenStore";
 
@@ -23,6 +24,12 @@ const USER_KEY = "genealogy_user";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<MobileUser | null>(null);
   const [ready, setReady] = useState(false);
+  const { mutate } = useSWRConfig();
+  const userRef = useRef<MobileUser | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     // Restore session on launch: a stored token implies a stored user.
@@ -33,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setReady(true);
     })();
     const off = onUnauthorized(() => {
-      void signOut();
+      if (userRef.current) void signOut();
     });
     return off;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function signOut() {
     void tokenStore.clear();
     void import("expo-secure-store").then((m) => m.deleteItemAsync(USER_KEY));
+    void mutate(() => true, undefined, { revalidate: false });
     setUser(null);
   }
 

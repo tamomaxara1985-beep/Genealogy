@@ -30,7 +30,14 @@ export function createApiClient(opts: ApiClientOptions) {
     if (res.status === 401) opts.onUnauthorized();
 
     const text = await res.text();
-    const body = text ? JSON.parse(text) : null;
+    let body: any = null;
+    if (text) {
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = null;
+      }
+    }
 
     if (!res.ok) {
       const message =

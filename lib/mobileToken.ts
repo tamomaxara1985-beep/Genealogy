@@ -28,7 +28,7 @@ export async function verifyMobileToken(
   secret: string
 ): Promise<MobileTokenClaims | null> {
   try {
-    const { payload } = await jwtVerify(token, key(secret));
+    const { payload } = await jwtVerify(token, key(secret), { algorithms: ["HS256"] });
     if (!payload.sub) return null;
     return {
       sub: payload.sub,
