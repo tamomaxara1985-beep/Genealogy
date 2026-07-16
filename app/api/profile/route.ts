@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
-import { auth } from "@/lib/auth"
+import { getSession } from "@/lib/apiAuth"
 import { connectDB } from "@/lib/db"
 import User from "@/lib/models/User"
 
 export async function PATCH(request: Request) {
-  const session = await auth()
+  const session = await getSession(request)
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const { bio } = await request.json()

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/apiAuth";
 import { connectDB } from "@/lib/db";
 import Person from "@/lib/models/Person";
 import Tree from "@/lib/models/Tree";
@@ -10,7 +10,7 @@ import { validateSearchParams, escapeRegex, computeAccess } from "@/lib/search";
 const LIMIT = 50;
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
+  const session = await getSession(req);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

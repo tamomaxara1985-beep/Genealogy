@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/apiAuth";
 import { connectDB } from "@/lib/db";
 import Person from "@/lib/models/Person";
 import Tree from "@/lib/models/Tree";
@@ -17,8 +17,8 @@ async function authorizePersonAccess(personId: string, userId: string) {
   return person;
 }
 
-export async function GET(_req: NextRequest, { params }: Params) {
-  const session = await auth();
+export async function GET(req: NextRequest, { params }: Params) {
+  const session = await getSession(req);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -30,7 +30,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
-  const session = await auth();
+  const session = await getSession(req);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -46,8 +46,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
   return NextResponse.json(person);
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const session = await auth();
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const session = await getSession(req);
   if (!session?.user?.id)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
