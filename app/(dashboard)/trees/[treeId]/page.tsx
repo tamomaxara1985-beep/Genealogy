@@ -27,7 +27,7 @@ import { TreeToolbar } from "@/components/tree/TreeToolbar";
 import { DeleteTreeDialog } from "@/components/tree/DeleteTreeDialog";
 import { RenameTreeDialog } from "@/components/tree/RenameTreeDialog";
 import { buildTreeData } from "@/lib/buildTreeData";
-import { getAncestors, getSiblings, getCoreVisible, getSpouses } from "@/lib/treeCollapse";
+import { getAncestors, getSiblings, getCoreVisible, getSpouses, getSiblingRevealSet } from "@/lib/treeCollapse";
 import { getRootPersonId } from "@/lib/treeRoot";
 import type { IPerson, IRelationship, RelativeRole, ITree } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -355,16 +355,9 @@ export default function TreePage({
     const hidden = new Set<string>();
     if (rootId) {
       const core = getCoreVisible(rootId, relationships);
-      const revealed = new Set<string>();
-      expandedSiblingIds.forEach((id) => {
-        getSiblings(id, relationships).forEach((sib) => revealed.add(sib));
-      });
-      // include spouses of revealed siblings so they pair into couple nodes
-      for (const r of relationships) {
-        if (r.type !== "spouse") continue;
-        if (revealed.has(r.person1Id)) revealed.add(r.person2Id);
-        if (revealed.has(r.person2Id)) revealed.add(r.person1Id);
-      }
+      // Expanded siblings reveal the sibling, their descendants, and spouses —
+      // so children added under an expanded collateral sibling are not hidden.
+      const revealed = getSiblingRevealSet(expandedSiblingIds, relationships);
       persons.forEach((p) => {
         if (!core.has(p._id) && !revealed.has(p._id)) hidden.add(p._id);
       });

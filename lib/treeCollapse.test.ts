@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getCoreVisible, getSpouses } from "./treeCollapse";
+import { getCoreVisible, getSpouses, getSiblingRevealSet } from "./treeCollapse";
 import type { IRelationship } from "@/types";
 
 const pc = (parent: string, child: string): IRelationship =>
@@ -55,5 +55,43 @@ describe("getCoreVisible", () => {
   it("getCoreVisible does NOT include the root spouse's siblings (in-law collateral stays collapsed)", () => {
     const rels = [sp("root", "wife"), pc("wifeDad", "wife"), pc("wifeDad", "wifeSister")];
     expect(getCoreVisible("root", rels).has("wifeSister")).toBe(false);
+  });
+
+  // Regression: adding a parent to an in-law spouse of a visible ancestor must show that parent.
+  // Mirrors "Anna's father": Svimon (ancestor) has 2nd wife Anna; Anna's father Ivane was hidden.
+  it("includes the ancestors of an in-law spouse of a visible person", () => {
+    const rels = [pc("dad", "root"), sp("dad", "stepmom"), pc("stepmomDad", "stepmom")];
+    const core = getCoreVisible("root", rels);
+    expect(core.has("stepmom")).toBe(true);
+    expect(core.has("stepmomDad")).toBe(true);
+  });
+
+  it("still keeps an in-law spouse's SIBLINGS collapsed (only ancestors surface)", () => {
+    const rels = [pc("dad", "root"), sp("dad", "stepmom"), pc("smDad", "stepmom"), pc("smDad", "stepmomSister")];
+    expect(getCoreVisible("root", rels).has("stepmomSister")).toBe(false);
+  });
+});
+
+describe("getSiblingRevealSet", () => {
+  // Regression: expanding a sibling must also reveal that sibling's descendants.
+  // Mirrors "Goga+Sofo's children": Goga is root's sibling; his children were hidden.
+  it("reveals an expanded person's siblings, their descendants, and spouses", () => {
+    const rels = [
+      pc("dad", "root"),
+      pc("dad", "sib"),          // sib is root's sibling
+      sp("sib", "sibSpouse"),
+      pc("sib", "niece"),        // sib's child
+      pc("sibSpouse", "niece"),
+      pc("niece", "grandniece"), // deeper descendant
+    ];
+    const revealed = getSiblingRevealSet(new Set(["root"]), rels);
+    ["sib", "sibSpouse", "niece", "grandniece"].forEach((id) =>
+      expect(revealed.has(id)).toBe(true)
+    );
+  });
+
+  it("is empty when nothing is expanded", () => {
+    const rels = [pc("dad", "root"), pc("dad", "sib")];
+    expect(getSiblingRevealSet(new Set(), rels).size).toBe(0);
   });
 });

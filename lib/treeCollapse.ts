@@ -126,13 +126,47 @@ export function getCoreVisible(
   }
 
   // Add the spouse of any visible person (root, ancestors, or descendants) so
-  // additional spouses render wherever their partner is visible. Only the
-  // spouse card is added — not the spouse's own ancestors.
+  // additional spouses render wherever their partner is visible — and, like the
+  // root's own spouse, surface that in-law's ancestor pedigree so a parent added
+  // to an in-law is not orphaned off-screen. (Collateral — the in-law's siblings —
+  // still stays collapsed: only the upward line is added.)
   const coreSnapshot = new Set(core);
   for (const r of relationships) {
     if (r.type !== "spouse") continue;
-    if (coreSnapshot.has(r.person1Id)) core.add(r.person2Id);
-    if (coreSnapshot.has(r.person2Id)) core.add(r.person1Id);
+    for (const [a, b] of [[r.person1Id, r.person2Id], [r.person2Id, r.person1Id]] as const) {
+      if (!coreSnapshot.has(a)) continue;
+      core.add(b);
+      getAncestors(b, relationships).forEach((id) => core.add(id));
+    }
   }
   return core;
+}
+
+/**
+ * Reveal set for expanded collateral siblings.
+ *
+ * For each person whose sibling group is expanded, returns that person's
+ * siblings PLUS each sibling's full descendant subtree PLUS the spouse of
+ * everyone revealed (so revealed people pair into couple nodes and the
+ * children a user adds under an expanded sibling are not left off-screen).
+ * Does not include the expanded person itself.
+ */
+export function getSiblingRevealSet(
+  expandedIds: Set<string>,
+  relationships: IRelationship[]
+): Set<string> {
+  const revealed = new Set<string>();
+  for (const id of expandedIds) {
+    for (const sib of getSiblings(id, relationships)) {
+      revealed.add(sib);
+      getDescendants(sib, relationships).forEach((d) => revealed.add(d));
+    }
+  }
+  // Spouses of everyone revealed, so they pair into couple nodes.
+  for (const r of relationships) {
+    if (r.type !== "spouse") continue;
+    if (revealed.has(r.person1Id)) revealed.add(r.person2Id);
+    if (revealed.has(r.person2Id)) revealed.add(r.person1Id);
+  }
+  return revealed;
 }
