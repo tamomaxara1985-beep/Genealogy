@@ -150,10 +150,29 @@ export function applyDagreLayout<T extends MinimalNode>(
   };
   const widthOf = widthOfNode;
 
+  // Horizontal offset (from a node's centre) of the target handle a parent edge
+  // lands on. Lets a lone/in-law parent sit above the correct spouse card of a
+  // multi-spouse node instead of over the node centre.
+  function handleOffsetX(targetId: string, th: string): number {
+    const n = nodeById.get(targetId);
+    const w = widthOf(targetId);
+    if (n?.type === "polyCoupleNode") {
+      const x = th === "left" ? 80 : th === "right" ? 520 : 300; // shared → 300
+      return x - w / 2;
+    }
+    if (n?.type === "multiCoupleNode") {
+      const m = /^spouse(\d+)$/.exec(th);
+      const x = m ? 300 + 220 * Number(m[1]) : 80; // "shared" → 80
+      return x - w / 2;
+    }
+    return 0;
+  }
+
   // Resolve each child node's parents, split by side.
-  // wife = person1 / left card, husband = person2 / right card,
-  // single = a lone person's parent group (no husband/wife split).
-  type Parents = { wife?: string; husband?: string; single?: string };
+  // wife = person1 / left card, husband = person2 / right card.
+  // singles = lone/in-law parent groups (no husband/wife split); a poly/multi
+  // node can have several — one per spouse — each offset above its own card.
+  type Parents = { wife?: string; husband?: string; singles?: { id: string; offset: number }[] };
   const parentsOf = new Map<string, Parents>();
   const hasChildren = new Set<string>(); // nodes that are a parent of someone
   edges.forEach((e) => {
@@ -162,7 +181,7 @@ export function applyDagreLayout<T extends MinimalNode>(
     const th = e.targetHandle ?? "";
     if (th.startsWith("person1")) entry.wife = e.source;
     else if (th.startsWith("person2")) entry.husband = e.source;
-    else entry.single = e.source; // "mother"/"father" (person child) or poly handles
+    else (entry.singles ??= []).push({ id: e.source, offset: handleOffsetX(e.target, th) });
     parentsOf.set(e.target, entry);
   });
 
@@ -177,10 +196,9 @@ export function applyDagreLayout<T extends MinimalNode>(
     const p = parentsOf.get(id);
     const left = p?.wife ? subtreeWidth(p.wife) : 0;
     const right = p?.husband ? subtreeWidth(p.husband) : 0;
-    const single = p?.single ? subtreeWidth(p.single) : 0;
     let w = widthOf(id);
     if (p?.wife || p?.husband) w = Math.max(w, left + GAP + right);
-    if (p?.single) w = Math.max(w, single);
+    for (const s of p?.singles ?? []) w = Math.max(w, subtreeWidth(s.id));
     widthVisiting.delete(id);
     widthMemo.set(id, w);
     return w;
@@ -195,7 +213,8 @@ export function applyDagreLayout<T extends MinimalNode>(
     const p = parentsOf.get(id);
     if (p?.wife) placeFan(p.wife, centerX - GAP / 2 - subtreeWidth(p.wife) / 2, visited);
     if (p?.husband) placeFan(p.husband, centerX + GAP / 2 + subtreeWidth(p.husband) / 2, visited);
-    if (p?.single) placeFan(p.single, centerX, visited); // lone person's parents: centered above
+    // Lone/in-law parents: above their own spouse card (offset), not the node centre.
+    for (const s of p?.singles ?? []) placeFan(s.id, centerX + s.offset, visited);
   }
 
   // Anchors = youngest nodes (never a parent). Fan upward from each, ordered by
@@ -228,7 +247,7 @@ export function applyDagreLayout<T extends MinimalNode>(
   const coneParents = (id: string): string[] => {
     const p = parentsOf.get(id);
     if (!p) return [];
-    return [p.wife, p.husband, p.single].filter((v): v is string => !!v);
+    return [p.wife, p.husband, ...(p.singles?.map((s) => s.id) ?? [])].filter((v): v is string => !!v);
   };
   const adjustedX = enforceRowGaps(placedIds, centerXMap, yMap, widthOf, coneParents, MIN_ROW_GAP);
 
